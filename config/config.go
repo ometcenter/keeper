@@ -118,7 +118,7 @@ func New() *ServiceConfig {
 	return &ServiceConfig{
 		Port:            getEnv("PORT", defaultPort),
 		PortgRPC:        getEnv("PORT_gRPC", defaultGRPCPort),
-		AddressPortgRPC: getEnv("ADDRESS_PORT_gRPC", fmt.Sprint("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
+		AddressPortgRPC: getEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
 		MessagePath:     getEnv("MESSAGE_PATH", defaultMessagePath),
 		MaxWorker:       getEnvAsInt("MAX_WORKERS", 1),
 		MaxQueue:        getEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
