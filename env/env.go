@@ -1,4 +1,4 @@
-package config
+package env
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 )
 
 // Simple helper function to read an environment or return a default value
-func getEnv(key string, defaultVal string) string {
+func GetEnv(key string, defaultVal string) string {
 	if value, exists := os.LookupEnv(key); exists {
 		return value
 	}
@@ -16,8 +16,8 @@ func getEnv(key string, defaultVal string) string {
 }
 
 // Simple helper function to read an environment variable into integer or return a default value
-func getEnvAsInt(name string, defaultVal int) int {
-	valueStr := getEnv(name, "")
+func GetEnvAsInt(name string, defaultVal int) int {
+	valueStr := GetEnv(name, "")
 	if value, err := strconv.Atoi(valueStr); err == nil {
 		return value
 	}
@@ -26,8 +26,8 @@ func getEnvAsInt(name string, defaultVal int) int {
 }
 
 // Helper to read an environment variable into a bool or return default value
-func getEnvAsBool(name string, defaultVal bool) bool {
-	valStr := getEnv(name, "")
+func GetEnvAsBool(name string, defaultVal bool) bool {
+	valStr := GetEnv(name, "")
 	if val, err := strconv.ParseBool(valStr); err == nil {
 		return val
 	}
@@ -36,8 +36,8 @@ func getEnvAsBool(name string, defaultVal bool) bool {
 }
 
 // Helper to read an environment variable into a string slice or return default value
-func getEnvAsSlice(name string, defaultVal []string, sep string) []string {
-	valStr := getEnv(name, "")
+func GetEnvAsSlice(name string, defaultVal []string, sep string) []string {
+	valStr := GetEnv(name, "")
 
 	if valStr == "" {
 		return defaultVal

@@ -6,6 +6,8 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/ometcenter/keeper/env"
 )
 
 const (
@@ -81,7 +83,7 @@ type ServiceConfig struct {
 func (s ServiceConfig) InitTimezone() string {
 	str := ""
 	var err error
-	if tz := getEnv("TIMEZONE", "Local"); tz != "" {
+	if tz := env.GetEnv("TIMEZONE", "Local"); tz != "" {
 		time.Local, err = time.LoadLocation(tz)
 		if err != nil {
 			str = fmt.Sprintf("[ERROR] loading location '%s': %v\n", tz, err)
@@ -96,39 +98,39 @@ func (s ServiceConfig) InitTimezone() string {
 func New() *ServiceConfig {
 
 	pbc := PubSubConfig{
-		Topic:         getEnv("NSQ_TOPIC", defaultNSQTopic),
-		Channel:       getEnv("NSQ_CHANNEL", defaultNSQChannel),
-		NsqLookupdPub: getEnv("NSQ_LOOKUPD_PUB", defaultNSQLookupdPub),
-		NsqLookupdSub: getEnv("NSQ_LOOKUPD_SUB", defaultNSQLookupdSub),
-		MaxRequeue:    getEnvAsInt("NSQ_MAX_REQUEUE", 10),
-		Concurrent:    getEnvAsInt("NSQ_CONCURRENT", 1),
-		MaxInFlight:   getEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
-		UseDailyTopic: getEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
+		Topic:         env.GetEnv("NSQ_TOPIC", defaultNSQTopic),
+		Channel:       env.GetEnv("NSQ_CHANNEL", defaultNSQChannel),
+		NsqLookupdPub: env.GetEnv("NSQ_LOOKUPD_PUB", defaultNSQLookupdPub),
+		NsqLookupdSub: env.GetEnv("NSQ_LOOKUPD_SUB", defaultNSQLookupdSub),
+		MaxRequeue:    env.GetEnvAsInt("NSQ_MAX_REQUEUE", 10),
+		Concurrent:    env.GetEnvAsInt("NSQ_CONCURRENT", 1),
+		MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
+		UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
 	}
 
 	pc := PusherConfig{
-		Address: getEnv("PUSHER_ADDRESS", defaultPusherAddress),
-		Token:   getEnv("PUSHER_TOKEN", ""),
+		Address: env.GetEnv("PUSHER_ADDRESS", defaultPusherAddress),
+		Token:   env.GetEnv("PUSHER_TOKEN", ""),
 	}
 
 	l := LoggerConfig{
-		Name:  getEnv("LOGGER_DEFAULT", LoggerSentry), //Lorgus
-		Level: getEnvAsInt("LOG_LEVEL", 0),
+		Name:  env.GetEnv("LOGGER_DEFAULT", LoggerSentry), //Lorgus
+		Level: env.GetEnvAsInt("LOG_LEVEL", 0),
 	}
 	return &ServiceConfig{
-		Port:            getEnv("PORT", defaultPort),
-		PortgRPC:        getEnv("PORT_gRPC", defaultGRPCPort),
-		AddressPortgRPC: getEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
-		MessagePath:     getEnv("MESSAGE_PATH", defaultMessagePath),
-		MaxWorker:       getEnvAsInt("MAX_WORKERS", 1),
-		MaxQueue:        getEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
-		MaxLength:       getEnvAsInt("MAX_LENGTH", 1048576),
-		DatabaseURL:     getEnv("DB_CONNECTION", ""),
-		SentryUrlDSN:    getEnv("SENTRY_URL_DSN", ""),
-		Release:         getEnv("RELEASE", "Nope"),
-		QueueType:       getEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
-		AddressRabbitMQ: getEnv("ADDRESS_RABBIT_MQ", defaultAddressRabbitMQ),
-		SecretKeyJWT:    getEnv("SECRET_KEY_JWT", ""),
+		Port:            env.GetEnv("PORT", defaultPort),
+		PortgRPC:        env.GetEnv("PORT_gRPC", defaultGRPCPort),
+		AddressPortgRPC: env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
+		MessagePath:     env.GetEnv("MESSAGE_PATH", defaultMessagePath),
+		MaxWorker:       env.GetEnvAsInt("MAX_WORKERS", 1),
+		MaxQueue:        env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
+		MaxLength:       env.GetEnvAsInt("MAX_LENGTH", 1048576),
+		DatabaseURL:     env.GetEnv("DB_CONNECTION", ""),
+		SentryUrlDSN:    env.GetEnv("SENTRY_URL_DSN", ""),
+		Release:         env.GetEnv("RELEASE", "Nope"),
+		QueueType:       env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
+		AddressRabbitMQ: env.GetEnv("ADDRESS_RABBIT_MQ", defaultAddressRabbitMQ),
+		SecretKeyJWT:    env.GetEnv("SECRET_KEY_JWT", ""),
 		PubSubConfig:    pbc,
 		PusherConfig:    pc,
 		LoggerConfig:    l,
