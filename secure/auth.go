@@ -1,8 +1,8 @@
 package secure
 
 import (
-	"go-keeper/config"
-	"go-keeper/log"
+	"github.com/ometcenter/keeper/config"
+	"github.com/ometcenter/keeper/log"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
