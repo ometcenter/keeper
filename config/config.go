@@ -1,47 +1,23 @@
-/* Package config определяет структуры конфигурации и некоторые интерфейсы
- */
 package config
 
 import (
-	"errors"
-	"fmt"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 	"time"
-
-	"github.com/ometcenter/keeper/env"
 )
 
-const (
-	LoggerSentry = "Sentry"
-	LoggerLorgus = "Lorgus"
-	RabbitMQ     = "RabbitMQ"
-	NSQ          = "NSQ"
-)
+// Conf ...
+var Conf *Config
 
-var (
-	errInvalidHost     = errors.New("invalid host")
-	defaultPort        = "8080"
-	defaultGRPCPort    = "5300"
-	defaultGRPCAddress = "localhost"
-	defaultMessagePath = "/"
-
-	defaultPusherAddress   = "http://localhost"
-	defaultAddressRabbitMQ = "amqp://localhost:5672"
-
-	defaultNSQTopic      = "go-keeper-messages"
-	defaultNSQChannel    = "keeper-agent"
-	defaultNSQLookupdPub = "localhost:4150"
-	defaultNSQLookupdSub = "localhost:4161"
-)
-
-// Pusher содержит настройки для использования сервиса Pusher
-type PusherConfig struct {
-	// Адрес сервиса принимающего события из Pusher
+// Pusher ...
+type Pusher struct {
 	Address string
-	// Логин и пароль в формате base64
-	Token string
+	Token   string
 }
 
-// PubSubConfig содержит настройки для использования сервиса очередей
+// PubSubConfig ...
 type PubSubConfig struct {
 	Topic         string
 	Channel       string
@@ -53,87 +29,110 @@ type PubSubConfig struct {
 	UseDailyTopic bool
 }
 
-// LoggerConfig содержит настройки для логгера
-type LoggerConfig struct {
-	Level int
-	Name  string
-}
-
-// ServiceConfig основные настроки приложения
-type ServiceConfig struct {
+// Config ...
+type Config struct {
 	Port            string
-	PortgRPC        string
-	AddressPortgRPC string
 	MessagePath     string
 	MaxWorker       int
 	MaxQueue        int
 	MaxLength       int
 	DatabaseURL     string
 	SentryUrlDSN    string
-	LoggerConfig
+	LoggerDefault   string
+	LogLevel        int
 	Release         string
 	SecretKeyJWT    string
 	QueueType       string
 	AddressRabbitMQ string
 	PubSubConfig
-	PusherConfig
+	Pusher
 }
 
-// InitTimezone устанавливает временную зону в time.Local
-func (s ServiceConfig) InitTimezone() string {
-	str := ""
-	var err error
-	if tz := env.GetEnv("TIMEZONE", "Local"); tz != "" {
+// New returns a new Config struct
+func New() *Config {
+
+	if tz := getEnv("TIMEZONE", "Local"); tz != "" {
+		var err error
 		time.Local, err = time.LoadLocation(tz)
 		if err != nil {
-			str = fmt.Sprintf("[ERROR] loading location '%s': %v\n", tz, err)
+			log.Printf("[ERROR] loading location '%s': %v\n", tz, err)
 		}
 		nameLocation, _ := time.Now().Zone()
-		str = fmt.Sprintf("[INFO] текущая таймзона %s\n", nameLocation)
+		log.Printf("[INFO] текущая таймзона %s", nameLocation)
 	}
-	return str
+
+	c := &Config{
+		Port:            getEnv("PORT", "8080"),
+		MessagePath:     getEnv("MESSAGE_PATH", "/"),
+		MaxWorker:       getEnvAsInt("MAX_WORKERS", 1),
+		MaxQueue:        getEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
+		MaxLength:       getEnvAsInt("MAX_LENGTH", 1048576),
+		DatabaseURL:     getEnv("DB_CONNECTION", ""),
+		SentryUrlDSN:    getEnv("SENTRY_URL_DSN", "http://ded6d3a6b5c64c0d9e38c042a365fa39:0aed9c2ef0994bf39f40e7227174bfa2@localhost:9000/2"),
+		LoggerDefault:   getEnv("LOGGER_DEFAULT", "Sentry"),
+		LogLevel:        getEnvAsInt("LOG_LEVEL", 0),
+		Release:         getEnv("RELEASE", "Nope"),
+		QueueType:       getEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
+		AddressRabbitMQ: getEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
+		SecretKeyJWT:    getEnv("SECRET_KEY_JWT", ""),
+		PubSubConfig: PubSubConfig{
+			Topic:         getEnv("NSQ_TOPIC", "go-keeper-messages"),
+			Channel:       getEnv("NSQ_CHANNEL", "keeper-agent"),
+			NsqLookupdPub: getEnv("NSQ_LOOKUPD_PUB", "localhost:4150"),
+			NsqLookupdSub: getEnv("NSQ_LOOKUPD_SUB", "localhost:4161"),
+			MaxRequeue:    getEnvAsInt("NSQ_MAX_REQUEUE", 10),
+			Concurrent:    getEnvAsInt("NSQ_CONCURRENT", 1),
+			MaxInFlight:   getEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
+			UseDailyTopic: getEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
+		},
+		Pusher: Pusher{
+			Address: getEnv("PUSHER_ADDRESS", "http://localhost"),
+			Token:   getEnv("PUSHER_TOKEN", ""),
+		},
+	}
+
+	Conf = c
+	return c
 }
 
-// New возвращает новый ServiceConfig тип
-func New() *ServiceConfig {
-
-	pbc := PubSubConfig{
-		Topic:         env.GetEnv("NSQ_TOPIC", defaultNSQTopic),
-		Channel:       env.GetEnv("NSQ_CHANNEL", defaultNSQChannel),
-		NsqLookupdPub: env.GetEnv("NSQ_LOOKUPD_PUB", defaultNSQLookupdPub),
-		NsqLookupdSub: env.GetEnv("NSQ_LOOKUPD_SUB", defaultNSQLookupdSub),
-		MaxRequeue:    env.GetEnvAsInt("NSQ_MAX_REQUEUE", 10),
-		Concurrent:    env.GetEnvAsInt("NSQ_CONCURRENT", 1),
-		MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
-		UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
+// Simple helper function to read an environment or return a default value
+func getEnv(key string, defaultVal string) string {
+	if value, exists := os.LookupEnv(key); exists {
+		return value
 	}
 
-	pc := PusherConfig{
-		Address: env.GetEnv("PUSHER_ADDRESS", defaultPusherAddress),
-		Token:   env.GetEnv("PUSHER_TOKEN", ""),
+	return defaultVal
+}
+
+// Simple helper function to read an environment variable into integer or return a default value
+func getEnvAsInt(name string, defaultVal int) int {
+	valueStr := getEnv(name, "")
+	if value, err := strconv.Atoi(valueStr); err == nil {
+		return value
 	}
 
-	l := LoggerConfig{
-		Name:  env.GetEnv("LOGGER_DEFAULT", LoggerSentry), //Lorgus
-		Level: env.GetEnvAsInt("LOG_LEVEL", 0),
-	}
-	return &ServiceConfig{
-		Port:            env.GetEnv("PORT", defaultPort),
-		PortgRPC:        env.GetEnv("PORT_gRPC", defaultGRPCPort),
-		AddressPortgRPC: env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
-		MessagePath:     env.GetEnv("MESSAGE_PATH", defaultMessagePath),
-		MaxWorker:       env.GetEnvAsInt("MAX_WORKERS", 1),
-		MaxQueue:        env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
-		MaxLength:       env.GetEnvAsInt("MAX_LENGTH", 1048576),
-		DatabaseURL:     env.GetEnv("DB_CONNECTION", ""),
-		SentryUrlDSN:    env.GetEnv("SENTRY_URL_DSN", ""),
-		Release:         env.GetEnv("RELEASE", "Nope"),
-		QueueType:       env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
-		AddressRabbitMQ: env.GetEnv("ADDRESS_RABBIT_MQ", defaultAddressRabbitMQ),
-		SecretKeyJWT:    env.GetEnv("SECRET_KEY_JWT", ""),
-		PubSubConfig:    pbc,
-		PusherConfig:    pc,
-		LoggerConfig:    l,
+	return defaultVal
+}
+
+// Helper to read an environment variable into a bool or return default value
+func getEnvAsBool(name string, defaultVal bool) bool {
+	valStr := getEnv(name, "")
+	if val, err := strconv.ParseBool(valStr); err == nil {
+		return val
 	}
 
+	return defaultVal
+}
+
+// Helper to read an environment variable into a string slice or return default value
+func getEnvAsSlice(name string, defaultVal []string, sep string) []string {
+	valStr := getEnv(name, "")
+
+	if valStr == "" {
+		return defaultVal
+	}
+
+	val := strings.Split(valStr, sep)
+
+	return val
 }
