@@ -2,6 +2,7 @@ package secure
 
 import (
 	"github.com/ometcenter/keeper/config"
+	log "github.com/ometcenter/keeper/logging"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
