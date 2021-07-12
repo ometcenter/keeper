@@ -42,6 +42,7 @@ type ExchangeJob struct {
 	Area          string `json:"Область"`
 	Event         string `json:"Событие"`
 	Priod         string `json:"Дата"`
+	Notes         string `json:"Заметки"`
 }
 
 type ExchangeJobAllInform struct {
@@ -161,4 +162,9 @@ type Options struct {
 	ComparionFields  []string `json:"ПоляСравнения"`
 	CompareAllFields bool     `json:"СравниватьПоВсемПолям"`
 	CompressBody     bool     `json:"СжиматьОтвет"`
+}
+
+type MessageNSQ struct {
+	Type string `json:"Тип"`
+	Body string `json:"Тело"`
 }
