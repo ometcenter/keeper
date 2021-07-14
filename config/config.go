@@ -68,7 +68,6 @@ func New() *Config {
 		MaxQueue:        getEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
 		MaxLength:       getEnvAsInt("MAX_LENGTH", 1048576),
 		DatabaseURL:     getEnv("DB_CONNECTION", ""),
-		SentryUrlDSN:    getEnv("SENTRY_URL_DSN", "http://ded6d3a6b5c64c0d9e38c042a365fa39:0aed9c2ef0994bf39f40e7227174bfa2@localhost:9000/2"),
 		LoggerDefault:   getEnv("LOGGER_DEFAULT", "Sentry"),
 		LogLevel:        getEnvAsInt("LOG_LEVEL", 0),
 		Release:         getEnv("RELEASE", "Nope"),
