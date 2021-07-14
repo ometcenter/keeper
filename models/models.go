@@ -77,25 +77,16 @@ type AllJobs struct {
 	JSONString string
 }
 
-//TODO: Перенести в общий репозиторий
-type RemoteJob struct {
-	JobID        string `json:"ИдентификаторЗадания"`
-	RemoteBaseID string `json:"ИдентификаторУдаленнойБазы"`
-}
-
-//TODO: Перенести в общий репозиторий
 type QueryToBISimpleID struct {
 	JobID string `json:"ИдентификаторЗадания,JobID"`
 	Time  string
 }
 
-//TODO: Перенести в общий репозиторий
 type SettingsJobSliceQueryToBI struct {
 	JobID          string      `json:"ИдентификаторЗадания"`
 	SliceQueryToBI []QueryToBI `json:"Настройки"`
 }
 
-//TODO: Перенести в общий репозиторий
 type QueryToBI struct {
 	JobID                   string        `json:"ИдентификаторЗадания"`
 	Portions                int           `json:"Порции"`
@@ -167,4 +158,10 @@ type Options struct {
 type MessageNSQ struct {
 	Type string `json:"Тип"`
 	Body string `json:"Тело"`
+}
+
+type RemoteJob struct {
+	JobID        string `json:"ИдентификаторЗадания"`
+	RemoteBaseID string `json:"ИдентификаторУдаленнойБазы"`
+	JobJSON      string `json:"ЗаданиеJSON"`
 }
