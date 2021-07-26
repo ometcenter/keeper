@@ -69,9 +69,9 @@ func SetLogger(LogImpl LogImpl) {
 	Impl = LogImpl
 }
 
-func InitLog(Config *config.Config) {
+func InitLog(Config *config.ServiceConfig) {
 
-	switch Config.LogLevel {
+	switch Config.LoggerConfig.Level {
 	case 0:
 		SetLevel(DebugLevel)
 	case 1:
@@ -84,7 +84,7 @@ func InitLog(Config *config.Config) {
 		SetLevel(DebugLevel)
 	}
 
-	switch Config.LoggerDefault {
+	switch Config.LoggerConfig.Name {
 	case "Sentry":
 		Logger, err := NewSentryLog()
 		if err != nil {

@@ -1,15 +1,41 @@
 package config
 
 import (
-	"log"
-	"os"
-	"strconv"
-	"strings"
+	"fmt"
 	"time"
+
+	"github.com/ometcenter/keeper/env"
 )
 
+type LoggerType int
+
+const (
+	LoggerSentry LoggerType = iota
+	LoggerLorgus
+	LoggerRabbitMQ
+	LoggerNSQ
+)
+
+// const (
+// 	LoggerSentry   = "Sentry"
+// 	LoggerLorgus   = "Lorgus"
+// 	LoggerRabbitMQ = "RabbitMQ"
+// 	LoggerNSQ      = "NSQ"
+// )
+
 // Conf ...
-var Conf *Config
+var Conf *ServiceConfig
+
+// TODO: Почему не в коде, а через переменные?
+var (
+	defaultGRPCPort    = "5300"
+	defaultGRPCAddress = "localhost"
+)
+
+func InitConfig() {
+	Conf = New()
+	_ = Conf.InitTimezone()
+}
 
 // Pusher ...
 type Pusher struct {
@@ -30,108 +56,93 @@ type PubSubConfig struct {
 }
 
 // Config ...
-type Config struct {
+type ServiceConfig struct {
 	Port            string
+	PortgRPC        string
+	AddressPortgRPC string
 	MessagePath     string
 	MaxWorker       int
 	MaxQueue        int
 	MaxLength       int
 	DatabaseURL     string
 	SentryUrlDSN    string
-	LoggerDefault   string
-	LogLevel        int
 	Release         string
 	SecretKeyJWT    string
 	QueueType       string
 	AddressRabbitMQ string
 	PubSubConfig
 	Pusher
+	LoggerConfig
+}
+
+// LoggerConfig содержит настройки для логгера
+type LoggerConfig struct {
+	Level int
+	Name  string
+	//TODO: Встроить логи через константы например LoggerType[1]
+	LoggerType LoggerType
 }
 
 // New returns a new Config struct
-func New() *Config {
+func New() *ServiceConfig {
 
-	if tz := getEnv("TIMEZONE", "Local"); tz != "" {
-		var err error
-		time.Local, err = time.LoadLocation(tz)
-		if err != nil {
-			log.Printf("[ERROR] loading location '%s': %v\n", tz, err)
-		}
-		nameLocation, _ := time.Now().Zone()
-		log.Printf("[INFO] текущая таймзона %s", nameLocation)
-	}
+	// if tz := env.GetEnv("TIMEZONE", "Local"); tz != "" {
+	// 	var err error
+	// 	time.Local, err = time.LoadLocation(tz)
+	// 	if err != nil {
+	// 		log.Printf("[ERROR] loading location '%s': %v\n", tz, err)
+	// 	}
+	// 	nameLocation, _ := time.Now().Zone()
+	// 	log.Printf("[INFO] текущая таймзона %s", nameLocation)
+	// }
 
-	c := &Config{
-		Port:            getEnv("PORT", "8080"),
-		MessagePath:     getEnv("MESSAGE_PATH", "/"),
-		MaxWorker:       getEnvAsInt("MAX_WORKERS", 1),
-		MaxQueue:        getEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
-		MaxLength:       getEnvAsInt("MAX_LENGTH", 1048576),
-		DatabaseURL:     getEnv("DB_CONNECTION", ""),
-		LoggerDefault:   getEnv("LOGGER_DEFAULT", "Sentry"),
-		LogLevel:        getEnvAsInt("LOG_LEVEL", 0),
-		Release:         getEnv("RELEASE", "Nope"),
-		QueueType:       getEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
-		AddressRabbitMQ: getEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
-		SecretKeyJWT:    getEnv("SECRET_KEY_JWT", ""),
+	ServiceConfig := &ServiceConfig{
+		Port:            env.GetEnv("PORT", "8080"),
+		PortgRPC:        env.GetEnv("PORT_gRPC", defaultGRPCPort),
+		AddressPortgRPC: env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
+		MessagePath:     env.GetEnv("MESSAGE_PATH", "/"),
+		MaxWorker:       env.GetEnvAsInt("MAX_WORKERS", 1),
+		MaxQueue:        env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
+		MaxLength:       env.GetEnvAsInt("MAX_LENGTH", 1048576),
+		DatabaseURL:     env.GetEnv("DB_CONNECTION", ""),
+		Release:         env.GetEnv("RELEASE", "Nope"),
+		QueueType:       env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
+		AddressRabbitMQ: env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
+		SecretKeyJWT:    env.GetEnv("SECRET_KEY_JWT", ""),
 		PubSubConfig: PubSubConfig{
-			Topic:         getEnv("NSQ_TOPIC", "go-keeper-messages"),
-			Channel:       getEnv("NSQ_CHANNEL", "keeper-agent"),
-			NsqLookupdPub: getEnv("NSQ_LOOKUPD_PUB", "localhost:4150"),
-			NsqLookupdSub: getEnv("NSQ_LOOKUPD_SUB", "localhost:4161"),
-			MaxRequeue:    getEnvAsInt("NSQ_MAX_REQUEUE", 10),
-			Concurrent:    getEnvAsInt("NSQ_CONCURRENT", 1),
-			MaxInFlight:   getEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
-			UseDailyTopic: getEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
+			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
+			Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
+			NsqLookupdPub: env.GetEnv("NSQ_LOOKUPD_PUB", "localhost:4150"),
+			NsqLookupdSub: env.GetEnv("NSQ_LOOKUPD_SUB", "localhost:4161"),
+			MaxRequeue:    env.GetEnvAsInt("NSQ_MAX_REQUEUE", 10),
+			Concurrent:    env.GetEnvAsInt("NSQ_CONCURRENT", 1),
+			MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
+			UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
 		},
 		Pusher: Pusher{
-			Address: getEnv("PUSHER_ADDRESS", "http://localhost"),
-			Token:   getEnv("PUSHER_TOKEN", ""),
+			Address: env.GetEnv("PUSHER_ADDRESS", "http://localhost"),
+			Token:   env.GetEnv("PUSHER_TOKEN", ""),
+		},
+		LoggerConfig: LoggerConfig{
+			Name:  env.GetEnv("LOGGER_DEFAULT", "Sentry"), //Lorgus
+			Level: env.GetEnvAsInt("LOG_LEVEL", 0),
 		},
 	}
 
-	Conf = c
-	return c
+	return ServiceConfig
 }
 
-// Simple helper function to read an environment or return a default value
-func getEnv(key string, defaultVal string) string {
-	if value, exists := os.LookupEnv(key); exists {
-		return value
+// InitTimezone устанавливает временную зону в time.Local
+func (s ServiceConfig) InitTimezone() string {
+	str := ""
+	var err error
+	if tz := env.GetEnv("TIMEZONE", "Local"); tz != "" {
+		time.Local, err = time.LoadLocation(tz)
+		if err != nil {
+			str = fmt.Sprintf("[ERROR] loading location '%s': %v\n", tz, err)
+		}
+		nameLocation, _ := time.Now().Zone()
+		str = fmt.Sprintf("[INFO] текущая таймзона %s\n", nameLocation)
 	}
-
-	return defaultVal
-}
-
-// Simple helper function to read an environment variable into integer or return a default value
-func getEnvAsInt(name string, defaultVal int) int {
-	valueStr := getEnv(name, "")
-	if value, err := strconv.Atoi(valueStr); err == nil {
-		return value
-	}
-
-	return defaultVal
-}
-
-// Helper to read an environment variable into a bool or return default value
-func getEnvAsBool(name string, defaultVal bool) bool {
-	valStr := getEnv(name, "")
-	if val, err := strconv.ParseBool(valStr); err == nil {
-		return val
-	}
-
-	return defaultVal
-}
-
-// Helper to read an environment variable into a string slice or return default value
-func getEnvAsSlice(name string, defaultVal []string, sep string) []string {
-	valStr := getEnv(name, "")
-
-	if valStr == "" {
-		return defaultVal
-	}
-
-	val := strings.Split(valStr, sep)
-
-	return val
+	return str
 }
