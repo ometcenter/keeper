@@ -63,9 +63,9 @@ func SetLogger(LogImpl LogImpl) {
 	Impl = LogImpl
 }
 
-func InitLog(сonfig *config.LoggerConfig, l LogImpl) {
+func InitLog(ServiceConfig *config.ServiceConfig) {
 
-	switch сonfig.Level {
+	switch ServiceConfig.LoggerConfig.Level {
 	case 0:
 		SetLevel(DebugLevel)
 	case 1:
@@ -78,6 +78,22 @@ func InitLog(сonfig *config.LoggerConfig, l LogImpl) {
 		SetLevel(DebugLevel)
 	}
 
-	SetLogger(l)
+	switch ServiceConfig.LoggerConfig.Name {
+	case "Sentry":
+		Logger, err := NewSentryLog(ServiceConfig.SentryUrlDSN)
+		if err != nil {
+			Logger := NewStandartLog()
+			SetLogger(Logger)
+		} else {
+			SetLogger(Logger)
+
+		}
+	case "Lorgus":
+		Logger := NewLorgus()
+		SetLogger(Logger)
+	default:
+		Logger := NewStandartLog()
+		SetLogger(Logger)
+	}
 
 }
