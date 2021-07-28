@@ -109,6 +109,7 @@ func New() *ServiceConfig {
 		QueueType:       env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
 		AddressRabbitMQ: env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
 		SecretKeyJWT:    env.GetEnv("SECRET_KEY_JWT", ""),
+		SentryUrlDSN:    env.GetEnv("SENTRY_URL_DSN", ""),
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
 			Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
