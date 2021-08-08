@@ -165,3 +165,28 @@ type RemoteJob struct {
 	RemoteBaseID string `json:"ИдентификаторУдаленнойБазы"`
 	JobJSON      string `json:"ЗаданиеJSON"`
 }
+
+type EkisAreas struct {
+	Ekis             string
+	Inn              string
+	ShortName        string
+	FullName         string
+	Mrsd             string
+	AreaBgu          string
+	AreaZkgu         string
+	AddressBgu       string
+	AddressZkgu      string
+	BaseBgu          string
+	BaseZkgu         string
+	District         string
+	Region           string
+	Director         string
+	Site             string
+	MailDirector     string
+	MailOrganization string
+	Cgu              string
+	Updated          string
+	AreaUnf          string
+	AddressUnf       string
+	BaseUnf          string
+}
