@@ -173,7 +173,7 @@ func (s ServiceConfig) InitTimezone() string {
 	return str
 }
 
-func (s ServiceConfig) LoadSettingsFromConsul() {
+func (s *ServiceConfig) LoadSettingsFromConsul() {
 	if s.LoadSettings.LoadSettingsFromConsul == true {
 		err := s.GetSettingsFromConsul()
 		if err != nil {
@@ -182,7 +182,7 @@ func (s ServiceConfig) LoadSettingsFromConsul() {
 	}
 }
 
-func (s ServiceConfig) LoadSettingsFromDockerSecrets() {
+func (s *ServiceConfig) LoadSettingsFromDockerSecrets() {
 
 	if s.LoadSettings.LoadSettingsFromDockerSecret == true {
 		err := s.GetSettingsFromDockerSecrets()
@@ -306,7 +306,7 @@ func (s *ServiceConfig) GetSettingsFromDockerSecrets() error {
 
 	Keys := strings.Split(s.LoadSettings.ArrayDockerSecretKey, ",")
 	for _, Key := range Keys {
-		fmt.Println("444")
+		//fmt.Println("444")
 
 		valueSecret, ok := mapSecrets[strings.TrimSpace(Key)]
 		if ok != true {
