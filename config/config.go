@@ -193,7 +193,7 @@ func (s ServiceConfig) LoadSettingsFromDockerSecrets() {
 
 }
 
-func (s ServiceConfig) GetSettingsFromConsul() error {
+func (s *ServiceConfig) GetSettingsFromConsul() error {
 
 	var consulClient *consul.Client
 
@@ -216,12 +216,14 @@ func (s ServiceConfig) GetSettingsFromConsul() error {
 		return err
 	}
 
+	_ = qm
+
 	// fmt.Println("remoute consul last index", qm.LastIndex)
 	// if qm.LastIndex == 1000 {
 	// 	fmt.Println("Consult not changed")
 	// }
 
-	fmt.Println("qm", qm)
+	//fmt.Println("qm", qm)
 
 	//newConfig := make(map[string]string)
 
@@ -229,7 +231,7 @@ func (s ServiceConfig) GetSettingsFromConsul() error {
 
 	PrifixGroup := "GoKeeper/"
 
-	reflectGlobalSettings := reflect.ValueOf(&s)
+	reflectGlobalSettings := reflect.ValueOf(s)
 	reflectElem := reflectGlobalSettings.Elem()
 
 	//TODO: Алгоритм устанавливает для полей структура в структуре, но что будет если поля в основной и вложенной структтуре совпадают?
@@ -270,7 +272,7 @@ func (s ServiceConfig) GetSettingsFromConsul() error {
 
 }
 
-func (s ServiceConfig) GetSettingsFromDockerSecrets() error {
+func (s *ServiceConfig) GetSettingsFromDockerSecrets() error {
 
 	files, err := ioutil.ReadDir("/run/secrets")
 	if err != nil {
@@ -299,7 +301,7 @@ func (s ServiceConfig) GetSettingsFromDockerSecrets() error {
 
 	}
 
-	reflectGlobalSettings := reflect.ValueOf(&s)
+	reflectGlobalSettings := reflect.ValueOf(s)
 	reflectElem := reflectGlobalSettings.Elem()
 
 	Keys := strings.Split(s.LoadSettings.ArrayDockerSecretKey, ",")
