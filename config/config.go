@@ -2,8 +2,13 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
+	"reflect"
+	"strconv"
+	"strings"
 	"time"
 
+	consul "github.com/hashicorp/consul/api"
 	"github.com/ometcenter/keeper/env"
 )
 
@@ -35,6 +40,10 @@ var (
 func InitConfig() {
 	Conf = New()
 	_ = Conf.InitTimezone()
+
+	//TODO: Что делать с ошибками и вызывать ли паник, сейчас вызываю паник
+	Conf.LoadSettingsFromConsul()
+	Conf.LoadSettingsFromDockerSecrets()
 }
 
 // Pusher ...
@@ -53,6 +62,13 @@ type PubSubConfig struct {
 	Concurrent    int
 	MaxInFlight   int
 	UseDailyTopic bool
+}
+
+type LoadSettings struct {
+	LoadSettingsFromConsul       bool
+	ConsulServerAddres           string
+	LoadSettingsFromDockerSecret bool
+	ArrayDockerSecretKey         string
 }
 
 // Config ...
@@ -74,6 +90,7 @@ type ServiceConfig struct {
 	PubSubConfig
 	Pusher
 	LoggerConfig
+	LoadSettings
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -122,6 +139,12 @@ func New() *ServiceConfig {
 			MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
 			UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
 		},
+		LoadSettings: LoadSettings{
+			LoadSettingsFromConsul:       env.GetEnvAsBool("LOAD_SETTINGS_FROM_CONSUL", false),
+			ConsulServerAddres:           env.GetEnv("CONSUL_SERVER_ADDRESS", ""),
+			LoadSettingsFromDockerSecret: env.GetEnvAsBool("LOAD_SETTINGS_FROM_DOCKER_SECRET", false),
+			ArrayDockerSecretKey:         env.GetEnv("ARRAY_DOCKER_SECRET_KEY", ""),
+		},
 		Pusher: Pusher{
 			Address: env.GetEnv("PUSHER_ADDRESS", "http://localhost"),
 			Token:   env.GetEnv("PUSHER_TOKEN", ""),
@@ -148,4 +171,171 @@ func (s ServiceConfig) InitTimezone() string {
 		str = fmt.Sprintf("[INFO] текущая таймзона %s\n", nameLocation)
 	}
 	return str
+}
+
+func (s ServiceConfig) LoadSettingsFromConsul() {
+	if s.LoadSettings.LoadSettingsFromConsul == true {
+		err := s.GetSettingsFromConsul()
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func (s ServiceConfig) LoadSettingsFromDockerSecrets() {
+
+	if s.LoadSettings.LoadSettingsFromDockerSecret == true {
+		err := s.GetSettingsFromDockerSecrets()
+		if err != nil {
+			panic(err)
+		}
+	}
+
+}
+
+func (s ServiceConfig) GetSettingsFromConsul() error {
+
+	var consulClient *consul.Client
+
+	consulConf := consul.DefaultConfig()
+	consulConf.Address = s.LoadSettings.ConsulServerAddres
+
+	var err error
+	consulClient, err = consul.NewClient(consulConf)
+	if err != nil {
+		return err
+	}
+
+	qo := &consul.QueryOptions{
+		WaitIndex: 100,
+	}
+
+	kvPairs, qm, err := consulClient.KV().List("", qo)
+
+	if err != nil {
+		return err
+	}
+
+	// fmt.Println("remoute consul last index", qm.LastIndex)
+	// if qm.LastIndex == 1000 {
+	// 	fmt.Println("Consult not changed")
+	// }
+
+	fmt.Println("qm", qm)
+
+	//newConfig := make(map[string]string)
+
+	//GlobalSettingsReturn := Global_settings{}
+
+	PrifixGroup := "GoKeeper/"
+
+	reflectGlobalSettings := reflect.ValueOf(&s)
+	reflectElem := reflectGlobalSettings.Elem()
+
+	//TODO: Алгоритм устанавливает для полей структура в структуре, но что будет если поля в основной и вложенной структтуре совпадают?
+
+	for _, item := range kvPairs {
+		if item.Key == PrifixGroup {
+			continue
+		}
+		//fmt.Println(string(item.Key), string(item.Value))
+		res := strings.ReplaceAll(string(item.Key), PrifixGroup, "")
+		//fmt.Println("res:", res)
+
+		field := reflectElem.FieldByName(res)
+
+		if field.IsValid() {
+
+			switch field.Kind() {
+			case reflect.Int:
+				{
+					ParseIntVariable, _ := strconv.Atoi(string(item.Value))
+					field.SetInt(int64(ParseIntVariable))
+				}
+			case reflect.Bool:
+				{
+					ParseBoolVariable, _ := strconv.ParseBool(string(item.Value))
+					field.SetBool(ParseBoolVariable)
+				}
+			case reflect.String:
+				{
+					field.SetString(string(item.Value))
+				}
+			}
+
+		}
+	}
+
+	return nil
+
+}
+
+func (s ServiceConfig) GetSettingsFromDockerSecrets() error {
+
+	files, err := ioutil.ReadDir("/run/secrets")
+	if err != nil {
+		fmt.Println("Secret error :", err.Error())
+		return fmt.Errorf("Secret error :%s/n", err.Error())
+	}
+
+	var mapSecrets map[string]string
+	mapSecrets = make(map[string]string)
+
+	for _, file := range files {
+		//fmt.Println("file.Name() : ", file.Name())
+
+		if file.IsDir() == true {
+			fmt.Println("Secret error :", "IsDir")
+			continue
+		}
+		buf, err := ioutil.ReadFile("/run/secrets/" + file.Name())
+		if err != nil {
+			fmt.Println("Secret error :", err.Error())
+			continue
+		}
+
+		mapSecrets[file.Name()] = strings.TrimSpace(string(buf))
+		//fmt.Println("value : ", strings.TrimSpace(string(buf)))
+
+	}
+
+	reflectGlobalSettings := reflect.ValueOf(&s)
+	reflectElem := reflectGlobalSettings.Elem()
+
+	Keys := strings.Split(s.LoadSettings.ArrayDockerSecretKey, ",")
+	for _, Key := range Keys {
+		fmt.Println("444")
+
+		valueSecret, ok := mapSecrets[strings.TrimSpace(Key)]
+		if ok != true {
+			fmt.Println("Secret error :")
+			return fmt.Errorf("Secret error :%s\n", "Нет такого ключа")
+		}
+
+		field := reflectElem.FieldByName(strings.TrimSpace(Key))
+
+		if field.IsValid() {
+
+			switch field.Kind() {
+			case reflect.Int:
+				{
+					ParseIntVariable, _ := strconv.Atoi(string(valueSecret))
+					field.SetInt(int64(ParseIntVariable))
+				}
+			case reflect.Bool:
+				{
+					ParseBoolVariable, _ := strconv.ParseBool(string(valueSecret))
+					field.SetBool(ParseBoolVariable)
+				}
+			case reflect.String:
+				{
+					field.SetString(string(valueSecret))
+				}
+			}
+
+		}
+
+	}
+
+	return nil
 }
