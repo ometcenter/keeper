@@ -51,3 +51,41 @@ func TestServiceConfig_InitTimezone_MSK(t *testing.T) {
 		})
 	}
 }
+
+func TestGetSettingsFromConsul(t *testing.T) {
+
+	case1 := New()
+	case1.ConsulServerAddres = "10.128.1.93:8500"
+
+	cases := []struct {
+		name string
+		s    *ServiceConfig
+		want error
+	}{
+		{
+			name: "first case",
+			s:    case1,
+			want: nil,
+		},
+		{
+			name: "second case",
+			s:    New(),
+			want: nil,
+		},
+	}
+
+	for _, tt := range cases {
+		// t.Run(tt.name, func(t *testing.T) {
+		// 	if got := tt.s.GetSettingsFromConsul(); got != tt.want {
+		// 		t.Errorf("GetSettingsFromConsul() = %v, want %v", got, tt.want)
+		// 	}
+		// })
+
+		err := tt.s.GetSettingsFromConsul()
+		if err != nil {
+			t.Fatalf("Case %s \n GetSettingsFromConsul() returned error %q. "+
+				"Error not expected.", tt.name, err)
+		}
+	}
+
+}

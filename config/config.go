@@ -69,6 +69,7 @@ type LoadSettings struct {
 	ConsulServerAddres           string
 	LoadSettingsFromDockerSecret bool
 	ArrayDockerSecretKey         string
+	ConsulUpdateIndex            uint64
 }
 
 // Config ...
@@ -174,17 +175,28 @@ func (s ServiceConfig) InitTimezone() string {
 }
 
 func (s *ServiceConfig) LoadSettingsFromConsul() {
-	if s.LoadSettings.LoadSettingsFromConsul == true {
+	if s.LoadSettings.LoadSettingsFromConsul {
 		err := s.GetSettingsFromConsul()
 		if err != nil {
 			panic(err)
 		}
+		go func(s *ServiceConfig) {
+			for {
+				time.Sleep(time.Minute)
+				err := s.GetSettingsFromConsul()
+				if err != nil {
+					panic(err)
+				}
+				//fmt.Printf("Conf.LoadSettings.ConsulUpdateIndex = %d\n", Conf.LoadSettings.ConsulUpdateIndex)
+			}
+		}(s)
+
 	}
 }
 
 func (s *ServiceConfig) LoadSettingsFromDockerSecrets() {
 
-	if s.LoadSettings.LoadSettingsFromDockerSecret == true {
+	if s.LoadSettings.LoadSettingsFromDockerSecret {
 		err := s.GetSettingsFromDockerSecrets()
 		if err != nil {
 			panic(err)
@@ -207,23 +219,26 @@ func (s *ServiceConfig) GetSettingsFromConsul() error {
 	}
 
 	qo := &consul.QueryOptions{
-		WaitIndex: 100,
+		WaitIndex: s.LoadSettings.ConsulUpdateIndex,
+		WaitTime:  time.Second * 3,
 	}
 
-	kvPairs, qm, err := consulClient.KV().List("", qo)
-
+	// TODO: Тут иногда происходит зависание параметр WaitTime:  time.Second * 10, спасает, но ключи приходят корректно
+	// понять причину. Возможно если WaitIndex устанавливать большим чем текущий в консуле идет эта ошибка
+	kvPairs, qm, err := consulClient.KV().List("GoKeeper", qo)
+	//kvPairs, qm, err := consulClient.KV().List("", qo)
 	if err != nil {
 		return err
 	}
 
-	_ = qm
+	//_ = qm
 
-	// fmt.Println("remoute consul last index", qm.LastIndex)
-	// if qm.LastIndex == 1000 {
-	// 	fmt.Println("Consult not changed")
-	// }
+	//fmt.Println("remoute consul last index", qm.LastIndex)
+	if s.LoadSettings.ConsulUpdateIndex == qm.LastIndex {
+		return nil
+	}
 
-	//fmt.Println("qm", qm)
+	//fmt.Printf("qm: %v\n", qm)
 
 	//newConfig := make(map[string]string)
 
@@ -267,6 +282,11 @@ func (s *ServiceConfig) GetSettingsFromConsul() error {
 
 		}
 	}
+
+	// Обновляем индекс консула
+
+	s.LoadSettings.ConsulUpdateIndex = qm.LastIndex
+	fmt.Printf("Обновлены настройки консула LastIndex: %d | Адрес консула: %s\n", s.LoadSettings.ConsulUpdateIndex, s.LoadSettings.ConsulServerAddres)
 
 	return nil
 
