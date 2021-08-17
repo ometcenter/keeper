@@ -182,7 +182,7 @@ func (s *ServiceConfig) LoadSettingsFromConsul() {
 		}
 		go func(s *ServiceConfig) {
 			for {
-				time.Sleep(time.Minute)
+				time.Sleep(time.Minute * 30)
 				err := s.GetSettingsFromConsul()
 				if err != nil {
 					panic(err)
