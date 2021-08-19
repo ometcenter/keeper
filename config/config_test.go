@@ -4,6 +4,7 @@
 package config
 
 import (
+	"errors"
 	"testing"
 	"time"
 )
@@ -82,6 +83,41 @@ func TestGetSettingsFromConsul(t *testing.T) {
 		// })
 
 		err := tt.s.GetSettingsFromConsul()
+		if err != nil {
+			t.Fatalf("Case %s \n GetSettingsFromConsul() returned error %q. "+
+				"Error not expected.", tt.name, err)
+		}
+	}
+
+}
+
+func TestGetSettingsFromDockerSecrets(t *testing.T) {
+
+	cases := []struct {
+		name string
+		s    *ServiceConfig
+		want error
+	}{
+		{
+			name: "first case",
+			s:    New(),
+			want: errors.New("123"),
+		},
+		{
+			name: "second case",
+			s:    New(),
+			want: nil,
+		},
+	}
+
+	for _, tt := range cases {
+		// t.Run(tt.name, func(t *testing.T) {
+		// 	if got := tt.s.GetSettingsFromConsul(); got != tt.want {
+		// 		t.Errorf("GetSettingsFromConsul() = %v, want %v", got, tt.want)
+		// 	}
+		// })
+
+		err := tt.s.GetSettingsFromDockerSecrets()
 		if err != nil {
 			t.Fatalf("Case %s \n GetSettingsFromConsul() returned error %q. "+
 				"Error not expected.", tt.name, err)
