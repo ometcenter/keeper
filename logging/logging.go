@@ -49,6 +49,7 @@ func getPrefix(l string) string {
 type LogImpl interface {
 	//InitLog()
 	Info(args ...interface{})
+	Infof(format string, args ...interface{})
 	Error(args ...interface{})
 	Errorf(format string, args ...interface{})
 	Warningf(format string, args ...interface{})

@@ -185,7 +185,8 @@ func (s *ServiceConfig) LoadSettingsFromConsul() {
 				time.Sleep(time.Minute * 30)
 				err := s.GetSettingsFromConsul()
 				if err != nil {
-					panic(err)
+					//panic(err)
+					fmt.Printf("Ошибка загрузки настроек конфига из консула %s", err.Error())
 				}
 				//fmt.Printf("Conf.LoadSettings.ConsulUpdateIndex = %d\n", Conf.LoadSettings.ConsulUpdateIndex)
 			}

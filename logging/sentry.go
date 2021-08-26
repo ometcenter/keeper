@@ -48,6 +48,13 @@ func (SentryLog SentryLog) Info(args ...interface{}) {
 	}
 }
 
+func (SentryLog SentryLog) Infof(format string, args ...interface{}) {
+	if ok := should(InfoLevel); ok {
+		s := fmt.Sprintf(format, args...)
+		print(getPrefix("[INF]"), s)
+	}
+}
+
 func (SentryLog SentryLog) Errorf(format string, args ...interface{}) {
 
 	StringError := fmt.Sprintf(format, args...)

@@ -34,6 +34,13 @@ func (StandartLog StandartLog) Info(args ...interface{}) {
 	}
 }
 
+func (StandartLog StandartLog) Infof(format string, args ...interface{}) {
+	if ok := should(DebugLevel); ok {
+		s := fmt.Sprintf(format, args...)
+		print(getPrefix("[INF]"), s)
+	}
+}
+
 func (StandartLog StandartLog) Debugf(format string, args ...interface{}) {
 	if ok := should(DebugLevel); ok {
 		s := fmt.Sprintf(format, args...)

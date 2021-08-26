@@ -37,6 +37,10 @@ func (LorgusLog LorgusLog) Info(args ...interface{}) {
 	LorgusLog.Logger.Info(args...)
 }
 
+func (LorgusLog LorgusLog) Infof(format string, args ...interface{}) {
+	LorgusLog.Logger.Infof(format, args...)
+}
+
 func (LorgusLog LorgusLog) Output(calldepth int, s string) error {
 
 	if calldepth == 4 {
