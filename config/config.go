@@ -74,20 +74,22 @@ type LoadSettings struct {
 
 // Config ...
 type ServiceConfig struct {
-	Port            string
-	PortgRPC        string
-	AddressPortgRPC string
-	MessagePath     string
-	MaxWorker       int
-	MaxQueue        int
-	MaxLength       int
-	DatabaseURL     string
-	SentryUrlDSN    string
-	Release         string
-	SecretKeyJWT    string
-	QueueType       string
-	AddressRabbitMQ string
-	TokenBearer     string
+	Port             string
+	PortgRPC         string
+	AddressPortgRPC  string
+	MessagePath      string
+	MaxWorker        int
+	MaxQueue         int
+	MaxLength        int
+	DatabaseURL      string
+	SentryUrlDSN     string
+	Release          string
+	SecretKeyJWT     string
+	QueueType        string
+	AddressRabbitMQ  string
+	UseRedis         bool
+	RedisAddressPort string
+	TokenBearer      string
 	PubSubConfig
 	Pusher
 	LoggerConfig
@@ -116,20 +118,22 @@ func New() *ServiceConfig {
 	// }
 
 	ServiceConfig := &ServiceConfig{
-		Port:            env.GetEnv("PORT", "8080"),
-		PortgRPC:        env.GetEnv("PORT_gRPC", defaultGRPCPort),
-		AddressPortgRPC: env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
-		MessagePath:     env.GetEnv("MESSAGE_PATH", "/"),
-		MaxWorker:       env.GetEnvAsInt("MAX_WORKERS", 1),
-		MaxQueue:        env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
-		MaxLength:       env.GetEnvAsInt("MAX_LENGTH", 1048576),
-		DatabaseURL:     env.GetEnv("DB_CONNECTION", ""),
-		Release:         env.GetEnv("RELEASE", "Nope"),
-		QueueType:       env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
-		AddressRabbitMQ: env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
-		SecretKeyJWT:    env.GetEnv("SECRET_KEY_JWT", ""),
-		SentryUrlDSN:    env.GetEnv("SENTRY_URL_DSN", ""),
-		TokenBearer:     env.GetEnv("TOKEN_BEARER", ""),
+		Port:             env.GetEnv("PORT", "8080"),
+		PortgRPC:         env.GetEnv("PORT_gRPC", defaultGRPCPort),
+		AddressPortgRPC:  env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
+		MessagePath:      env.GetEnv("MESSAGE_PATH", "/"),
+		MaxWorker:        env.GetEnvAsInt("MAX_WORKERS", 1),
+		MaxQueue:         env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
+		MaxLength:        env.GetEnvAsInt("MAX_LENGTH", 1048576),
+		DatabaseURL:      env.GetEnv("DB_CONNECTION", ""),
+		Release:          env.GetEnv("RELEASE", "Nope"),
+		QueueType:        env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
+		AddressRabbitMQ:  env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
+		SecretKeyJWT:     env.GetEnv("SECRET_KEY_JWT", ""),
+		SentryUrlDSN:     env.GetEnv("SENTRY_URL_DSN", ""),
+		UseRedis:         env.GetEnvAsBool("USE_REDIS", false),
+		RedisAddressPort: env.GetEnv("REDIS_ADDRESS_PORT", "localhost:6379"),
+		TokenBearer:      env.GetEnv("TOKEN_BEARER", ""),
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
 			Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
@@ -330,7 +334,7 @@ func (s *ServiceConfig) GetSettingsFromDockerSecrets() error {
 		//fmt.Println("444")
 
 		valueSecret, ok := mapSecrets[strings.TrimSpace(Key)]
-		if ok != true {
+		if !ok {
 			fmt.Println("Secret error :")
 			return fmt.Errorf("Secret error :%s\n", "Нет такого ключа")
 		}
