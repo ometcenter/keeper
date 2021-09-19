@@ -1,13 +1,40 @@
 package models
 
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"errors"
+)
+
 type SettingsJobs struct {
 	JobID      string `json:"ИдентификаторЗадания"`
 	JSONString string `json:"JSONСтрокаНастроек"`
 }
 
+// Корверая стурктура описывающее задание обмена, хранящаяся в таблице settings_jobs.
 type SettingsJobSliceQueryToBI struct {
 	JobID          string      `json:"ИдентификаторЗадания"`
 	SliceQueryToBI []QueryToBI `json:"Настройки"`
+}
+
+func (SettingsJobSliceQueryToBI *SettingsJobSliceQueryToBI) Scan(value interface{}) (err error) {
+	switch value.(type) {
+	case string:
+		err = json.Unmarshal([]byte(value.(string)), &SettingsJobSliceQueryToBI)
+	case []byte:
+		err = json.Unmarshal(value.([]byte), &SettingsJobSliceQueryToBI)
+	default:
+		return errors.New("Incompatible type for Skills")
+	}
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
+func (SettingsJobSliceQueryToBI SettingsJobSliceQueryToBI) Value() (driver.Value, error) {
+	return json.Marshal(SettingsJobSliceQueryToBI)
 }
 
 type QueryToBI struct {
@@ -20,6 +47,7 @@ type QueryToBI struct {
 	ConnectContur           ConnectContur `json:"ПараметрыПодключенияКонтура"`
 	ConnectBI1C             ConnectBI1C   `json:"ПараметрыПодключенияBI1C"`
 	ConnectConturJSNOString string        `json:"JSONСтрокаПараметрыПодключенияКонтура"`
+	Schedule                Schedule      `json:"РасписаниеПланировщика"`
 }
 
 type Query struct {
@@ -29,6 +57,13 @@ type Query struct {
 	ExchangeJobID                        string `json:"ИдентификаторЗапроса"`
 	PText                                string `json:"ПараметрыЗапроса"`
 	UsedCalculatedFieldsInQueryParametrs bool   `json:"ИспользуетсяВычисляемыеПоляВПараметрахЗапроса"`
+}
+
+type Schedule struct {
+	JobID             string   `json:"ИдентификаторЗадания"`
+	UseRegulatoryTask bool     `json:"ИспользоватьРегламентноеЗадание"`
+	UseCronSchedule   bool     `json:"ИспользоватьCronРасписание"`
+	SliceCronString   []string `json:"МассивСтрокCron"`
 }
 
 type AdditionParam struct {
