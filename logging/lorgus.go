@@ -41,16 +41,16 @@ func (LorgusLog LorgusLog) Infof(format string, args ...interface{}) {
 	LorgusLog.Logger.Infof(format, args...)
 }
 
-func (LorgusLog LorgusLog) Output(calldepth int, s string) error {
+// func (LorgusLog LorgusLog) Output(calldepth int, s string) error {
 
-	if calldepth == 4 {
-		LorgusLog.Logger.Error(s)
-	} else {
-		LorgusLog.Logger.Info(s)
-	}
+// 	if calldepth == 4 {
+// 		LorgusLog.Logger.Error(s)
+// 	} else {
+// 		LorgusLog.Logger.Info(s)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (LorgusLog LorgusLog) Panic() {
 

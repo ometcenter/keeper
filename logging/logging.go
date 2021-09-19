@@ -54,7 +54,7 @@ type LogImpl interface {
 	Errorf(format string, args ...interface{})
 	Warningf(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
-	Output(calldepth int, s string) error
+	//Output(calldepth int, s string) error
 	Panic() // Выполняется перед panic
 }
 

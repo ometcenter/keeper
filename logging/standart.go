@@ -2,7 +2,6 @@ package logging
 
 import (
 	"fmt"
-	"log"
 )
 
 type StandartLog struct{}
@@ -55,17 +54,17 @@ func (StandartLog StandartLog) Warningf(format string, args ...interface{}) {
 	}
 }
 
-// TODO: При установке в NSQ logger всегда приходит уровень 2, понять почему
-func (StandartLog StandartLog) Output(calldepth int, s string) error {
+// // TODO: При установке в NSQ logger всегда приходит уровень 2, понять почему
+// func (StandartLog StandartLog) Output(calldepth int, s string) error {
 
-	if calldepth == 4 {
-		log.Print(s)
-	} else {
-		log.Print(s)
-	}
+// 	if calldepth == 4 {
+// 		log.Print(s)
+// 	} else {
+// 		log.Print(s)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (StandartLog StandartLog) Panic() {
 

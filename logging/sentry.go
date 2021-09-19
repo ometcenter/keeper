@@ -78,21 +78,21 @@ func (SentryLog SentryLog) Warningf(format string, args ...interface{}) {
 	}
 }
 
-func (SentryLog SentryLog) Output(calldepth int, s string) error {
+// func (SentryLog SentryLog) Output(calldepth int, s string) error {
 
-	if calldepth == 4 {
-		sentry.CaptureException(errors.New(s))
-		print(getPrefix("[ERR]"), s)
-	} else {
+// 	if calldepth == 4 {
+// 		sentry.CaptureException(errors.New(s))
+// 		print(getPrefix("[ERR]"), s)
+// 	} else {
 
-		if ok := should(InfoLevel); ok {
-			//s := fmt.Sprint(args...)
-			print(getPrefix(""), s)
-		}
-	}
+// 		if ok := should(InfoLevel); ok {
+// 			//s := fmt.Sprint(args...)
+// 			print(getPrefix(""), s)
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 func (SentryLog SentryLog) Panic() {
 	sentry.Flush(time.Second * 5)
