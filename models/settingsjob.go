@@ -50,6 +50,26 @@ type QueryToBI struct {
 	Schedule                Schedule      `json:"РасписаниеПланировщика"`
 }
 
+func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
+	switch value.(type) {
+	case string:
+		err = json.Unmarshal([]byte(value.(string)), &QueryToBI)
+	case []byte:
+		err = json.Unmarshal(value.([]byte), &QueryToBI)
+	default:
+		return errors.New("Incompatible type for Skills")
+	}
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
+func (QueryToBI QueryToBI) Value() (driver.Value, error) {
+	return json.Marshal(QueryToBI)
+}
+
 type Query struct {
 	QueryText                            string `json:"Запрос"`
 	Base                                 string `json:"База"`
