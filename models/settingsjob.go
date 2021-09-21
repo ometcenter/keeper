@@ -39,6 +39,8 @@ func (SettingsJobSliceQueryToBI SettingsJobSliceQueryToBI) Value() (driver.Value
 
 type QueryToBI struct {
 	JobID                   string        `json:"ИдентификаторЗадания"`
+	SendUseREST             bool          `json:"ОтправлятьПоREST"`
+	RemoteCollect           bool          `json:"УдаленныйСбор"`
 	Portions                int           `json:"Порции"`
 	Query                   []Query       `json:"Запросы"`
 	AddParam                AdditionParam `json:"ДополнительныеПараметрыJSON"`
