@@ -89,40 +89,44 @@ type Schedule struct {
 }
 
 type AdditionParam struct {
-	ZipAnswer  bool     `json:"СжиматьОтвет"`
-	HashAnswer bool     `json:"ХешироватьРезультат"`
-	Options    *Options `json:"НастройкиМоделиДанных"`
-	Connect    Connect  `json:"ПараметрыПодключенияHTTPОтвета"`
+	ZipAnswer       bool     `json:"СжиматьОтвет"`
+	HashAnswer      bool     `json:"ХешироватьРезультат"`
+	DeSerialization bool     `json:"ДесериализацияXDTO"`
+	Options         *Options `json:"НастройкиМоделиДанных"`
+	Connect         Connect  `json:"ПараметрыПодключенияHTTPОтвета"`
 }
 
 type Connect struct {
-	AddressServer   string `json:"АдресСервиса"`
-	PortServer      int    `json:"Порт"`
-	Resource        string `json:"Ресурс"`
-	SecureConnetion bool   `json:"ЗащищенноеСоединение"`
-	LoginConnetion  string `json:"Логин"`
-	Password        string `json:"Пароль"`
-	Headers         string `json:"Заголовки"`
+	AddressServer    string `json:"АдресСервиса"`
+	PortServer       int    `json:"Порт"`
+	Resource         string `json:"Ресурс"`
+	SecureConnetion  bool   `json:"ЗащищенноеСоединение"`
+	SecureConnetion2 bool   `json:"ЗащищенноеСоединенние"`
+	LoginConnetion   string `json:"Логин"`
+	Password         string `json:"Пароль"`
+	Headers          string `json:"Заголовки"`
 }
 
 type ConnectBI1C struct {
-	AddressServer   string `json:"АдресСервиса"`
-	PortServer      int    `json:"Порт"`
-	Resource        string `json:"Ресурс"`
-	SecureConnetion bool   `json:"ЗащищенноеСоединение"`
-	LoginConnetion  string `json:"Логин"`
-	Password        string `json:"Пароль"`
-	Headers         string `json:"Заголовки"`
+	AddressServer    string `json:"АдресСервиса"`
+	PortServer       int    `json:"Порт"`
+	Resource         string `json:"Ресурс"`
+	SecureConnetion  bool   `json:"ЗащищенноеСоединение"`
+	SecureConnetion2 bool   `json:"ЗащищенноеСоединенние"`
+	LoginConnetion   string `json:"Логин"`
+	Password         string `json:"Пароль"`
+	Headers          string `json:"Заголовки"`
 }
 
 type ConnectContur struct {
-	AddressServer   string `json:"АдресСервисаПриемника"`
-	PortServer      int    `json:"Порт"`
-	Resource        string `json:"Ресурс"`
-	SecureConnetion bool   `json:"ЗащищенноеСоединение"`
-	LoginConnetion  string `json:"Логин"`
-	Password        string `json:"Пароль"`
-	Headers         string `json:"Заголовки"`
+	AddressServer    string `json:"АдресСервисаПриемника"`
+	PortServer       int    `json:"Порт"`
+	Resource         string `json:"Ресурс"`
+	SecureConnetion  bool   `json:"ЗащищенноеСоединение"`
+	SecureConnetion2 bool   `json:"ЗащищенноеСоединенние"`
+	LoginConnetion   string `json:"Логин"`
+	Password         string `json:"Пароль"`
+	Headers          string `json:"Заголовки"`
 }
 
 type Options struct {
