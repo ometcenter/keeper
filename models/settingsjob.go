@@ -1,9 +1,11 @@
 package models
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type SettingsJobs struct {
@@ -24,7 +26,7 @@ func (SettingsJobSliceQueryToBI *SettingsJobSliceQueryToBI) Scan(value interface
 	case []byte:
 		err = json.Unmarshal(value.([]byte), &SettingsJobSliceQueryToBI)
 	default:
-		return errors.New("Incompatible type for Skills")
+		return errors.New("incompatible type for skills")
 	}
 	if err != nil {
 		return
@@ -37,19 +39,38 @@ func (SettingsJobSliceQueryToBI SettingsJobSliceQueryToBI) Value() (driver.Value
 	return json.Marshal(SettingsJobSliceQueryToBI)
 }
 
+func (S *SettingsJobSliceQueryToBI) LoadSettingsFromPgByJobID(DB *sql.DB, JobID string) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, JobID)
+
+	var LoadValue SettingsJobSliceQueryToBI
+	err := DB.QueryRow("SELECT json_byte FROM settings_jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Переделать по нормальному эту конструкцию
+	*S = LoadValue
+
+	return nil
+}
+
 type QueryToBI struct {
-	JobID                   string        `json:"ИдентификаторЗадания"`
-	SendUseREST             bool          `json:"ОтправлятьПоREST"`
-	RemoteCollect           bool          `json:"УдаленныйСбор"`
-	Portions                int           `json:"Порции"`
-	Query                   []Query       `json:"Запросы"`
-	AddParam                AdditionParam `json:"ДополнительныеПараметрыJSON"`
-	AddParamJSNOString      string        `json:"JSONСтрокаДополнительныеПараметры"`
-	Connect                 Connect       `json:"ПараметрыПодключения"`
-	ConnectContur           ConnectContur `json:"ПараметрыПодключенияКонтура"`
-	ConnectBI1C             ConnectBI1C   `json:"ПараметрыПодключенияBI1C"`
-	ConnectConturJSNOString string        `json:"JSONСтрокаПараметрыПодключенияКонтура"`
-	Schedule                Schedule      `json:"РасписаниеПланировщика"`
+	JobID                         string        `json:"ИдентификаторЗадания"`
+	SendUseREST                   bool          `json:"ОтправлятьПоREST"`
+	RemoteCollect                 bool          `json:"УдаленныйСбор"`
+	Portions                      int           `json:"Порции"`
+	Query                         []Query       `json:"Запросы"`
+	AddParam                      AdditionParam `json:"ДополнительныеПараметрыJSON"`
+	AddParamJSNOString            string        `json:"JSONСтрокаДополнительныеПараметры"`
+	Connect                       Connect       `json:"ПараметрыПодключения"`
+	ConnectContur                 ConnectContur `json:"ПараметрыПодключенияКонтура"`
+	ConnectBI1C                   ConnectBI1C   `json:"ПараметрыПодключенияBI1C"`
+	ConnectConturJSNOString       string        `json:"JSONСтрокаПараметрыПодключенияКонтура"`
+	Schedule                      Schedule      `json:"РасписаниеПланировщика"`
+	SaveResultToHistory           string        `json:"СохранятьРезультатВИсторию"`
+	SaveToDataVisualizationSystem string        `json:"СохранятьВСистемуВизуализацииДанных"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
@@ -59,7 +80,7 @@ func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
 	case []byte:
 		err = json.Unmarshal(value.([]byte), &QueryToBI)
 	default:
-		return errors.New("Incompatible type for Skills")
+		return errors.New("incompatible type for skills")
 	}
 	if err != nil {
 		return
@@ -70,6 +91,27 @@ func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
 
 func (QueryToBI QueryToBI) Value() (driver.Value, error) {
 	return json.Marshal(QueryToBI)
+}
+
+func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, JobID)
+
+	var LoadValue SettingsJobSliceQueryToBI
+	err := DB.QueryRow("SELECT json_byte FROM settings_jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	if len(LoadValue.SliceQueryToBI) > 0 {
+		// TODO: Переделать по нормальному эту конструкцию
+		*Q = LoadValue.SliceQueryToBI[0]
+	} else {
+		return fmt.Errorf("получена пустая настройка")
+	}
+
+	return nil
 }
 
 type Query struct {
@@ -137,4 +179,5 @@ type Options struct {
 	ComparionFields  []string `json:"ПоляСравнения"`
 	CompareAllFields bool     `json:"СравниватьПоВсемПолям"`
 	CompressBody     bool     `json:"СжиматьОтвет"`
+	// TODO: Пробросить поля: ПараметрыСистемыВизуализацииДанных и АнонимизацияПолей
 }
