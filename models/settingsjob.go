@@ -178,15 +178,15 @@ type ConnectContur struct {
 }
 
 type Options struct {
-	Description                       string                            `json:"НаименованиеЗадания"`
-	TableName                         string                            `json:"ИмяТаблицы"`
-	HardRemoval                       bool                              `json:"ПолноеУдаление"`
-	SelectionFields                   []string                          `json:"ПоляОтбора"`
-	ComparionFields                   []string                          `json:"ПоляСравнения"`
-	CompareAllFields                  bool                              `json:"СравниватьПоВсемПолям"`
-	CompressBody                      bool                              `json:"СжиматьОтвет"`
-	AnonymizingFields                 AnonymizingFields                 `json:"АнонимизацияПолей"`
-	DataVisualizationSystemParameters DataVisualizationSystemParameters `json:"ПараметрыСистемыВизуализацииДанных"`
+	Description                       string                              `json:"НаименованиеЗадания"`
+	TableName                         string                              `json:"ИмяТаблицы"`
+	HardRemoval                       bool                                `json:"ПолноеУдаление"`
+	SelectionFields                   []string                            `json:"ПоляОтбора"`
+	ComparionFields                   []string                            `json:"ПоляСравнения"`
+	CompareAllFields                  bool                                `json:"СравниватьПоВсемПолям"`
+	CompressBody                      bool                                `json:"СжиматьОтвет"`
+	AnonymizingFields                 []AnonymizingFields                 `json:"АнонимизацияПолей"`
+	DataVisualizationSystemParameters []DataVisualizationSystemParameters `json:"ПараметрыСистемыВизуализацииДанных"`
 }
 
 type AnonymizingFields struct {
