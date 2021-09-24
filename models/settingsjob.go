@@ -75,8 +75,8 @@ type QueryToBI struct {
 	ConnectBI1C                   ConnectBI1C   `json:"ПараметрыПодключенияBI1C"`
 	ConnectConturJSNOString       string        `json:"JSONСтрокаПараметрыПодключенияКонтура"`
 	Schedule                      Schedule      `json:"РасписаниеПланировщика"`
-	SaveResultToHistory           string        `json:"СохранятьРезультатВИсторию"`
-	SaveToDataVisualizationSystem string        `json:"СохранятьВСистемуВизуализацииДанных"`
+	SaveResultToHistory           bool          `json:"СохранятьРезультатВИсторию"`
+	SaveToDataVisualizationSystem bool          `json:"СохранятьВСистемуВизуализацииДанных"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
@@ -178,12 +178,23 @@ type ConnectContur struct {
 }
 
 type Options struct {
-	Description      string   `json:"НаименованиеЗадания"`
-	TableName        string   `json:"ИмяТаблицы"`
-	HardRemoval      bool     `json:"ПолноеУдаление"`
-	SelectionFields  []string `json:"ПоляОтбора"`
-	ComparionFields  []string `json:"ПоляСравнения"`
-	CompareAllFields bool     `json:"СравниватьПоВсемПолям"`
-	CompressBody     bool     `json:"СжиматьОтвет"`
-	// TODO: Пробросить поля: ПараметрыСистемыВизуализацииДанных и АнонимизацияПолей
+	Description                       string                            `json:"НаименованиеЗадания"`
+	TableName                         string                            `json:"ИмяТаблицы"`
+	HardRemoval                       bool                              `json:"ПолноеУдаление"`
+	SelectionFields                   []string                          `json:"ПоляОтбора"`
+	ComparionFields                   []string                          `json:"ПоляСравнения"`
+	CompareAllFields                  bool                              `json:"СравниватьПоВсемПолям"`
+	CompressBody                      bool                              `json:"СжиматьОтвет"`
+	AnonymizingFields                 AnonymizingFields                 `json:"АнонимизацияПолей"`
+	DataVisualizationSystemParameters DataVisualizationSystemParameters `json:"ПараметрыСистемыВизуализацииДанных"`
+}
+
+type AnonymizingFields struct {
+	Name string `json:"Имя"`
+	Type string `json:"Тип"`
+}
+
+type DataVisualizationSystemParameters struct {
+	Name      string `json:"Name"`
+	ValueData string `json:"Value"`
 }
