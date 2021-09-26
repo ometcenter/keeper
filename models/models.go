@@ -1,5 +1,7 @@
 package models
 
+import "time"
+
 type TableDescription struct {
 	TableName string   `json:"ИмяТаблицы"`
 	Fields    []Fields `json:"СведенияКолонкиТаблицы"`
@@ -111,4 +113,17 @@ type EkisAreas struct {
 	AreaUnf          string
 	AddressUnf       string
 	BaseUnf          string
+}
+
+type OrganizationRegistrationInformation struct {
+	IDinDVS    int       `json:"id"`
+	Name       string    `json:"name"`
+	INN        string    `json:"inn"`
+	Area       string    `json:"area"`
+	UpdateData time.Time `json:"updated_at"`
+}
+
+type OrganizationRegistrationInformationMessage struct {
+	Action  string                              `json:"action"`
+	Payload OrganizationRegistrationInformation `json:"payload"`
 }
