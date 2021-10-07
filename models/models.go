@@ -127,3 +127,22 @@ type OrganizationRegistrationInformationMessage struct {
 	Action  string                              `json:"action"`
 	Payload OrganizationRegistrationInformation `json:"payload"`
 }
+
+type MessageWithPassport struct {
+	Srvr              string
+	Ref               string
+	Pass              string
+	Contur            string
+	Usr               string
+	Mail_timestamp    time.Time
+	Date_from_subject time.Time
+}
+
+type RowPass struct {
+	Date           string `json:"date"`
+	Address_server string `json:"address_server"`
+	Stage          string `json:"stage"`
+	Db_name        string `json:"db_name"`
+	Db_username    string `json:"db_username"`
+	Db_userpwd     string `json:"db_userpwd"`
+}
