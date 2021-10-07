@@ -91,6 +91,8 @@ type ServiceConfig struct {
 	RedisAddressPort       string
 	TokenBearer            string
 	AddressPortCRONService string
+	AddressPostJaeger      string
+	UseTracing             bool
 	PubSubConfig
 	Pusher
 	LoggerConfig
@@ -135,6 +137,8 @@ func New() *ServiceConfig {
 		UseRedis:               env.GetEnvAsBool("USE_REDIS", false),
 		RedisAddressPort:       env.GetEnv("REDIS_ADDRESS_PORT", "localhost:6379"),
 		AddressPortCRONService: env.GetEnv("ADDRESS_PORT_CRON_SERVICE", "localhost:8087"),
+		AddressPostJaeger:      env.GetEnv("ADDRESS_PORT_JAEGER", "localhost:6831"),
+		UseTracing:             env.GetEnvAsBool("USE_TRACING", false),
 		TokenBearer:            env.GetEnv("TOKEN_BEARER", ""),
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
