@@ -113,6 +113,12 @@ type ServiceConfig struct {
 	MailFolder            string
 	GrabPasswordFromMail  bool
 	SelectDepthOfMessages int
+
+	AdressServiceRemoutPassword         string
+	UseServiceRemoutPassword            bool
+	UseDownLoadOrganization             bool
+	DownLoadOrganizationRabbitMQAddress string
+	DownLoadOrganizationRabbitMQTheme   string
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -170,6 +176,13 @@ func New() *ServiceConfig {
 		GrabPasswordFromMail:  env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
 		SelectDepthOfMessages: env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
 		MailFolder:            env.GetEnv("MAILFOLDER", "balance/pwd"),
+
+		AdressServiceRemoutPassword: env.GetEnv("ADRESS_SERVICE_REMOUT_PASSWORD", "http://localhost:8087/api_v1/list"),
+		UseServiceRemoutPassword:    env.GetEnvAsBool("USE_SERVICE_REMOUT_PASSWORD", true),
+
+		UseDownLoadOrganization:             env.GetEnvAsBool("USE_DOWNLOAD_ORGANIZATION", false),
+		DownLoadOrganizationRabbitMQAddress: env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_ADDRESS", "amqp://localhost:5672"),
+		DownLoadOrganizationRabbitMQTheme:   env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_THEME", "Theme"),
 
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
