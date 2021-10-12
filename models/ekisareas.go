@@ -1,6 +1,6 @@
 package models
 
-import "time"
+import "gorm.io/gorm"
 
 type EkisAreas struct {
 	Ekis             string
@@ -34,6 +34,7 @@ type EkisTokenSession struct {
 }
 
 type EkisOrganizationDesctiption struct {
+	gorm.Model
 	EoId                         int    `json:"eo_id"`
 	FullName                     string `json:"full_name"`
 	ShortName                    string `json:"short_name"`
@@ -80,7 +81,7 @@ type EkisOrganizationDesctiption struct {
 	LegalOrganizationIdAfter2013 string `json:"legal_organization_id_after2013"`
 	IsDonm                       int    `json:"is_donm"`
 	IsCgu                        string `json:"is_cgu"`
-	DataUpdate                   time.Time
+	//DataUpdate                   time.Time
 }
 
 type EkisOrganizationDesctiptionRespons struct {
