@@ -121,3 +121,10 @@ type RowPass struct {
 	Db_username    string `json:"db_username"`
 	Db_userpwd     string `json:"db_userpwd"`
 }
+
+type JobsCronBackGroundTask struct {
+	ID   int
+	Job  string
+	Next time.Time
+	Prev time.Time
+}
