@@ -119,6 +119,8 @@ type ServiceConfig struct {
 	UseDownLoadOrganization             bool
 	DownLoadOrganizationRabbitMQAddress string
 	DownLoadOrganizationRabbitMQTheme   string
+
+	AddressPortRemoteCollector string
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -184,6 +186,8 @@ func New() *ServiceConfig {
 		DownLoadOrganizationRabbitMQAddress: env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_ADDRESS", "amqp://localhost:5672"),
 		DownLoadOrganizationRabbitMQTheme:   env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_THEME", "Theme"),
 
+		AddressPortRemoteCollector: env.GetEnv("ADDRESS_PORT_REMOTE_COLLECTOR", "http://localhost:8087"),
+
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
 			Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
@@ -234,6 +238,8 @@ func (s *ServiceConfig) LoadSettingsFromConsul() {
 		if err != nil {
 			panic(err)
 		}
+		//TODO: Если мы раз в 30 минут проверяем изменения настроек, могут прийти критические настройки например
+		// подключения к СУБД, необходимо как-то тогда перезапускать сервисы и контейнеры.
 		go func(s *ServiceConfig) {
 			for {
 				time.Sleep(time.Minute * 30)
