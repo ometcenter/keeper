@@ -120,7 +120,8 @@ type ServiceConfig struct {
 	DownLoadOrganizationRabbitMQAddress string
 	DownLoadOrganizationRabbitMQTheme   string
 
-	AddressPortRemoteCollector string
+	AddressPortRemoteCollector        string
+	SaveMultipleSourcesForBackService bool
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -187,6 +188,8 @@ func New() *ServiceConfig {
 		DownLoadOrganizationRabbitMQTheme:   env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_THEME", "Theme"),
 
 		AddressPortRemoteCollector: env.GetEnv("ADDRESS_PORT_REMOTE_COLLECTOR", "http://localhost:8087"),
+
+		SaveMultipleSourcesForBackService: env.GetEnvAsBool("SAVE_MULTIPLE_SOURCES_FOR_BACK_SERVICE", false),
 
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
