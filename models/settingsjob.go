@@ -180,6 +180,7 @@ type ConnectContur struct {
 type Options struct {
 	Description                       string                              `json:"НаименованиеЗадания"`
 	TableName                         string                              `json:"ИмяТаблицы"`
+	DSNconnection                     string                              `json:"БазаСУБДDSN"`
 	HardRemoval                       bool                                `json:"ПолноеУдаление"`
 	SelectionFields                   []string                            `json:"ПоляОтбора"`
 	ComparionFields                   []string                            `json:"ПоляСравнения"`
