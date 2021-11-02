@@ -15,8 +15,9 @@ type SettingsJobs struct {
 
 // Используется для выгрузки в Систему визуализации данных
 type DataForDataVisualizationSystem struct {
-	Data      json.RawMessage //`json:"ИдентификаторЗадания"`
-	QueryToBI QueryToBI       //`json:"Настройки"`
+	//Data      json.RawMessage //`json:"ИдентификаторЗадания"`
+	Data      []map[string]interface{} //`json:"ИдентификаторЗадания"`
+	QueryToBI QueryToBI                //`json:"Настройки"`
 }
 
 // Корверая стурктура описывающее задание обмена, хранящаяся в таблице settings_jobs.
