@@ -128,3 +128,20 @@ type JobsCronBackGroundTask struct {
 	Next time.Time
 	Prev time.Time
 }
+
+type QuantityMetric struct {
+	ID             int
+	DateMetric     time.Time // Дата метрики
+	Area           string    // Область
+	TableName      string    // Имя таблицы
+	DataBaseID     string    // Идентификатор базы данных
+	Value          int       // Значение метрики
+	Hash           int64     // Строка хеш суммы
+	SizeBody       int       // Размер сообщения в байтах
+	SpeedUnzipping float64   // time.Duration Скорость распаковки в секундах
+	SaveSpeed      float64   // time.Duration Скорость сохранения пакета в базу в секундах
+	CountRecords   int       // Количество строк в запросе
+	DateBeginQuery string    // Дата/время начала выполнения запроса в 1С
+	DataEndQuery   string    // Дата/время окончания запроса в 1С
+	DataSendQuery  string    // Дата/время отправки ответа в 1С
+}
