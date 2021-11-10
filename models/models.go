@@ -145,3 +145,10 @@ type QuantityMetric struct {
 	DataEndQuery   string    // Дата/время окончания запроса в 1С
 	DataSendQuery  string    // Дата/время отправки ответа в 1С
 }
+
+type DeleteDataForArea struct {
+	JobID      string
+	TableName  string
+	Area       string
+	DataBaseID string
+}
