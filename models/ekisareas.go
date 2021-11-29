@@ -88,3 +88,28 @@ type EkisOrganizationDesctiptionRespons struct {
 	Status bool                          `json:"is_cgu"`
 	Data   []EkisOrganizationDesctiption `json:"data"`
 }
+
+type EkisOrganizationAddresses struct {
+	gorm.Model
+	EoId           int    `json:"eo_id"`            // Номер организации ЕКИС
+	Unom           int    `json:"unom"`             // Уникальный номер статкарты БТИ
+	Unad           int    `json:"unad"`             // UNAD
+	District       string `json:"district"`         // Муниципальный округ (Район)
+	AreaArea       string `json:"area"`             // Административный округ
+	Address        string `json:"address"`          // Адрес
+	AddressAsur    string `json:"address_asur"`     // Адрес (другой формат)
+	IsMainBuilding string `json:"is_main_building"` // Признак главного здания
+	AdrLng         string `json:"adr_lng"`          // X_center
+	AdrLat         string `json:"adr_lat"`          // Y_center
+	IsTempAccom    string `json:"is_temp_accom"`    // Временное размещение
+	TempEnd        string `json:"temp_end"`         // Дата окончания временного размещения
+	FullName       string //full_name
+	ShortName      string //short_name
+	Number         int    //number
+	XaIsActive     string //xa_is_active
+}
+
+type EkisOrganizationAddressesRespons struct {
+	Status bool                        `json:"status"`
+	Data   []EkisOrganizationAddresses `json:"data"`
+}
