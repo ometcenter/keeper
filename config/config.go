@@ -97,7 +97,8 @@ type ServiceConfig struct {
 	Pusher
 	LoggerConfig
 	LoadSettings
-	DatabaseURLKeeper string
+	DatabaseURLKeeper        string
+	DatabaseURLMainAnalytics string
 	//PubSubConfig
 	//Pusher
 	LoggerDefault         string
@@ -166,19 +167,20 @@ func New() *ServiceConfig {
 		UseTracing:             env.GetEnvAsBool("USE_TRACING", false),
 		TokenBearer:            env.GetEnv("TOKEN_BEARER", ""),
 
-		DatabaseURLKeeper:     env.GetEnv("DB_CONNECTION_KEEPER", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
-		LoggerDefault:         env.GetEnv("LOGGER_DEFAULT", "Sentry"),
-		CheckMailAddres:       env.GetEnv("CHECK_MAIL_ADDRESS", ""),
-		CheckMailPassword:     env.GetEnv("CHECK_MAIL_PASSWORD", "GetDockerSecrets(CHECK_MAIL_PASSWORD)"),
-		CheckMailServerPort:   env.GetEnv("CHECK_MAIL_SERVER_PORT", "pochta.mos.ru:993"),
-		CronParam:             env.GetEnv("CRON_PARAM", "@every 0h31m"),
-		SendMailAddres:        env.GetEnv("SEND_MAIL_ADDRESS", ""),
-		SendMailPassword:      env.GetEnv("SEND_MAIL_PASSWORD", ""),
-		SendMailServer:        env.GetEnv("SEND_MAIL_SERVER", "smtp.yandex.ru"),
-		SendMailPort:          env.GetEnv("SEND_MAIL_PORT", "25"),
-		GrabPasswordFromMail:  env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
-		SelectDepthOfMessages: env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
-		MailFolder:            env.GetEnv("MAILFOLDER", "balance/pwd"),
+		DatabaseURLKeeper:        env.GetEnv("DB_CONNECTION_KEEPER", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
+		DatabaseURLMainAnalytics: env.GetEnv("DB_CONNECTION_MAIN_ANALYTICS", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
+		LoggerDefault:            env.GetEnv("LOGGER_DEFAULT", "Sentry"),
+		CheckMailAddres:          env.GetEnv("CHECK_MAIL_ADDRESS", ""),
+		CheckMailPassword:        env.GetEnv("CHECK_MAIL_PASSWORD", "GetDockerSecrets(CHECK_MAIL_PASSWORD)"),
+		CheckMailServerPort:      env.GetEnv("CHECK_MAIL_SERVER_PORT", "pochta.mos.ru:993"),
+		CronParam:                env.GetEnv("CRON_PARAM", "@every 0h31m"),
+		SendMailAddres:           env.GetEnv("SEND_MAIL_ADDRESS", ""),
+		SendMailPassword:         env.GetEnv("SEND_MAIL_PASSWORD", ""),
+		SendMailServer:           env.GetEnv("SEND_MAIL_SERVER", "smtp.yandex.ru"),
+		SendMailPort:             env.GetEnv("SEND_MAIL_PORT", "25"),
+		GrabPasswordFromMail:     env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
+		SelectDepthOfMessages:    env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
+		MailFolder:               env.GetEnv("MAILFOLDER", "balance/pwd"),
 
 		AdressServiceRemoutPassword: env.GetEnv("ADRESS_SERVICE_REMOUT_PASSWORD", "http://localhost:8087/api_v1/list"),
 		UseServiceRemoutPassword:    env.GetEnvAsBool("USE_SERVICE_REMOUT_PASSWORD", true),
