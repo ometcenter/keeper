@@ -99,6 +99,8 @@ type ServiceConfig struct {
 	LoadSettings
 	DatabaseURLKeeper        string
 	DatabaseURLMainAnalytics string
+	EKISLogin                string
+	EKISPassword             string
 	//PubSubConfig
 	//Pusher
 	LoggerDefault         string
@@ -181,6 +183,8 @@ func New() *ServiceConfig {
 		GrabPasswordFromMail:     env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
 		SelectDepthOfMessages:    env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
 		MailFolder:               env.GetEnv("MAILFOLDER", "balance/pwd"),
+		EKISLogin:                env.GetEnv("EKIS_LOGIN", ""),
+		EKISPassword:             env.GetEnv("EKIS_PASSWORD", ""),
 
 		AdressServiceRemoutPassword: env.GetEnv("ADRESS_SERVICE_REMOUT_PASSWORD", "http://localhost:8087/api_v1/list"),
 		UseServiceRemoutPassword:    env.GetEnvAsBool("USE_SERVICE_REMOUT_PASSWORD", true),
