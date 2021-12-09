@@ -1,6 +1,11 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
+)
 
 type TableDescription struct {
 	TableName string   `json:"ИмяТаблицы"`
@@ -151,4 +156,17 @@ type DeleteDataForArea struct {
 	TableName  string
 	Area       string
 	DataBaseID string
+}
+
+type AllAreasSourses struct {
+	gorm.Model
+	Area                string
+	ExternalID          string
+	ShortName           string
+	FullName            string
+	INN                 string
+	TypeSource          string
+	BaseURL             string
+	Notes               string
+	AdditionInformation datatypes.JSON
 }
