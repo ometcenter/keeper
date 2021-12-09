@@ -167,6 +167,7 @@ type AllAreasSourses struct {
 	INN                 string
 	TypeSource          string
 	BaseURL             string
+	BaseName            string
 	Notes               string
 	AdditionInformation datatypes.JSON
 }
