@@ -125,6 +125,7 @@ type ServiceConfig struct {
 
 	AddressPortRemoteCollector        string
 	SaveMultipleSourcesForBackService bool
+	LocalPathForStaticsFileScripts    string
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -196,6 +197,8 @@ func New() *ServiceConfig {
 		AddressPortRemoteCollector: env.GetEnv("ADDRESS_PORT_REMOTE_COLLECTOR", "http://localhost:8087"),
 
 		SaveMultipleSourcesForBackService: env.GetEnvAsBool("SAVE_MULTIPLE_SOURCES_FOR_BACK_SERVICE", false),
+
+		LocalPathForStaticsFileScripts: env.GetEnv("LOCAL_PATH_FOR_STATICS_FILE_SCRIPTS", "staticFile/monitoring_sot/"),
 
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
