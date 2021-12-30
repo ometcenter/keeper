@@ -171,3 +171,11 @@ type AllAreasSourses struct {
 	Notes               string
 	AdditionInformation datatypes.JSON
 }
+
+type FileAndBinary struct {
+	gorm.Model
+	Name      string
+	Type      string
+	TextStore string
+	ByteStore []byte `gorm:"type:bytea"`
+}
