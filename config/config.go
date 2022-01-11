@@ -123,6 +123,8 @@ type ServiceConfig struct {
 	DownLoadOrganizationRabbitMQAddress string
 	DownLoadOrganizationRabbitMQTheme   string
 
+	AddressPortUrlRedirect string
+
 	AddressPortRemoteCollector        string
 	SaveMultipleSourcesForBackService bool
 	LocalPathForStaticsFileScripts    string
@@ -199,6 +201,8 @@ func New() *ServiceConfig {
 		SaveMultipleSourcesForBackService: env.GetEnvAsBool("SAVE_MULTIPLE_SOURCES_FOR_BACK_SERVICE", false),
 
 		LocalPathForStaticsFileScripts: env.GetEnv("LOCAL_PATH_FOR_STATICS_FILE_SCRIPTS", "staticFile/monitoring_sot/"),
+
+		AddressPortUrlRedirect: env.GetEnv("ADDRESS_PORT_URL_REDIRECT", "localhost:6831"),
 
 		PubSubConfig: PubSubConfig{
 			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
