@@ -9,7 +9,7 @@ type LkUsers struct {
 	Login           string `json:"login"`
 	Password        string `json:"Password"`
 	HashPassword    string
-	SecretJWT       string
+	SecretJWT       string `gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
 	JWTtoken        string
 	JWTExp          int64
 	Role            string

@@ -78,6 +78,8 @@ type QueryToBI struct {
 	Schedule                      Schedule      `json:"РасписаниеПланировщика"`
 	SaveResultToHistory           bool          `json:"СохранятьРезультатВИсторию"`
 	SaveToDataVisualizationSystem bool          `json:"СохранятьВСистемуВизуализацииДанных"`
+	UseDataProcessingAlgorithms   bool          `json:"ИспользоватьАлгоритмыОбработкиДанных"`
+	ListDataProcessingAlgorithms  []string      `json:"СписокАлгоритмовОбработкиДанных"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
