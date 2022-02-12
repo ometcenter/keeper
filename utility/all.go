@@ -14,7 +14,7 @@ func GetAreasByStasus(DB *sql.DB, JobID, Stasus string) ([]string, error) {
 		public.exchange_jobs
 	where
 		job_id = $1
-		and "event" <> $2;`
+		and "event" = $2;`
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {
