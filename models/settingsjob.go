@@ -80,6 +80,8 @@ type QueryToBI struct {
 	SaveToDataVisualizationSystem bool          `json:"СохранятьВСистемуВизуализацииДанных"`
 	UseDataProcessingAlgorithms   bool          `json:"ИспользоватьАлгоритмыОбработкиДанных"`
 	ListDataProcessingAlgorithms  []string      `json:"СписокАлгоритмовОбработкиДанных"`
+	UseHandleAfterLoadAlgorithms  bool          `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
+	ListHandleAfterLoadAlgorithms []string      `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
