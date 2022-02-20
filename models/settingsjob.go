@@ -82,6 +82,7 @@ type QueryToBI struct {
 	ListDataProcessingAlgorithms  []string      `json:"СписокАлгоритмовОбработкиДанных"`
 	UseHandleAfterLoadAlgorithms  bool          `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
 	ListHandleAfterLoadAlgorithms []string      `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
+	Webhooks                      []string      `json:"Webhooks"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
