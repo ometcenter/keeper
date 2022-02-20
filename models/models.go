@@ -1,6 +1,8 @@
 package models
 
 import (
+	"bytes"
+	"net/http"
 	"time"
 
 	"gorm.io/datatypes"
@@ -178,4 +180,41 @@ type FileAndBinary struct {
 	Type      string
 	TextStore string
 	ByteStore []byte `gorm:"type:bytea"`
+}
+
+type RESTRequestUniversal struct {
+	Body      []byte
+	UrlToCall string
+	Method    string
+	Headers   map[string]string
+}
+
+func (requestUniversal *RESTRequestUniversal) Send() error {
+
+	body := bytes.NewBuffer([]byte(requestUniversal.Body))
+	useAuth := true
+
+	req, err := http.NewRequest(requestUniversal.Method, requestUniversal.UrlToCall, body)
+	req.Header.Set("Content-Type", "application/json")
+	if useAuth {
+		req.Header.Set("Authorization", "Basic "+requestUniversal.Headers["TokenBearer"])
+	}
+
+	for key, value := range requestUniversal.Headers {
+		req.Header.Set(key, value)
+	}
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		//return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode))
+		return err
+	}
+
+	return nil
+
 }
