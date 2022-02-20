@@ -11,6 +11,6 @@ type MessageQueueGeneralInterface struct {
 }
 
 type HandleAfterLoad struct {
-	JobID     string   `json:"jobID"`
-	Algorithm []string `json:"algorithm"`
+	JobID      string   `json:"jobID"`
+	Algorithms []string `json:"algorithms"`
 }
