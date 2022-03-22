@@ -152,8 +152,8 @@ type AdditionParam struct {
 }
 
 type MappingForExcelArray struct {
-	NumberField bool `json:"НомерСтроки"`
-	Name        bool `json:"Имя"`
+	NumberField int    `json:"НомерСтроки"`
+	Name        string `json:"Имя"`
 }
 
 type Connect struct {
