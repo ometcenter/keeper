@@ -64,25 +64,26 @@ func (S *SettingsJobSliceQueryToBI) LoadSettingsFromPgByJobID(DB *sql.DB, JobID 
 }
 
 type QueryToBI struct {
-	JobID                         string        `json:"ИдентификаторЗадания"`
-	SendUseREST                   bool          `json:"ОтправлятьПоREST"`
-	RemoteCollect                 bool          `json:"УдаленныйСбор"`
-	Portions                      int           `json:"Порции"`
-	Query                         []Query       `json:"Запросы"`
-	AddParam                      AdditionParam `json:"ДополнительныеПараметрыJSON"`
-	AddParamJSNOString            string        `json:"JSONСтрокаДополнительныеПараметры"`
-	Connect                       Connect       `json:"ПараметрыПодключения"`
-	ConnectContur                 ConnectContur `json:"ПараметрыПодключенияКонтура"`
-	ConnectBI1C                   ConnectBI1C   `json:"ПараметрыПодключенияBI1C"`
-	ConnectConturJSNOString       string        `json:"JSONСтрокаПараметрыПодключенияКонтура"`
-	Schedule                      Schedule      `json:"РасписаниеПланировщика"`
-	SaveResultToHistory           bool          `json:"СохранятьРезультатВИсторию"`
-	SaveToDataVisualizationSystem bool          `json:"СохранятьВСистемуВизуализацииДанных"`
-	UseDataProcessingAlgorithms   bool          `json:"ИспользоватьАлгоритмыОбработкиДанных"`
-	ListDataProcessingAlgorithms  []string      `json:"СписокАлгоритмовОбработкиДанных"`
-	UseHandleAfterLoadAlgorithms  bool          `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
-	ListHandleAfterLoadAlgorithms []string      `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
-	Webhooks                      []string      `json:"Webhooks"`
+	JobID                         string                 `json:"ИдентификаторЗадания"`
+	SendUseREST                   bool                   `json:"ОтправлятьПоREST"`
+	RemoteCollect                 bool                   `json:"УдаленныйСбор"`
+	Portions                      int                    `json:"Порции"`
+	Query                         []Query                `json:"Запросы"`
+	AddParam                      AdditionParam          `json:"ДополнительныеПараметрыJSON"`
+	AddParamJSNOString            string                 `json:"JSONСтрокаДополнительныеПараметры"`
+	Connect                       Connect                `json:"ПараметрыПодключения"`
+	ConnectContur                 ConnectContur          `json:"ПараметрыПодключенияКонтура"`
+	ConnectBI1C                   ConnectBI1C            `json:"ПараметрыПодключенияBI1C"`
+	ConnectConturJSNOString       string                 `json:"JSONСтрокаПараметрыПодключенияКонтура"`
+	Schedule                      Schedule               `json:"РасписаниеПланировщика"`
+	SaveResultToHistory           bool                   `json:"СохранятьРезультатВИсторию"`
+	SaveToDataVisualizationSystem bool                   `json:"СохранятьВСистемуВизуализацииДанных"`
+	UseDataProcessingAlgorithms   bool                   `json:"ИспользоватьАлгоритмыОбработкиДанных"`
+	ListDataProcessingAlgorithms  []string               `json:"СписокАлгоритмовОбработкиДанных"`
+	UseHandleAfterLoadAlgorithms  bool                   `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
+	ListHandleAfterLoadAlgorithms []string               `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
+	Webhooks                      []string               `json:"Webhooks"`
+	MappingForExcelArray          []MappingForExcelArray `json:"СопоставлениеДляExcalМассив"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
@@ -148,6 +149,11 @@ type AdditionParam struct {
 	DeSerialization bool     `json:"ДесериализацияXDTO"`
 	Options         *Options `json:"НастройкиМоделиДанных"`
 	Connect         Connect  `json:"ПараметрыПодключенияHTTPОтвета"`
+}
+
+type MappingForExcelArray struct {
+	NumberField bool `json:"НомерСтроки"`
+	Name        bool `json:"Имя"`
 }
 
 type Connect struct {
