@@ -101,8 +101,9 @@ type EkisOrganizationAddresses struct {
 	IsMainBuilding string `json:"is_main_building"` // Признак главного здания
 	AdrLng         string `json:"adr_lng"`          // X_center
 	AdrLat         string `json:"adr_lat"`          // Y_center
-	IsTempAccom    string `json:"is_temp_accom"`    // Временное размещение
-	TempEnd        string `json:"temp_end"`         // Дата окончания временного размещения
+	Fias           string `json:"fias"`
+	IsTempAccom    string `json:"is_temp_accom"` // Временное размещение
+	TempEnd        string `json:"temp_end"`      // Дата окончания временного размещения
 	FullName       string //full_name
 	ShortName      string //short_name
 	Number         int    //number
