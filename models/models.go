@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -217,4 +218,32 @@ func (requestUniversal *RESTRequestUniversal) Send() error {
 
 	return nil
 
+}
+
+// TODO: Выкидываем все что можем взять из настроек
+type QueryResult struct {
+	Area           int             `json:"НомерОбласти"`
+	ResultRequest  json.RawMessage `json:"РезультатЗапроса"`
+	ErrorExecution bool            `json:"ОшибкаВыполнения"`
+	EmptyRequest   bool            `json:"ПустойЗапрос"`
+	ExchangeJobID  string          `json:"УИД"`
+	JobID          string          `json:"УИД_Пакета"`
+	// TODO: Возможно логичнее сжатые данные складывать в отдельное поле, чтобы не было путанницы извращения
+	ResultRequestBase64          string                   `json:"РезультатЗапросаBase64"`
+	HashSum                      int64                    `json:"ХешСумма"`
+	SizeBody                     int                      // Размера тела в байтах, вычисляется при вычитывании сообщения из шины.
+	Metrics                      Metrics                  `json:"Метрики"`
+	MatureData                   []map[string]interface{} //[]map[string]interface{}
+	Settings                     QueryToBI
+	ElapsedSpeedUnzippingFloat64 float64
+	lenPayload                   int
+	BeginTimeMetric              time.Time
+	ElapsedSaveSpeed             time.Duration
+}
+
+type Metrics struct {
+	CountRecords   int    `json:"КоличествоЗаписей"`
+	DateBeginQuery string `json:"ДатаНачалаЗапроса"`
+	DataEndQuery   string `json:"ДатаОкончанияЗапроса"`
+	DataSendQuery  string `json:"ДатаОтправкиОтвета"`
 }
