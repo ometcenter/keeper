@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -184,22 +185,27 @@ type FileAndBinary struct {
 }
 
 type RESTRequestUniversal struct {
-	Body      []byte
-	UrlToCall string
-	Method    string
-	Headers   map[string]string
+	Body         []byte
+	UrlToCall    string
+	Method       string
+	Headers      map[string]string
+	UseAuth      bool
+	AuthUserName string
+	AuthPassword string
 }
 
-func (requestUniversal *RESTRequestUniversal) Send() error {
+func (requestUniversal *RESTRequestUniversal) Send() ([]byte, error) {
 
 	body := bytes.NewBuffer([]byte(requestUniversal.Body))
-	useAuth := true
 
 	req, err := http.NewRequest(requestUniversal.Method, requestUniversal.UrlToCall, body)
 	req.Header.Set("Content-Type", "application/json")
-	if useAuth {
-		req.Header.Set("Authorization", "Basic "+requestUniversal.Headers["TokenBearer"])
+	if requestUniversal.UseAuth {
+		req.SetBasicAuth(requestUniversal.AuthUserName, requestUniversal.AuthPassword)
 	}
+	//if useAuth {
+	//req.Header.Set("Authorization", "Basic "+requestUniversal.Headers["TokenBearer"])
+	//}
 
 	for key, value := range requestUniversal.Headers {
 		req.Header.Set(key, value)
@@ -208,15 +214,20 @@ func (requestUniversal *RESTRequestUniversal) Send() error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		//return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode))
-		return err
+		return nil, err
 	}
 
-	return nil
+	bodyRespons, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return bodyRespons, nil
 
 }
 
