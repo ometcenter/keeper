@@ -3,8 +3,10 @@ package models
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"time"
 
 	"gorm.io/datatypes"
@@ -225,6 +227,12 @@ func (requestUniversal *RESTRequestUniversal) Send() ([]byte, error) {
 	bodyRespons, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		errReturn := errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode) +
+			" service: " + requestUniversal.UrlToCall)
+		return bodyRespons, errReturn
 	}
 
 	return bodyRespons, nil
