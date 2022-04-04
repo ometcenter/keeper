@@ -187,13 +187,14 @@ type FileAndBinary struct {
 }
 
 type RESTRequestUniversal struct {
-	Body         []byte
-	UrlToCall    string
-	Method       string
-	Headers      map[string]string
-	UseAuth      bool
-	AuthUserName string
-	AuthPassword string
+	Body           []byte
+	UrlToCall      string
+	Method         string
+	Headers        map[string]string
+	UseAuth        bool
+	AuthUserName   string
+	AuthPassword   string
+	TimeoutSeconds time.Duration
 }
 
 func (requestUniversal *RESTRequestUniversal) Send() ([]byte, error) {
@@ -214,6 +215,9 @@ func (requestUniversal *RESTRequestUniversal) Send() ([]byte, error) {
 	}
 
 	client := &http.Client{}
+	if requestUniversal.TimeoutSeconds != 0 {
+		client.Timeout = requestUniversal.TimeoutSeconds * time.Second
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
