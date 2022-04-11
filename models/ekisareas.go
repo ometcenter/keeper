@@ -108,7 +108,7 @@ type EkisOrganizationAddresses struct {
 	TempEnd                       string `json:"temp_end"`      // Дата окончания временного размещения
 	FullName                      string //full_name
 	ShortName                     string //short_name
-	INN                           string
+	Inn                           string
 	Number                        int    //number
 	XaIsActive                    string //xa_is_active
 }
