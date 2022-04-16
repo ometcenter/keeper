@@ -164,6 +164,15 @@ type DeleteDataForArea struct {
 	DataBaseID string
 }
 
+type ErrorOnBI struct {
+	JobID            string `json:"УИД_Пакета"`
+	ExchangeJobID    string `json:"УИД"`
+	Area             string `json:"НомерОбласти"`
+	EmptyQuery       bool   `json:"ПустойЗапрос"`
+	ErrorDescription bool   `json:"ОшибкаВыполнения"`
+	ResultQueryJSON  string `json:"РезультатЗапроса"`
+}
+
 type AllAreasSourses struct {
 	gorm.Model
 	Area                string
