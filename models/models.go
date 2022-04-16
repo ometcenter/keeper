@@ -279,3 +279,18 @@ type Metrics struct {
 	DataEndQuery   string `json:"ДатаОкончанияЗапроса"`
 	DataSendQuery  string `json:"ДатаОтправкиОтвета"`
 }
+
+// TODO: Старый вариант переделать
+type ChangingStatusJob struct {
+	Priod string                `json:"Дата"`
+	Event string                `json:"Событие"`
+	Date  DataChangingStatusJob `json:"Данные"`
+}
+
+// TODO: Старый вариант переделать
+type DataChangingStatusJob struct {
+	JobID         string   `json:"ИдентификаторЗадания"`
+	ExchangeJobID string   `json:"ИдентификаторЗапроса"`
+	Status        string   `json:"Состояние"`
+	Areas         []string `json:"Области"`
+}
