@@ -213,3 +213,20 @@ func ChangeStatusJobsTask(DB *sql.DB, JobID, Status string) error {
 	return nil
 
 }
+
+// Удалить все задание
+func DeleteJobs(DB *sql.DB, JobID string) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, JobID)
+
+	QueryString := `DELETE FROM public.exchange_jobs where job_id = $1`
+
+	_, err := DB.Exec(QueryString, argsquery...)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
