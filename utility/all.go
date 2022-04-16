@@ -3,6 +3,7 @@ package utility
 import (
 	"database/sql"
 	"encoding/json"
+	"time"
 
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
@@ -165,6 +166,48 @@ func SendInQueueRabbitMQUniversal(TypeMessage string, DataStruct interface{},
 		if err != nil {
 			return err
 		}
+	}
+
+	return nil
+
+}
+
+// Изменяет статус всего задания "Выполняется"
+func ChangeStatusJobsTask(DB *sql.DB, JobID, Status string) error {
+
+	var argsUpdate []interface{}
+	argsUpdate = append(argsUpdate, JobID)
+	argsUpdate = append(argsUpdate, Status)
+	argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
+
+	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
+	WHERE job_id = $1;`, argsUpdate...)
+
+	if err != nil {
+		return err
+	}
+
+	//LastInsertId, _ := result.LastInsertId()
+	RowsAffected, _ := result.RowsAffected()
+
+	//fmt.Println("LastInsertId: ", LastInsertId)
+	//fmt.Println("RowsAffected: ", RowsAffected)
+
+	// Если не обновленно не одной записи, значит это новая запись и ее надо добавить
+	if RowsAffected == 0 {
+
+		var argsInsert []interface{}
+		argsInsert = append(argsInsert, JobID)
+		argsInsert = append(argsInsert, Status)
+		argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+
+		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod)
+		VALUES($1, $2, $3);`, argsInsert...)
+
+		if err != nil {
+			return err
+		}
+
 	}
 
 	return nil
