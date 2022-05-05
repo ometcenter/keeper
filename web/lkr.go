@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"math"
+	"net/http"
 	"regexp"
 	"sort"
 	"strconv"
@@ -136,6 +137,76 @@ type V1BudgetStatGroupResponds struct {
 	DaysWorked     int                    `json:"daysWorked"`
 	HoursWorked    float32                `json:"hoursWorked"`
 	Items          []V1BudgetStatResponds `json:"items"`
+}
+
+type AllInformationV1Answer struct {
+	HolidayStat              interface{} `json:"holidayStat"`
+	BudgetStat               interface{} `json:"budgetStat"`
+	JobPlaces                interface{} `json:"jobPlaces"`
+	HolidayStatForColleagues interface{} `json:"holidayStatForColleagues"`
+	GetBranchTree            interface{} `json:"getBranchTree"`
+	AverageSalary            interface{} `json:"averageSalary"`
+}
+
+func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *redis.Client) (interface{}, error) {
+
+	var AllInformationV1Answer AllInformationV1Answer
+
+	var err error
+	var HolidayStat interface{}
+	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
+	if err != nil {
+		HolidayStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	var BudgetStat interface{}
+	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisClient)
+	if err != nil {
+		BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	var JobPlaces interface{}
+	JobPlaces, err = V1JobPlacesGeneral(workerID, RedisClient)
+	if err != nil {
+		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	var HolidayStatForColleagues interface{}
+	HolidayStatForColleagues, err = V1HolidayStatForColleaguesGeneral(workerID)
+	if err != nil {
+		HolidayStatForColleagues = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	var GetBranchTree interface{}
+	GetBranchTree, err = GetBranchTreeGeneral(workerID)
+	if err != nil {
+		GetBranchTree = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	UseYearFilter = false
+
+	var AverageSalary interface{}
+	AverageSalary, err = V1AverageSalaryGeneral(workerID, UseYearFilter, yearFilter)
+	if err != nil {
+		AverageSalary = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	}
+
+	UseYearFilter = true
+
+	AllInformationV1Answer.HolidayStat = HolidayStat
+	AllInformationV1Answer.BudgetStat = BudgetStat
+	AllInformationV1Answer.JobPlaces = JobPlaces
+	AllInformationV1Answer.HolidayStatForColleagues = HolidayStatForColleagues
+	AllInformationV1Answer.GetBranchTree = GetBranchTree
+	AllInformationV1Answer.AverageSalary = AverageSalary
+
+	var AnswerWebV1 AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = AllInformationV1Answer
+	AnswerWebV1.Error = nil
+	//c.JSON(http.StatusOK, AnswerWebV1)
+
+	return AnswerWebV1, nil
 }
 
 func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *redis.Client) (interface{}, error) {
