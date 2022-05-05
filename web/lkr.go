@@ -150,9 +150,32 @@ type AllInformationV1Answer struct {
 
 func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *redis.Client) (interface{}, error) {
 
+	JSONString, err := utility.GetDataRedisByParamGoRedislibrary(workerID+yearFilterFrom+yearFilterTo, 4, RedisClient)
+	//if err != nil {
+	if JSONString == "" {
+		//log.Impl.Error(err.Error())
+		// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
+		// if err != nil {
+		// 	log.Impl.Error(err)
+		// }
+
+		// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	} else {
+		//c.Data(http.StatusOK, "application/json", []byte(JSONString))
+		//c.JSON(http.StatusOK, JSONString)
+		//return []byte(JSONString), nil
+
+		var AnswerWebV1 AnswerWebV1
+		if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+			return nil, err
+		}
+
+		return AnswerWebV1, nil
+	}
+
 	var AllInformationV1Answer AllInformationV1Answer
 
-	var err error
 	var HolidayStat interface{}
 	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
 	if err != nil {
