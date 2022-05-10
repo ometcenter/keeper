@@ -194,8 +194,10 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
+	startDateFilter := time.Now()
+	endDateFilter := startDateFilter.AddDate(0, 0, 7)
 	var HolidayStatForColleagues interface{}
-	HolidayStatForColleagues, err = V1HolidayStatForColleaguesGeneral(workerID)
+	HolidayStatForColleagues, err = V1HolidayStatForColleaguesGeneral(workerID, startDateFilter, endDateFilter)
 	if err != nil {
 		HolidayStatForColleagues = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
@@ -669,7 +671,7 @@ func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}
 
 }
 
-func V1HolidayStatForColleaguesGeneral(WorkerID string) (interface{}, error) {
+func V1HolidayStatForColleaguesGeneral(WorkerID string, startDateFilter time.Time, endDateFilter time.Time) (interface{}, error) {
 
 	// Добрый день,
 	// Для блока "ближайшие отсутствия коллег" нужен метод со следующими входящими параметрами:
@@ -734,6 +736,75 @@ func V1HolidayStatForColleaguesGeneral(WorkerID string) (interface{}, error) {
 	var argsquery []interface{}
 	argsquery = append(argsquery, WorkerID)
 
+	// Выбираем коллег по текущему подразделению, в которм находится сотрудник
+	// 	queryAllColumns := `select
+	// 	lkr_otsutstviy_all.collaborator_id,
+	// 	collaborators_posle.full_name,
+	// 	lkr_otsutstviy_all.period,
+	// 	lkr_otsutstviy_all.valid_until,
+	// 	lkr_otsutstviy_all.status,
+	// 	lkr_otsutstviy_all.document_base,
+	// 	lkr_otsutstviy_all.year
+	// from
+	// 	lkr_otsutstviy_all
+	// left join collaborators_posle as collaborators_posle on
+	// 	lkr_otsutstviy_all.collaborator_id = collaborators_posle.collaborator_id
+	// where
+	// 	lkr_otsutstviy_all.collaborator_id in (
+	// 	select
+	// 		collaborators_posle.collaborator_id
+	// 	from
+	// 		collaborators_posle
+	// 	where
+	// 		collaborators_posle.podrazdelenie_id in (
+	// 		select
+	// 			collaborators_posle.podrazdelenie_id
+	// 		from
+	// 			collaborators_posle
+	// 		where
+	// 			collaborators_posle.collaborator_id = $1))
+	// 	and lkr_otsutstviy_all.status <> 'Работа'
+	// 	and lkr_otsutstviy_all.collaborator_id <> $1
+	// union all
+	// select
+	// 	otpuska.collaborator_id,
+	// 	collaborators_posle.full_name,
+	// 	case
+	// 		when otpuska.moved = 'Да' then otpuska.moved_data_start
+	// 		else otpuska.data_start
+	// 	end as data_start,
+	// 	case
+	// 		when otpuska.moved = 'Да' then otpuska.moved_data_end
+	// 		else otpuska.data_end
+	// 	end as data_end,
+	// 	'Отпуск по графику',
+	// 	case
+	// 		when moving_doc is null then moving_doc
+	// 		else planing_doc
+	// 	end,
+	// 	replace(otpuska.year, ' ', '') as year
+	// from
+	// 	otpuska as otpuska
+	// left join collaborators_posle as collaborators_posle on
+	// 	otpuska.collaborator_id = collaborators_posle.collaborator_id
+	// where
+	// 	otpuska.collaborator_id in (
+	// 	select
+	// 		collaborators_posle.collaborator_id
+	// 	from
+	// 		collaborators_posle
+	// 	where
+	// 		collaborators_posle.podrazdelenie_id in (
+	// 		select
+	// 			collaborators_posle.podrazdelenie_id
+	// 		from
+	// 			collaborators_posle
+	// 		where
+	// 			collaborators_posle.collaborator_id = $1))
+	// 		and otpuska.collaborator_id <> $1
+	// order by 2`
+
+	// Выбираем коллег их одной организации.
 	queryAllColumns := `select
 	lkr_otsutstviy_all.collaborator_id,
 	collaborators_posle.full_name,
@@ -748,19 +819,20 @@ left join collaborators_posle as collaborators_posle on
 	lkr_otsutstviy_all.collaborator_id = collaborators_posle.collaborator_id
 where
 	lkr_otsutstviy_all.collaborator_id in (
-	select
-		collaborators_posle.collaborator_id
-	from
-		collaborators_posle
-	where
-		collaborators_posle.podrazdelenie_id in (
 		select
-			collaborators_posle.podrazdelenie_id
+			collaborators_posle.collaborator_id
 		from
 			collaborators_posle
 		where
-			collaborators_posle.collaborator_id = $1))
+			collaborators_posle.area in (
+			select
+				collaborators_posle.area
+			from
+				collaborators_posle
+			where
+				collaborators_posle.collaborator_id = $1))
 	and lkr_otsutstviy_all.status <> 'Работа'
+	and collaborators_posle.status <> 'Увольнение'
 	and lkr_otsutstviy_all.collaborator_id <> $1
 union all
 select
@@ -786,18 +858,19 @@ left join collaborators_posle as collaborators_posle on
 	otpuska.collaborator_id = collaborators_posle.collaborator_id
 where
 	otpuska.collaborator_id in (
-	select
-		collaborators_posle.collaborator_id
-	from
-		collaborators_posle
-	where
-		collaborators_posle.podrazdelenie_id in (
 		select
-			collaborators_posle.podrazdelenie_id
+			collaborators_posle.collaborator_id
 		from
 			collaborators_posle
 		where
-			collaborators_posle.collaborator_id = $1))
+			collaborators_posle.area in (
+			select
+				collaborators_posle.area
+			from
+				collaborators_posle
+			where
+				collaborators_posle.collaborator_id = $1))
+		and collaborators_posle.status <> 'Увольнение'
 		and otpuska.collaborator_id <> $1
 order by 2`
 
@@ -806,7 +879,7 @@ order by 2`
 		return err, nil
 	}
 
-	currentTime := time.Now()
+	//currentTime := time.Now()
 
 	defer rows.Close()
 
@@ -830,7 +903,12 @@ order by 2`
 		//fmt.Println(year)
 
 		//yearArg, monthArg, dayArg := time.Now().Date()
-		compareData := date_from_subject.Before(currentTime)
+		compareData := date_from_subject.Before(startDateFilter)
+		if compareData {
+			continue
+		}
+
+		compareData = date_from_subject.After(endDateFilter)
 		if compareData {
 			continue
 		}
