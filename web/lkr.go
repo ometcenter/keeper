@@ -883,6 +883,8 @@ order by 2`
 
 	defer rows.Close()
 
+	mapCheckDoubles := make(map[string]bool)
+
 	ColumnsStructSlice := []V1HolidayAllStatRespondsForColleagues{}
 	for rows.Next() {
 		var r V1HolidayAllStatRespondsForColleagues
@@ -891,6 +893,12 @@ order by 2`
 		if err != nil {
 			return nil, err
 		}
+
+		_, ok := mapCheckDoubles[r.CollaboratorId+r.DateStart+r.DateEnd]
+		if ok {
+			continue
+		}
+		mapCheckDoubles[r.CollaboratorId+r.DateStart+r.DateEnd] = true
 
 		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
 		date_from_subjectArray := re.FindAllString(r.DateStart, -1)
