@@ -913,12 +913,18 @@ order by 2`
 		//yearArg, monthArg, dayArg := time.Now().Date()
 		compareData := date_from_subject.Before(startDateFilter)
 		if compareData {
-			continue
+			compareDataNested := date_from_subject.Equal(startDateFilter)
+			if !compareDataNested {
+				continue
+			}
 		}
 
 		compareData = date_from_subject.After(endDateFilter)
 		if compareData {
-			continue
+			compareDataNested := date_from_subject.Equal(endDateFilter)
+			if !compareDataNested {
+				continue
+			}
 		}
 
 		// if UseYearFilter {
