@@ -4,8 +4,11 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"fmt"
+	"net/url"
 	"time"
 
+	sq "github.com/Masterminds/squirrel"
 	"github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
@@ -256,5 +259,105 @@ func GetDataRedisByParamGoRedislibrary(Param string, RedisDB int, RedisClient *r
 		//fmt.Println("key2", val2)
 		return val, nil
 	}
+
+}
+
+func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables map[string]bool, QueryURL url.Values) ([]map[string]interface{}, error) {
+
+	IsAvailableTables, ok := mapAvailableTables[TableNameParam]
+	if !ok || !IsAvailableTables {
+		err := fmt.Errorf("Problems with getting data")
+		return nil, err
+	}
+	// TODO: Вставить защиту от SQL иньекций, например проверкой таблицы
+	//var queryText = `select * from ` + TableName + `;`
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryBuilder := psql.Select("*").From(TableNameParam)
+
+	//queryBuilder := sq.Select("*").From(TableNameParam)
+	param := []interface{}{}
+
+	if len(QueryURL) != 0 {
+		//var conditionSlice []sq.Eq
+		//conditionMap := make(map[string]interface{})
+		//var conditionSlice sq.Eq
+
+		sqEq := make(sq.Eq)
+
+		for key, value := range QueryURL {
+			//conditionSlice = append(conditionSlice, sq.Eq{key: value})
+			//conditionMap[key] = value
+			if len(value) == 0 {
+				param = append(param, "")
+			} else {
+				param = append(param, value[0])
+			}
+
+			sqEq[key] = ""
+
+		}
+		//queryBuilder = sq.Select("*").From(TableNameParam).Where(sqEq)
+		queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
+	}
+
+	queryText, _, err := queryBuilder.ToSql()
+	//fmt.Println(queryText)
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := DB.Query(queryText, param...)
+	if err != nil {
+		return nil, err
+	}
+	cols, _ := rows.Columns()
+
+	defer rows.Close()
+
+	var MatureDataSlice []map[string]interface{}
+	for rows.Next() {
+
+		MatureData := make(map[string]interface{})
+		// Create a slice of interface{}'s to represent each column,
+		// and a second slice to contain pointers to each item in the columns slice.
+		columns := make([]interface{}, len(cols))
+		columnPointers := make([]interface{}, len(cols))
+		for i, _ := range columns {
+			columnPointers[i] = &columns[i]
+		}
+
+		// Scan the result into the column pointers...
+		if err := rows.Scan(columnPointers...); err != nil {
+			return nil, err
+		}
+
+		// Create our map, and retrieve the value for each column from the pointers slice,
+		// storing it in the map with the name of the column as the key.
+		//m := make(map[string]interface{})
+		for i, colName := range cols {
+			val := columnPointers[i].(*interface{})
+			MatureData[colName] = *val
+		}
+
+		MatureDataSlice = append(MatureDataSlice, MatureData)
+
+	}
+
+	// byteResult, err := json.Marshal(MatureDataSlice)
+	// if err != nil {
+	// 	c.String(http.StatusBadRequest, "Response: %s", err.Error())
+	// 	log.Impl.Error(err.Error())
+	// 	return
+	// }
+
+	//fmt.Println(string(byteResult))
+	//c.String(http.StatusOK, string(byteResult))
+
+	//c.Data(http.StatusOK, "application/json", byteResult)
+
+	//c.JSON(http.StatusOK, MatureDataSlice)
+
+	return MatureDataSlice, nil
 
 }
