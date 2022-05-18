@@ -597,7 +597,7 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 
 }
 
-func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
+func V2JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -703,7 +703,7 @@ func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}
 
 }
 
-func V2JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
+func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
