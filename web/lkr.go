@@ -1074,9 +1074,9 @@ order by 2`
 			}
 		}
 
-		compareData = DateEnd.Before(startDateFilter)
+		compareData = startDateFilter.Before(DateEnd)
 		if compareData {
-			compareDataNested := DateEnd.Equal(startDateFilter)
+			compareDataNested := startDateFilter.Equal(DateEnd)
 			if !compareDataNested {
 				filer11 = true
 			}
@@ -1090,9 +1090,9 @@ order by 2`
 			}
 		}
 
-		compareData = DateEnd.Before(endDateFilter)
+		compareData = endDateFilter.Before(DateEnd)
 		if compareData {
-			compareDataNested := DateEnd.Equal(endDateFilter)
+			compareDataNested := endDateFilter.Equal(DateEnd)
 			if !compareDataNested {
 				filer22 = true
 			}
