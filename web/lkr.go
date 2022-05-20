@@ -1004,31 +1004,98 @@ order by 2`
 		}
 		mapCheckDoubles[r.CollaboratorId+r.DateStart+r.DateEnd] = true
 
-		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
-		date_from_subjectArray := re.FindAllString(r.DateStart, -1)
-		//fmt.Printf("%q\n", date_from_subjectArray)
+		// re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
+		// date_from_subjectArray := re.FindAllString(r.DateStart, -1)
+		// //fmt.Printf("%q\n", date_from_subjectArray)
 
-		date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
+		// date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
+		// if err != nil {
+		// 	return nil, err
+		// }
+		// //fmt.Println(year)
+
+		// //yearArg, monthArg, dayArg := time.Now().Date()
+		// compareData := date_from_subject.Before(startDateFilter)
+		// if compareData {
+		// 	compareDataNested := date_from_subject.Equal(startDateFilter)
+		// 	if !compareDataNested {
+		// 		continue
+		// 	}
+		// }
+
+		// compareData = date_from_subject.After(endDateFilter)
+		// if compareData {
+		// 	compareDataNested := date_from_subject.Equal(endDateFilter)
+		// 	if !compareDataNested {
+		// 		continue
+		// 	}
+		// }
+
+		// 10-15 Отпуск
+		// 5-14 Дата отбора.
+		// Если 5 > 10 и 5 < 15 = +
+		// Если 14 > 10 и 14 < 15 = -
+		// Если ДатаОтбораНачало > ОтпускНачало и ДатаОтбораНачало < ОтпускКонец = +
+		// Если ДатаОтбораКонец > ОтпускНачало и ДатаОтбораКонец < ОтпускКонец = -
+
+		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
+		compareData := false
+
+		DateStartArray := re.FindAllString(r.DateStart, -1)
+		DateStart, err := time.Parse("02.01.2006", DateStartArray[0])
 		if err != nil {
 			return nil, err
 		}
-		//fmt.Println(year)
+
+		DateEndArray := re.FindAllString(r.DateEnd, -1)
+		DateEnd, err := time.Parse("02.01.2006", DateEndArray[0])
+		if err != nil {
+			return nil, err
+		}
 
 		//yearArg, monthArg, dayArg := time.Now().Date()
-		compareData := date_from_subject.Before(startDateFilter)
+		filer1 := false
+		filer11 := false
+
+		filer2 := false
+		filer22 := false
+
+		compareData = startDateFilter.After(DateStart)
 		if compareData {
-			compareDataNested := date_from_subject.Equal(startDateFilter)
+			compareDataNested := startDateFilter.Equal(DateStart)
 			if !compareDataNested {
-				continue
+				filer1 = true
 			}
 		}
 
-		compareData = date_from_subject.After(endDateFilter)
+		compareData = DateEnd.Before(startDateFilter)
 		if compareData {
-			compareDataNested := date_from_subject.Equal(endDateFilter)
+			compareDataNested := DateEnd.Equal(startDateFilter)
 			if !compareDataNested {
-				continue
+				filer11 = true
 			}
+		}
+
+		compareData = endDateFilter.Before(DateStart)
+		if compareData {
+			compareDataNested := endDateFilter.Equal(DateStart)
+			if !compareDataNested {
+				filer2 = true
+			}
+		}
+
+		compareData = DateEnd.After(endDateFilter)
+		if compareData {
+			compareDataNested := DateEnd.Equal(endDateFilter)
+			if !compareDataNested {
+				filer22 = true
+			}
+		}
+
+		if filer1 && filer11 || filer2 && filer22 {
+
+		} else {
+			continue
 		}
 
 		// if UseYearFilter {
