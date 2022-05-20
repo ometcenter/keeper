@@ -1082,7 +1082,7 @@ order by 2`
 			}
 		}
 
-		compareData = endDateFilter.Before(DateStart)
+		compareData = endDateFilter.After(DateStart)
 		if compareData {
 			compareDataNested := endDateFilter.Equal(DateStart)
 			if !compareDataNested {
@@ -1090,7 +1090,7 @@ order by 2`
 			}
 		}
 
-		compareData = DateEnd.After(endDateFilter)
+		compareData = DateEnd.Before(endDateFilter)
 		if compareData {
 			compareDataNested := DateEnd.Equal(endDateFilter)
 			if !compareDataNested {
