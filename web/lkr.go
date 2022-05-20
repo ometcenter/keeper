@@ -939,7 +939,6 @@ where
 				collaborators_posle.collaborator_id = $1))
 	and lkr_otsutstviy_all.status <> 'Работа'
 	and collaborators_posle.status <> 'Увольнение'
-	and lkr_otsutstviy_all.collaborator_id <> $1
 union all
 select
 	otpuska.collaborator_id,
@@ -977,7 +976,6 @@ where
 			where
 				collaborators_posle.collaborator_id = $1))
 		and collaborators_posle.status <> 'Увольнение'
-		and otpuska.collaborator_id <> $1
 order by 2`
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
