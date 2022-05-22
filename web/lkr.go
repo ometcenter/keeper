@@ -1069,7 +1069,7 @@ order by 2`
 		compareData = startDateFilter.After(DateStart)
 		if !compareData {
 			compareDataNested := startDateFilter.Equal(DateStart)
-			if !compareDataNested {
+			if compareDataNested {
 				filer1 = true
 			}
 		} else {
@@ -1079,7 +1079,7 @@ order by 2`
 		compareData = startDateFilter.Before(DateEnd)
 		if !compareData {
 			compareDataNested := startDateFilter.Equal(DateEnd)
-			if !compareDataNested {
+			if compareDataNested {
 				filer11 = true
 			}
 		} else {
@@ -1089,7 +1089,7 @@ order by 2`
 		compareData = endDateFilter.After(DateStart)
 		if !compareData {
 			compareDataNested := endDateFilter.Equal(DateStart)
-			if !compareDataNested {
+			if compareDataNested {
 				filer2 = true
 			}
 		} else {
@@ -1099,7 +1099,7 @@ order by 2`
 		compareData = endDateFilter.Before(DateEnd)
 		if !compareData {
 			compareDataNested := endDateFilter.Equal(DateEnd)
-			if !compareDataNested {
+			if compareDataNested {
 				filer22 = true
 			}
 		} else {
