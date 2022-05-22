@@ -1067,35 +1067,43 @@ order by 2`
 		filer22 := false
 
 		compareData = startDateFilter.After(DateStart)
-		if compareData {
+		if !compareData {
 			compareDataNested := startDateFilter.Equal(DateStart)
 			if !compareDataNested {
 				filer1 = true
 			}
+		} else {
+			filer1 = true
 		}
 
 		compareData = startDateFilter.Before(DateEnd)
-		if compareData {
+		if !compareData {
 			compareDataNested := startDateFilter.Equal(DateEnd)
 			if !compareDataNested {
 				filer11 = true
 			}
+		} else {
+			filer11 = true
 		}
 
 		compareData = endDateFilter.After(DateStart)
-		if compareData {
+		if !compareData {
 			compareDataNested := endDateFilter.Equal(DateStart)
 			if !compareDataNested {
 				filer2 = true
 			}
+		} else {
+			filer2 = true
 		}
 
 		compareData = endDateFilter.Before(DateEnd)
-		if compareData {
+		if !compareData {
 			compareDataNested := endDateFilter.Equal(DateEnd)
 			if !compareDataNested {
 				filer22 = true
 			}
+		} else {
+			filer22 = true
 		}
 
 		if filer1 && filer11 || filer2 && filer22 {
