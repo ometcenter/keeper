@@ -10,11 +10,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-redis/redis/v8"
+	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
+	redis "github.com/ometcenter/keeper/redis"
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
-	utility "github.com/ometcenter/keeper/utility"
 )
 
 type V1HolidayStatResponds struct {
@@ -148,9 +148,9 @@ type AllInformationV1Answer struct {
 	AverageSalary            interface{} `json:"averageSalary"`
 }
 
-func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *redis.Client) (interface{}, error) {
+func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := utility.GetDataRedisByParamGoRedislibrary(workerID+yearFilterFrom+yearFilterTo, 4, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(workerID+yearFilterFrom+yearFilterTo, 4, RedisClient)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -234,9 +234,9 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	return AnswerWebV1, nil
 }
 
-func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *redis.Client) (interface{}, error) {
+func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := utility.GetDataRedisByParamGoRedislibrary(WorkerID+yearFilterFrom+yearFilterTo, 3, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(WorkerID+yearFilterFrom+yearFilterTo, 3, RedisClient)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -389,9 +389,9 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 
 }
 
-func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisClient *redis.Client) (interface{}, error) {
+func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := utility.GetDataRedisByParamGoRedislibrary(WorkerID+yearFilter, 2, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(WorkerID+yearFilter, 2, RedisClient)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -597,7 +597,7 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 
 }
 
-func V2JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
+func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -683,7 +683,7 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}
 			return nil, err
 		}
 
-		JSONString, err := utility.GetDataRedisByParamGoRedislibrary(r.InsuranceNumber, 1, RedisClient)
+		JSONString, err := redis.GetLibraryGoRedis(r.InsuranceNumber, 1, RedisClient)
 		if err != nil {
 			return err, nil
 		}
@@ -703,7 +703,7 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}
 
 }
 
-func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}, error) {
+func V1JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -757,7 +757,7 @@ func V1JobPlacesGeneral(WorkerID string, RedisClient *redis.Client) (interface{}
 			return nil, err
 		}
 
-		JSONString, err := utility.GetDataRedisByParamGoRedislibrary(r.InsuranceNumber, 1, RedisClient)
+		JSONString, err := redis.GetLibraryGoRedis(r.InsuranceNumber, 1, RedisClient)
 		if err != nil {
 			return err, nil
 		}

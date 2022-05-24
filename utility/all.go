@@ -1,7 +1,6 @@
 package utility
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
-	"github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	"github.com/ometcenter/keeper/models"
@@ -233,32 +231,6 @@ func DeleteJobs(DB *sql.DB, JobID string) error {
 	}
 
 	return nil
-
-}
-
-//"github.com/go-redis/redis/v8"
-func GetDataRedisByParamGoRedislibrary(Param string, RedisDB int, RedisClient *redis.Client) (string, error) {
-
-	var Result string
-
-	_, err := RedisClient.Do(context.Background(), "select", RedisDB).Result()
-	if err != nil {
-		return Result, err
-	}
-
-	val, err := RedisClient.Get(context.Background(), Param).Result()
-	if err == redis.Nil {
-		//fmt.Println("key2 does not exist")
-		//return Result, fmt.Errorf("Не найден ключ для JobId: %s в Redis", InsuranceNumber)
-		return Result, nil
-	} else if err != nil {
-		//panic(err)
-		return Result, err
-		//return Result, nil
-	} else {
-		//fmt.Println("key2", val2)
-		return val, nil
-	}
 
 }
 
