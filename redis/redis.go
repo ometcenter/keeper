@@ -157,7 +157,7 @@ func GetLibraryGoRedis(RedisClient *libraryGoRedis.Client, Key string, RedisDB i
 //"github.com/go-redis/redis/v8"
 func SetLibraryGoRedis(RedisClient *libraryGoRedis.Client, Key string, Value interface{}, RedisDB int, TTLsec int) error {
 
-	_, err := RedisClient.Do(context.Background(), "select", 12).Result()
+	_, err := RedisClient.Do(context.Background(), "select", RedisDB).Result()
 	if err != nil {
 		return err
 	}
@@ -177,11 +177,22 @@ func SetLibraryGoRedis(RedisClient *libraryGoRedis.Client, Key string, Value int
 //"github.com/go-redis/redis/v8"
 func FlushdbLibraryGoRedis(RedisClient *libraryGoRedis.Client, RedisDB int) error {
 
-	_, err := RedisClient.Do(context.Background(), "select", 12).Result()
+	_, err := RedisClient.Do(context.Background(), "select", RedisDB).Result()
 	if err != nil {
 		return err
 	}
 	_, err = RedisClient.Do(context.Background(), "flushdb").Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//"github.com/go-redis/redis/v8"
+func SelectLibraryGoRedis(RedisClient *libraryGoRedis.Client, RedisDB int) error {
+
+	_, err := RedisClient.Do(context.Background(), "select", RedisDB).Result()
 	if err != nil {
 		return err
 	}
