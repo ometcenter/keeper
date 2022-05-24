@@ -129,7 +129,7 @@ func IntiClientLibraryGoRedis(AddressPort string) (*libraryGoRedis.Client, error
 }
 
 //"github.com/go-redis/redis/v8"
-func GetLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Client) (string, error) {
+func GetLibraryGoRedis(RedisClient *libraryGoRedis.Client, Key string, RedisDB int) (string, error) {
 
 	var Result string
 
@@ -155,14 +155,18 @@ func GetLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Clie
 }
 
 //"github.com/go-redis/redis/v8"
-func SetLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Client) error {
+func SetLibraryGoRedis(RedisClient *libraryGoRedis.Client, Key string, Value interface{}, RedisDB int, TTLsec int) error {
 
 	_, err := RedisClient.Do(context.Background(), "select", 12).Result()
 	if err != nil {
 		return err
 	}
 
-	err = RedisClient.Set(context.Background(), "TestSetGoRedis", "777", time.Second*5).Err()
+	if TTLsec == 0 {
+		err = RedisClient.Set(context.Background(), Key, Value, 0).Err()
+	} else {
+		err = RedisClient.Set(context.Background(), Key, Value, time.Second*5).Err()
+	}
 	if err != nil {
 		return err
 	}
@@ -171,7 +175,7 @@ func SetLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Clie
 }
 
 //"github.com/go-redis/redis/v8"
-func FlushdbLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Client) error {
+func FlushdbLibraryGoRedis(RedisClient *libraryGoRedis.Client, RedisDB int) error {
 
 	_, err := RedisClient.Do(context.Background(), "select", 12).Result()
 	if err != nil {

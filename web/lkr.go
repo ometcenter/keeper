@@ -150,7 +150,7 @@ type AllInformationV1Answer struct {
 
 func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(workerID+yearFilterFrom+yearFilterTo, 4, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(RedisClient, workerID+yearFilterFrom+yearFilterTo, 4)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -236,7 +236,7 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 
 func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(WorkerID+yearFilterFrom+yearFilterTo, 3, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilterFrom+yearFilterTo, 3)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -391,7 +391,7 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 
 func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(WorkerID+yearFilter, 2, RedisClient)
+	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilter, 2)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -683,7 +683,7 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 			return nil, err
 		}
 
-		JSONString, err := redis.GetLibraryGoRedis(r.InsuranceNumber, 1, RedisClient)
+		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
 		if err != nil {
 			return err, nil
 		}
@@ -757,7 +757,7 @@ func V1JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 			return nil, err
 		}
 
-		JSONString, err := redis.GetLibraryGoRedis(r.InsuranceNumber, 1, RedisClient)
+		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
 		if err != nil {
 			return err, nil
 		}
