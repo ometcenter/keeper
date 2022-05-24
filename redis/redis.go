@@ -99,25 +99,26 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, R
 }
 
 //"github.com/gomodule/redigo/redis"
-func GetLibraryRediGo(Pool *libraryRediGo.Pool, key string, RedisDB int) error {
+func GetLibraryRediGo(Pool *libraryRediGo.Pool, key string, RedisDB int) (string, error) {
 
 	conn := Pool.Get()
 	defer conn.Close()
 
 	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	var data []byte
-	data, err = libraryRediGo.Bytes(conn.Do("GET", key))
+	//var data []byte
+	//data, err = libraryRediGo.Bytes(conn.Do("GET", key))
+	data, err := libraryRediGo.String(conn.Do("GET", key))
 	if err != nil {
 		ErrReturn := fmt.Errorf("error getting key %s: %v", key, err)
 		fmt.Println(ErrReturn)
-		return ErrReturn
+		return "", ErrReturn
 	}
-	fmt.Println(string(data))
-	return nil
+
+	return data, nil
 }
 
 //"github.com/go-redis/redis/v8"
