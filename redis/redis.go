@@ -42,13 +42,13 @@ func IntiClientLibraryRediGo(AddressPort string) (*libraryRediGo.Pool, error) {
 }
 
 //"github.com/gomodule/redigo/redis"
-func SelectLibraryRediGo(Pool *libraryRediGo.Pool, BaseNumber int) error {
+func SelectLibraryRediGo(Pool *libraryRediGo.Pool, RedisDB int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
 
 	//_, err := conn.Do("SET", key, value)
-	_, err := conn.Do("SELECT", BaseNumber) // 10 секунд
+	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
 	if err != nil {
 		return err
 	}
@@ -57,13 +57,18 @@ func SelectLibraryRediGo(Pool *libraryRediGo.Pool, BaseNumber int) error {
 }
 
 //"github.com/gomodule/redigo/redis"
-func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, TTL int) error {
+func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, RedisDB int, TTL int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
 
+	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
+	if err != nil {
+		return err
+	}
+
 	//_, err := conn.Do("SET", key, value)
-	_, err := conn.Do("SET", key, value, "EX", "100") // 10 секунд
+	_, err = conn.Do("SET", key, value, "EX", "100") // 10 секунд
 	if err != nil {
 		// v := string(value)
 		// if len(v) > 15 {
@@ -94,13 +99,18 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, T
 }
 
 //"github.com/gomodule/redigo/redis"
-func GetLibraryRediGo(Pool *libraryRediGo.Pool, key string) error {
+func GetLibraryRediGo(Pool *libraryRediGo.Pool, key string, RedisDB int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
 
+	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
+	if err != nil {
+		return err
+	}
+
 	var data []byte
-	data, err := libraryRediGo.Bytes(conn.Do("GET", key))
+	data, err = libraryRediGo.Bytes(conn.Do("GET", key))
 	if err != nil {
 		ErrReturn := fmt.Errorf("error getting key %s: %v", key, err)
 		fmt.Println(ErrReturn)
