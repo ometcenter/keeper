@@ -57,7 +57,7 @@ func SelectLibraryRediGo(Pool *libraryRediGo.Pool, BaseNumber int) error {
 }
 
 //"github.com/gomodule/redigo/redis"
-func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value []byte, TTL int) error {
+func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, TTL int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
@@ -65,11 +65,12 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value []byte, TTL in
 	//_, err := conn.Do("SET", key, value)
 	_, err := conn.Do("SET", key, value, "EX", "100") // 10 секунд
 	if err != nil {
-		v := string(value)
-		if len(v) > 15 {
-			v = v[0:12] + "..."
-		}
-		return fmt.Errorf("error setting key %s to %s: %v", key, v, err)
+		// v := string(value)
+		// if len(v) > 15 {
+		// 	v = v[0:12] + "..."
+		// }
+		// return fmt.Errorf("error setting key %s to %s: %v", key, v, err)
+		return err
 	}
 
 	// // Установить время истечения 24 часа
@@ -80,11 +81,12 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value []byte, TTL in
 		// 	fmt.Println("success: ", n)
 		// }
 		if err != nil {
-			v := string(value)
-			if len(v) > 15 {
-				v = v[0:12] + "..."
-			}
-			return fmt.Errorf("error EXPIRE key %s to %s: %v", key, v, err)
+			// v := string(value)
+			// if len(v) > 15 {
+			// 	v = v[0:12] + "..."
+			// }
+			// return fmt.Errorf("error EXPIRE key %s to %s: %v", key, v, err)
+			return err
 		}
 	}
 
