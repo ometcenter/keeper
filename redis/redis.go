@@ -6,30 +6,31 @@ import (
 	"time"
 
 	libraryGoRedis "github.com/go-redis/redis/v8"
-	libraryRedigo "github.com/gomodule/redigo/redis"
+	libraryRediGo "github.com/gomodule/redigo/redis"
 )
 
-var PoolRedisRediGolibrary *libraryRedigo.Pool
+var PoolRedisRediGolibrary *libraryRediGo.Pool
 
 var ctxGoRedisLibrary = context.Background()
 var RedisClientGoRedisLibrary *libraryGoRedis.Client
 
-func IntiRedisClientRediGo(AddressPort string) (*libraryRedigo.Pool, error) {
+//"github.com/gomodule/redigo/redis"
+func IntiClientLibraryRediGo(AddressPort string) (*libraryRediGo.Pool, error) {
 
-	Pool := &libraryRedigo.Pool{
+	Pool := &libraryRediGo.Pool{
 
 		MaxIdle:     3,
 		IdleTimeout: 240 * time.Second,
 
-		Dial: func() (libraryRedigo.Conn, error) {
-			c, err := libraryRedigo.Dial("tcp", AddressPort)
+		Dial: func() (libraryRediGo.Conn, error) {
+			c, err := libraryRediGo.Dial("tcp", AddressPort)
 			if err != nil {
 				return nil, err
 			}
 			return c, err
 		},
 
-		TestOnBorrow: func(c libraryRedigo.Conn, t time.Time) error {
+		TestOnBorrow: func(c libraryRediGo.Conn, t time.Time) error {
 			_, err := c.Do("PING")
 			return err
 		},
@@ -40,27 +41,8 @@ func IntiRedisClientRediGo(AddressPort string) (*libraryRedigo.Pool, error) {
 	return Pool, nil
 }
 
-func IntiRedisClient(AddressPort string) (*libraryGoRedis.Client, error) {
-
-	rdb := libraryGoRedis.NewClient(&libraryGoRedis.Options{
-		Addr:     AddressPort,
-		Password: "", // no password set
-		DB:       0,  // use default DB
-	})
-
-	//_, err := rdb.Ping(ctxRedis).Result()
-	_, err := rdb.Ping(context.Background()).Result()
-	if err != nil {
-		return nil, err
-	}
-
-	RedisClientGoRedisLibrary = rdb
-
-	return rdb, err
-}
-
 //"github.com/gomodule/redigo/redis"
-func SelectLibraryGoRedis(Pool *libraryRedigo.Pool, BaseNumber int) error {
+func SelectLibraryRediGo(Pool *libraryRediGo.Pool, BaseNumber int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
@@ -75,7 +57,7 @@ func SelectLibraryGoRedis(Pool *libraryRedigo.Pool, BaseNumber int) error {
 }
 
 //"github.com/gomodule/redigo/redis"
-func SetRedigo(Pool *libraryRedigo.Pool, key string, value []byte, TTL int) error {
+func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value []byte, TTL int) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
@@ -110,13 +92,13 @@ func SetRedigo(Pool *libraryRedigo.Pool, key string, value []byte, TTL int) erro
 }
 
 //"github.com/gomodule/redigo/redis"
-func GetRedigo(Pool *libraryRedigo.Pool, key string) error {
+func GetLibraryRediGo(Pool *libraryRediGo.Pool, key string) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
 
 	var data []byte
-	data, err := libraryRedigo.Bytes(conn.Do("GET", key))
+	data, err := libraryRediGo.Bytes(conn.Do("GET", key))
 	if err != nil {
 		ErrReturn := fmt.Errorf("error getting key %s: %v", key, err)
 		fmt.Println(ErrReturn)
@@ -124,6 +106,26 @@ func GetRedigo(Pool *libraryRedigo.Pool, key string) error {
 	}
 	fmt.Println(string(data))
 	return nil
+}
+
+//"github.com/go-redis/redis/v8"
+func IntiClientLibraryGoRedis(AddressPort string) (*libraryGoRedis.Client, error) {
+
+	rdb := libraryGoRedis.NewClient(&libraryGoRedis.Options{
+		Addr:     AddressPort,
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	//_, err := rdb.Ping(ctxRedis).Result()
+	_, err := rdb.Ping(context.Background()).Result()
+	if err != nil {
+		return nil, err
+	}
+
+	RedisClientGoRedisLibrary = rdb
+
+	return rdb, err
 }
 
 //"github.com/go-redis/redis/v8"
@@ -169,7 +171,7 @@ func SetLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Clie
 }
 
 //"github.com/go-redis/redis/v8"
-func flushdbLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Client) error {
+func FlushdbLibraryGoRedis(Key string, RedisDB int, RedisClient *libraryGoRedis.Client) error {
 
 	_, err := RedisClient.Do(context.Background(), "select", 12).Result()
 	if err != nil {
