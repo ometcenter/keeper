@@ -1475,7 +1475,7 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		AverageSalary.DaySum = float32(math.Ceil(float64(AverageSalary.DaySum)*100) / 100)
 
 		AverageSalary.DaySumGross = (countSumGross / float32(countMonth)) / 29.3
-		AverageSalary.DaySumGross = float32(math.Ceil(float64(AverageSalary.DaySum)*100) / 100)
+		AverageSalary.DaySumGross = float32(math.Ceil(float64(AverageSalary.DaySumGross)*100) / 100)
 	}
 
 	//fmt.Printf("Month = %d, Summ = %f Average = %f\n", AverageSalary.Months, AverageSalary.Summ, AverageSalary.Average)
