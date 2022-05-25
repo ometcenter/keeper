@@ -1394,15 +1394,17 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		r.Summ = float32(SummFloat)
 
 		if r.SettlementGroup == "Начислено" {
-			V1BudgetStatGroupResponds.TotalGross = V1BudgetStatGroupResponds.TotalGross + r.Summ
-			V1BudgetStatGroupResponds.Total = V1BudgetStatGroupResponds.Total + r.Summ
 			//r.Summ = 10
 		} else {
 			//r.Summ = -10
-			//r.Summ = -r.Summ
+			r.Summ = -r.Summ
+		}
+
+		V1BudgetStatGroupResponds.Total = V1BudgetStatGroupResponds.Total + r.Summ
+		if r.SettlementGroup == "Начислено" {
+			V1BudgetStatGroupResponds.TotalGross = V1BudgetStatGroupResponds.TotalGross + r.Summ
+		} else {
 			V1BudgetStatGroupResponds.TotalDeduction = V1BudgetStatGroupResponds.TotalDeduction + -r.Summ
-			V1BudgetStatGroupResponds.Total = V1BudgetStatGroupResponds.Total + -r.Summ
-			continue
 		}
 
 		if UseYearFilter {
