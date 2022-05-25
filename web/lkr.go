@@ -41,10 +41,13 @@ type V1HolidayAllStatRespondsForColleagues struct {
 }
 
 type AverageSalary struct {
-	Months  int     `json:"months"`
-	Summ    float32 `json:"summ"`
-	Average float32 `json:"average"`
-	DaySum  float32 `json:"daySum"`
+	Months       int     `json:"months"`
+	Summ         float32 `json:"summ"`
+	SummGross    float32 `json:"summGross"`
+	Average      float32 `json:"average"`
+	AverageGross float32 `json:"averageGross"`
+	DaySum       float32 `json:"daySum"`
+	DaySumGross  float32 `json:"daySumGross"`
 }
 
 type V1VacationSchedule struct {
@@ -1399,6 +1402,12 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		}
 
 		V1BudgetStatGroupResponds.Total = V1BudgetStatGroupResponds.Total + r.Summ
+		if r.SettlementGroup == "Начислено" {
+			V1BudgetStatGroupResponds.TotalGross = V1BudgetStatGroupResponds.TotalGross + r.Summ
+		} else {
+			V1BudgetStatGroupResponds.TotalDeduction = V1BudgetStatGroupResponds.TotalDeduction + -r.Summ
+		}
+
 		if UseYearFilter {
 			// TODO: Подключить по возможности к регулярному выражению ниже.
 			Ok := strings.Contains(r.DateRegistration, yearFilter)
@@ -1440,6 +1449,7 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 
 	countMonth := 0
 	var countSum float32
+	var countSumGross float32
 
 	keys := make([]int, 0, len(MapV1BudgetStatGroupResponds))
 	for k := range MapV1BudgetStatGroupResponds {
@@ -1452,15 +1462,21 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 
 		countMonth++
 		countSum = countSum + MapV1BudgetStatGroupResponds[k].Total
+		countSumGross = countSumGross + MapV1BudgetStatGroupResponds[k].TotalGross
 	}
 
 	var AverageSalary AverageSalary
 	if countMonth != 0 {
 		AverageSalary.Months = countMonth
 		AverageSalary.Summ = countSum
+		AverageSalary.SummGross = countSumGross
 		AverageSalary.Average = countSum / float32(countMonth)
+		AverageSalary.AverageGross = countSumGross / float32(countMonth)
 		AverageSalary.DaySum = (countSum / float32(countMonth)) / 29.3
 		AverageSalary.DaySum = float32(math.Ceil(float64(AverageSalary.DaySum)*100) / 100)
+
+		AverageSalary.DaySumGross = (countSumGross / float32(countMonth)) / 29.3
+		AverageSalary.DaySumGross = float32(math.Ceil(float64(AverageSalary.DaySum)*100) / 100)
 	}
 
 	//fmt.Printf("Month = %d, Summ = %f Average = %f\n", AverageSalary.Months, AverageSalary.Summ, AverageSalary.Average)
