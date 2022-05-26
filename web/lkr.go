@@ -192,7 +192,7 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	}
 
 	var JobPlaces interface{}
-	JobPlaces, err = V2JobPlacesGeneral(workerID, RedisClient)
+	JobPlaces, err = V3JobPlacesGeneral(workerID, RedisClient)
 	if err != nil {
 		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
@@ -609,34 +609,6 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 	var argsquery []interface{}
 	argsquery = append(argsquery, WorkerID)
-	//queryAllColumns := "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = $1;"
-
-	// queryAllColumns := `select
-	// 	lkr_kadrovie_dannie.person_id,
-	// 	lkr_kadrovie_dannie.collaborator_id,
-	// 	lkr_kadrovie_dannie.insurance_number,
-	// 	lkr_kadrovie_dannie.inn,
-	// 	lkr_kadrovie_dannie.full_name,
-	// 	lkr_kadrovie_dannie.position,
-	// 	lkr_kadrovie_dannie.organization_name,
-	// 	lkr_kadrovie_dannie.status,
-	// 	lkr_kadrovie_dannie.email,
-	// 	lkr_kadrovie_dannie.mobile_phone,
-	// 	lkr_kadrovie_dannie.work_phone,
-	// 	lkr_kadrovie_dannie.date_birth,
-	// 	lkr_kadrovie_dannie.podrazdelenie,
-	// 	coalesce(lkr_kadrovie_dannie.guid_podrazdelenie, ''),
-	// 	coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
-	// 	coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
-	// 	COALESCE(lkr_kadrovie_dannie.updated_at, DATE '0001-01-01')
-	// from
-	// 	lkr_kadrovie_dannie as lkr_kadrovie_dannie
-	// left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
-	// 	lkr_kadrovie_dannie.position = dit_gruppirovka_dolzhnostey.position
-	// where
-	// 	collaborator_id = $1`
-	// //where
-	// //	insurance_number = $1`
 
 	queryText := `select
 		collaborators_posle.person_id as person_id,
@@ -699,6 +671,87 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 	var AnswerWebV1 AnswerWebV1
 	AnswerWebV1.Status = true
 	AnswerWebV1.Data = ColumnsStructSlice
+	AnswerWebV1.Error = nil
+	//c.JSON(http.StatusOK, AnswerWebV1)
+
+	return AnswerWebV1, nil
+
+}
+
+func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+
+	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
+	if err != nil {
+		return nil, err
+	}
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, WorkerID)
+
+	queryText := `select
+		collaborators_posle.person_id as person_id,
+		collaborators_posle.collaborator_id as collaborator_id,
+		collaborators_posle.insurance_number as insurance_number,
+		collaborators_posle.inn as inn,
+		collaborators_posle.full_name as full_name,
+		collaborators_posle.position as position,
+		organizations_zkgu.name as organization_name,
+		collaborators_posle.status as status,
+		coalesce(contact_inf_pochta_posle.email, '') as email,
+		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
+		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
+		collaborators_posle.date_birth as date_birth,
+		collaborators_posle.podrazdelenie as podrazdelenie,
+		coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenie_id,
+		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
+		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
+		coalesce(collaborators_posle.updated_at, DATE '0001-01-01') as updated_at,
+		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date
+	from
+		collaborators_posle as collaborators_posle
+	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
+		collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
+	left join organizations_zkgu as organizations_zkgu on
+		collaborators_posle.organization_id = organizations_zkgu.organization_id
+	left join contact_inf_pochta_posle as contact_inf_pochta_posle on
+		collaborators_posle.person_id = contact_inf_pochta_posle.person_id
+	left join contact_inf_telephone_posle as contact_inf_telephone_posle on
+		collaborators_posle.person_id = contact_inf_telephone_posle.person_id
+	where
+		collaborator_id = $1`
+
+	rows, err := DB.Query(queryText, argsquery...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	//ColumnsStructSlice := []V1ActiveWorkers{}
+	ColumnsStruct := V1ActiveWorkers{}
+	for rows.Next() {
+		var r V1ActiveWorkers
+		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
+			&r.Email, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.UpdatedAt, &r.DateDismissals)
+		if err != nil {
+			return nil, err
+		}
+
+		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		if err != nil {
+			return err, nil
+		}
+
+		r.EmailArray = JSONString
+
+		//ColumnsStructSlice = append(ColumnsStructSlice, r)
+
+		ColumnsStruct = r
+	}
+
+	var AnswerWebV1 AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = ColumnsStruct
 	AnswerWebV1.Error = nil
 	//c.JSON(http.StatusOK, AnswerWebV1)
 
