@@ -1064,42 +1064,6 @@ order by 2`
 		}
 		mapCheckDoubles[r.CollaboratorId+r.DateStart+r.DateEnd] = true
 
-		// // Старый алгоритм поиска
-		// re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
-		// date_from_subjectArray := re.FindAllString(r.DateStart, -1)
-		// //fmt.Printf("%q\n", date_from_subjectArray)
-
-		// date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
-		// if err != nil {
-		// 	return nil, err
-		// }
-		// //fmt.Println(year)
-
-		// //yearArg, monthArg, dayArg := time.Now().Date()
-		// compareData := date_from_subject.Before(startDateFilter)
-		// if compareData {
-		// 	compareDataNested := date_from_subject.Equal(startDateFilter)
-		// 	if !compareDataNested {
-		// 		continue
-		// 	}
-		// }
-
-		// compareData = date_from_subject.After(endDateFilter)
-		// if compareData {
-		// 	compareDataNested := date_from_subject.Equal(endDateFilter)
-		// 	if !compareDataNested {
-		// 		continue
-		// 	}
-		// }
-
-		//Новый алгоритм поиска
-		// 10-15 Отпуск
-		// 5-14 Дата отбора.
-		// Если 5 > 10 и 5 < 15 = +
-		// Если 14 > 10 и 14 < 15 = -
-		// Если ДатаОтбораНачало > ОтпускНачало и ДатаОтбораНачало < ОтпускКонец = +
-		// Если ДатаОтбораКонец > ОтпускНачало и ДатаОтбораКонец < ОтпускКонец = -
-
 		if r.Status == "Увольнение" {
 			continue
 		}
@@ -1126,9 +1090,55 @@ order by 2`
 		filer2 := false
 		filer22 := false
 
-		compareData = startDateFilter.After(DateStart)
+		// Если ДатаОтбораНачало > ОтпускНачало и ДатаОтбораНачало < ОтпускКонец = +
+		// Если ДатаОтбораКонец > ОтпускНачало и ДатаОтбораКонец < ОтпускКонец = -
+
+		// compareData = startDateFilter.After(DateStart)
+		// if !compareData {
+		// 	compareDataNested := startDateFilter.Equal(DateStart)
+		// 	if compareDataNested {
+		// 		filer1 = true
+		// 	}
+		// } else {
+		// 	filer1 = true
+		// }
+
+		// compareData = startDateFilter.Before(DateEnd)
+		// if !compareData {
+		// 	compareDataNested := startDateFilter.Equal(DateEnd)
+		// 	if compareDataNested {
+		// 		filer11 = true
+		// 	}
+		// } else {
+		// 	filer11 = true
+		// }
+
+		// compareData = endDateFilter.After(DateStart)
+		// if !compareData {
+		// 	compareDataNested := endDateFilter.Equal(DateStart)
+		// 	if compareDataNested {
+		// 		filer2 = true
+		// 	}
+		// } else {
+		// 	filer2 = true
+		// }
+
+		// compareData = endDateFilter.Before(DateEnd)
+		// if !compareData {
+		// 	compareDataNested := endDateFilter.Equal(DateEnd)
+		// 	if compareDataNested {
+		// 		filer22 = true
+		// 	}
+		// } else {
+		// 	filer22 = true
+		// }
+
+		// Если ДатаОтбораКонец => ОтпускНачало и ОтпускНачало => ДатаОтбораНачало
+		// Если ДатаОтбораКонец => ОтпускКонец и ОтпускКонец => ДатаОтбораНачало
+
+		compareData = endDateFilter.After(DateStart)
 		if !compareData {
-			compareDataNested := startDateFilter.Equal(DateStart)
+			compareDataNested := endDateFilter.Equal(DateStart)
 			if compareDataNested {
 				filer1 = true
 			}
@@ -1136,9 +1146,9 @@ order by 2`
 			filer1 = true
 		}
 
-		compareData = startDateFilter.Before(DateEnd)
+		compareData = DateStart.After(startDateFilter)
 		if !compareData {
-			compareDataNested := startDateFilter.Equal(DateEnd)
+			compareDataNested := DateStart.Equal(startDateFilter)
 			if compareDataNested {
 				filer11 = true
 			}
@@ -1146,9 +1156,9 @@ order by 2`
 			filer11 = true
 		}
 
-		compareData = endDateFilter.After(DateStart)
+		compareData = endDateFilter.After(DateEnd)
 		if !compareData {
-			compareDataNested := endDateFilter.Equal(DateStart)
+			compareDataNested := endDateFilter.Equal(DateEnd)
 			if compareDataNested {
 				filer2 = true
 			}
@@ -1156,14 +1166,20 @@ order by 2`
 			filer2 = true
 		}
 
-		compareData = endDateFilter.Before(DateEnd)
+		compareData = DateEnd.After(startDateFilter)
 		if !compareData {
-			compareDataNested := endDateFilter.Equal(DateEnd)
+			compareDataNested := DateEnd.Equal(startDateFilter)
 			if compareDataNested {
 				filer22 = true
 			}
 		} else {
 			filer22 = true
+		}
+
+		if filer1 && filer11 || filer2 && filer22 {
+
+		} else {
+			continue
 		}
 
 		if filer1 && filer11 || filer2 && filer22 {
@@ -1269,7 +1285,9 @@ from
 	public.lkr_podrazdelenie_branch as lkr_podrazdelenie_branch
 inner join collaborators_posle as collaborators_posle on
 	lkr_podrazdelenie_branch.area = collaborators_posle.area
-	and collaborators_posle.collaborator_id = $1`
+	and collaborators_posle.collaborator_id = $1
+order by
+	lkr_podrazdelenie_branch.unit_name, lkr_podrazdelenie_branch.roditel`
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {
