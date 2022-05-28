@@ -41,6 +41,7 @@ func AssembleTreeHandler(BranchTree []BranchTree) interface{} {
 	// Node.AssembleTree(BranchTree)
 	// ////////_, Result := Node.AssembleTree(BranchTree)
 
+	//TODO: Смена сортировки ведет к потери узлов в дереве
 	Node = &NodeExample2{"", "", "root", false, 0, nil}
 	Node.AssembleTree(BranchTree)
 	///////Node, _ := AssembleTreeExample2(BranchTree)

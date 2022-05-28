@@ -1301,7 +1301,7 @@ inner join collaborators_posle as collaborators_posle on
 	and collaborators_posle.collaborator_id = $1
 order by
 	lkr_podrazdelenie_branch.roditel, lkr_podrazdelenie_branch.unit_name`
-	//lkr_podrazdelenie_branch.unit_name, lkr_podrazdelenie_branch.roditel`
+	// TODO: Смена сортировки ведет к потери узлов в дереве
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {
