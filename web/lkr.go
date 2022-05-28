@@ -1192,8 +1192,8 @@ order by 2`
 		filer1 := utilityShare.InTimeSpan(DateStart, DateEnd, startDateFilter)
 		filer2 := utilityShare.InTimeSpan(DateStart, DateEnd, endDateFilter)
 
-		filer3 := utilityShare.InTimeSpan(startDateFilter, endDateFilter, DateStart)
-		filer4 := utilityShare.InTimeSpan(DateStart, DateEnd, endDateFilter)
+		filer3 := utilityShare.InTimeSpan(startDateFilter, DateStart, DateEnd)
+		filer4 := utilityShare.InTimeSpan(endDateFilter, DateStart, DateEnd)
 
 		if filer1 || filer2 || filer3 || filer4 {
 
