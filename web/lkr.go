@@ -15,6 +15,7 @@ import (
 	redis "github.com/ometcenter/keeper/redis"
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
+	utilityShare "github.com/ometcenter/keeper/utility"
 )
 
 type V1HolidayStatResponds struct {
@@ -1069,7 +1070,7 @@ order by 2`
 		}
 
 		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
-		compareData := false
+		//compareData := false
 
 		DateStartArray := re.FindAllString(r.DateStart, -1)
 		DateStart, err := time.Parse("02.01.2006", DateStartArray[0])
@@ -1083,12 +1084,12 @@ order by 2`
 			return nil, err
 		}
 
-		//yearArg, monthArg, dayArg := time.Now().Date()
-		filer1 := false
-		filer11 := false
+		// //yearArg, monthArg, dayArg := time.Now().Date()
+		// filer1 := false
+		// filer11 := false
 
-		filer2 := false
-		filer22 := false
+		// filer2 := false
+		// filer22 := false
 
 		// Если ДатаОтбораНачало > ОтпускНачало и ДатаОтбораНачало < ОтпускКонец = +
 		// Если ДатаОтбораКонец > ОтпускНачало и ДатаОтбораКонец < ОтпускКонец = -
@@ -1136,53 +1137,65 @@ order by 2`
 		// Если ДатаОтбораКонец => ОтпускНачало и ОтпускНачало => ДатаОтбораНачало
 		// Если ДатаОтбораКонец => ОтпускКонец и ОтпускКонец => ДатаОтбораНачало
 
-		compareData = endDateFilter.After(DateStart)
-		if !compareData {
-			compareDataNested := endDateFilter.Equal(DateStart)
-			if compareDataNested {
-				filer1 = true
-			}
-		} else {
-			filer1 = true
-		}
+		// compareData = endDateFilter.After(DateStart)
+		// if !compareData {
+		// 	compareDataNested := endDateFilter.Equal(DateStart)
+		// 	if compareDataNested {
+		// 		filer1 = true
+		// 	}
+		// } else {
+		// 	filer1 = true
+		// }
 
-		compareData = DateStart.After(startDateFilter)
-		if !compareData {
-			compareDataNested := DateStart.Equal(startDateFilter)
-			if compareDataNested {
-				filer11 = true
-			}
-		} else {
-			filer11 = true
-		}
+		// compareData = DateStart.After(startDateFilter)
+		// if !compareData {
+		// 	compareDataNested := DateStart.Equal(startDateFilter)
+		// 	if compareDataNested {
+		// 		filer11 = true
+		// 	}
+		// } else {
+		// 	filer11 = true
+		// }
 
-		compareData = endDateFilter.After(DateEnd)
-		if !compareData {
-			compareDataNested := endDateFilter.Equal(DateEnd)
-			if compareDataNested {
-				filer2 = true
-			}
-		} else {
-			filer2 = true
-		}
+		// compareData = endDateFilter.After(DateEnd)
+		// if !compareData {
+		// 	compareDataNested := endDateFilter.Equal(DateEnd)
+		// 	if compareDataNested {
+		// 		filer2 = true
+		// 	}
+		// } else {
+		// 	filer2 = true
+		// }
 
-		compareData = DateEnd.After(startDateFilter)
-		if !compareData {
-			compareDataNested := DateEnd.Equal(startDateFilter)
-			if compareDataNested {
-				filer22 = true
-			}
-		} else {
-			filer22 = true
-		}
+		// compareData = DateEnd.After(startDateFilter)
+		// if !compareData {
+		// 	compareDataNested := DateEnd.Equal(startDateFilter)
+		// 	if compareDataNested {
+		// 		filer22 = true
+		// 	}
+		// } else {
+		// 	filer22 = true
+		// }
 
-		if filer1 && filer11 || filer2 && filer22 {
+		// if filer1 && filer11 || filer2 && filer22 {
 
-		} else {
-			continue
-		}
+		// } else {
+		// 	continue
+		// }
 
-		if filer1 && filer11 || filer2 && filer22 {
+		// if filer1 && filer11 || filer2 && filer22 {
+
+		// } else {
+		// 	continue
+		// }
+
+		filer1 := utilityShare.InTimeSpan(DateStart, DateEnd, startDateFilter)
+		filer2 := utilityShare.InTimeSpan(DateStart, DateEnd, endDateFilter)
+
+		filer3 := utilityShare.InTimeSpan(startDateFilter, endDateFilter, DateStart)
+		filer4 := utilityShare.InTimeSpan(DateStart, DateEnd, endDateFilter)
+
+		if filer1 || filer2 || filer3 || filer4 {
 
 		} else {
 			continue
