@@ -1442,6 +1442,10 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 			return nil, err
 		}
 
+		if Summ == "0" && DaysWorked == "0" && HoursWorked == "0" {
+			continue
+		}
+
 		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
 		date_from_subjectArray := re.FindAllString(r.DateRegistration, -1)
 		//fmt.Printf("%q\n", date_from_subjectArray)
