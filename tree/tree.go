@@ -296,7 +296,7 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 	var data []*NodeExample2
 	for _, value := range BranchTree {
 		data = append(data, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
-		//CurrectBranchId = value.CurrectBranchId
+		CurrectBranchId = value.CurrectBranchId
 	}
 
 	node.Add(data...)
