@@ -1298,9 +1298,9 @@ from
 	public.lkr_podrazdelenie_branch as lkr_podrazdelenie_branch
 inner join collaborators_posle as collaborators_posle on
 	lkr_podrazdelenie_branch.area = collaborators_posle.area
-	and collaborators_posle.collaborator_id = $1
-order by
-	lkr_podrazdelenie_branch.unit_name, lkr_podrazdelenie_branch.roditel`
+	and collaborators_posle.collaborator_id = $1`
+	// order by
+	// 	lkr_podrazdelenie_branch.unit_name, lkr_podrazdelenie_branch.roditel`
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {

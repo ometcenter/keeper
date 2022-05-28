@@ -36,9 +36,10 @@ func AssembleTreeHandler(BranchTree []BranchTree) interface{} {
 
 	var Node NodeInterface
 
-	Node = &NodeExample1{Name: "Root", Children: []*NodeExample1{}}
-	Node.AssembleTree(BranchTree)
-	////////_, Result := Node.AssembleTree(BranchTree)
+	// упрощенный вариант
+	// Node = &NodeExample1{Name: "Root", Children: []*NodeExample1{}}
+	// Node.AssembleTree(BranchTree)
+	// ////////_, Result := Node.AssembleTree(BranchTree)
 
 	Node = &NodeExample2{"", "", "root", false, 0, nil}
 	Node.AssembleTree(BranchTree)
