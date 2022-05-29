@@ -67,8 +67,8 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, R
 		return err
 	}
 
-	//_, err := conn.Do("SET", key, value)
-	_, err = conn.Do("SET", key, value, "EX", "100") // 10 секунд
+	//_, err := conn.Do("SET", key, value) --- _, err = conn.Do("SET", key, value, "EX", "100") // 10 секунд
+	_, err = conn.Do("SET", key, value)
 	if err != nil {
 		// v := string(value)
 		// if len(v) > 15 {
