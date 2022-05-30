@@ -57,7 +57,7 @@ func SelectLibraryRediGo(Pool *libraryRediGo.Pool, RedisDB int) error {
 }
 
 //"github.com/gomodule/redigo/redis"
-func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, RedisDB int, TTL int) error {
+func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, RedisDB int, TTL int64) error {
 
 	conn := Pool.Get()
 	defer conn.Close()
