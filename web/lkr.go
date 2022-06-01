@@ -211,11 +211,16 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	if err != nil {
 		GetBranchTree = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
+
+	UseYearFilter = false
+
 	var AverageSalary interface{}
 	AverageSalary, err = V1AverageSalaryGeneral(workerID, UseYearFilter, yearFilter)
 	if err != nil {
 		AverageSalary = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
+
+	UseYearFilter = true
 
 	AllInformationV1Answer.HolidayStat = HolidayStat
 	AllInformationV1Answer.BudgetStat = BudgetStat
@@ -1336,13 +1341,13 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 	// Начисленные суммировать за месяцы и разделить на 29,3
 	// Получать количество отработанных дней за период.
 
-	//UseYearFilter = true
+	//UseYearFilter = false
 	// yearFilter = "2021"
 
-	//currentTime := time.Now()
+	currentTime := time.Now()
 	//fmt.Println("Today:", currentTime)
 
-	//subtractYear := currentTime.AddDate(-1, 0, 0)
+	subtractYear := currentTime.AddDate(-1, 0, 0)
 	//	fmt.Println("Subtract 1 Year:", subtractYear)
 
 	// JSONString, err := GetDataRedisByInsuranceNumber(InsuranceNumber+yearFilter, 2)
@@ -1451,10 +1456,10 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		}
 		//fmt.Println(date_from_subject)
 
-		// compareData := date_from_subject.Before(subtractYear)
-		// if compareData {
-		// 	continue
-		// }
+		compareData := date_from_subject.Before(subtractYear)
+		if compareData {
+			continue
+		}
 
 		//yearArg, monthArg, dayArg := time.Now().Date()
 		MonthAccruals := date_from_subject.Month()
