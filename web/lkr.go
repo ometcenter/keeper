@@ -12,6 +12,7 @@ import (
 
 	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
+	log "github.com/ometcenter/keeper/logging"
 	redis "github.com/ometcenter/keeper/redis"
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
@@ -344,6 +345,10 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 			} else {
 				re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
 				date_from_subjectArray := re.FindAllString(year, -1)
+				if len(date_from_subjectArray) == 0 {
+					log.Impl.Errorf("Ошибка парсинга даты для метода %s collaborator_id %s :", "V1HolidayStatGeneral", WorkerID)
+					continue
+				}
 				//fmt.Printf("%q\n", date_from_subjectArray)
 
 				date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
@@ -499,6 +504,11 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 
 		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
 		date_from_subjectArray := re.FindAllString(r.DateRegistration, -1)
+		if len(date_from_subjectArray) == 0 {
+			log.Impl.Errorf("Ошибка парсинга даты для метода %s collaborator_id %s :", "V1BudgetStatGeneral", WorkerID)
+			continue
+		}
+
 		//fmt.Printf("%q\n", date_from_subjectArray)
 
 		date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
@@ -1073,12 +1083,20 @@ order by 2`
 		//compareData := false
 
 		DateStartArray := re.FindAllString(r.DateStart, -1)
+		if len(DateStartArray) == 0 {
+			log.Impl.Errorf("Ошибка парсинга даты для метода %s collaborator_id %s :", "V1HolidayStatForColleaguesGeneral", r.CollaboratorId)
+			continue
+		}
 		DateStart, err := time.Parse("02.01.2006", DateStartArray[0])
 		if err != nil {
 			return nil, err
 		}
 
 		DateEndArray := re.FindAllString(r.DateEnd, -1)
+		if len(DateEndArray) == 0 {
+			log.Impl.Errorf("Ошибка парсинга даты для метода %s collaborator_id %s :", "V1HolidayStatForColleaguesGeneral", r.CollaboratorId)
+			continue
+		}
 		DateEnd, err := time.Parse("02.01.2006", DateEndArray[0])
 		if err != nil {
 			return nil, err
@@ -1448,6 +1466,10 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 
 		re := regexp.MustCompile(`\d{2}.\d{2}.\d{4}`)
 		date_from_subjectArray := re.FindAllString(r.DateRegistration, -1)
+		if len(date_from_subjectArray) == 0 {
+			log.Impl.Errorf("Ошибка парсинга даты для метода %s collaborator_id %s :", "V1AverageSalaryGeneral", WorkerID)
+			continue
+		}
 		//fmt.Printf("%q\n", date_from_subjectArray)
 
 		date_from_subject, err := time.Parse("02.01.2006", date_from_subjectArray[0])
