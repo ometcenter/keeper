@@ -6,11 +6,25 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
+	"gorm.io/datatypes"
 )
 
+// type SettingsJobs struct {
+// 	JobID      string `json:"ИдентификаторЗадания"`
+// 	JSONString string `json:"JSONСтрокаНастроек"`
+// }
+
 type SettingsJobs struct {
-	JobID      string `json:"ИдентификаторЗадания"`
-	JSONString string `json:"JSONСтрокаНастроек"`
+	JobID               string `json:"ИдентификаторЗадания"`
+	JSONString          string `json:"JSONСтрокаНастроек"`
+	CodeExternal        string `json:"Код1С"`
+	NameExternal        string `json:"Наименование1С"`
+	TableName           string `json:"ИмяТаблицы"`
+	UseRemoteCollection bool   `json:"УдаленныйСбор"`
+	ConfigName          string `json:"ИмяКонфигурации"`
+	TypeDataGetting     string `json:"ВидПолученияДанных"`
+	JSONByte            datatypes.JSON
 }
 
 // Используется для выгрузки в Систему визуализации данных
@@ -67,6 +81,7 @@ type QueryToBI struct {
 	JobID                         string                 `json:"ИдентификаторЗадания"`
 	SendUseREST                   bool                   `json:"ОтправлятьПоREST"`
 	RemoteCollect                 bool                   `json:"УдаленныйСбор"`
+	TypeDataGetting               string                 `json:"ВидПолученияДанных"`
 	Portions                      int                    `json:"Порции"`
 	Query                         []Query                `json:"Запросы"`
 	AddParam                      AdditionParam          `json:"ДополнительныеПараметрыJSON"`
