@@ -4,11 +4,13 @@ import (
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
 	"github.com/ometcenter/keeper/config"
+	log "github.com/ometcenter/keeper/logging"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	shareStore "github.com/ometcenter/keeper/store"
 	web "github.com/ometcenter/keeper/web"
@@ -62,20 +64,20 @@ import (
 // 	}
 // }
 
-// //a struct to rep user account
-// type Account struct {
-// 	Login    string `json:"login"`
-// 	Password string `json:"password"`
-// 	Token    string `json:"token";sql:"-"`
-// 	//QueryHistory []*QueryHistory `gorm:"many2many:account_query_history;"`
-// }
+//a struct to rep user account
+type Account struct {
+	Login    string `json:"login"`
+	Password string `json:"password"`
+	Token    string `json:"token";sql:"-"`
+	//QueryHistory []*QueryHistory `gorm:"many2many:account_query_history;"`
+}
 
-// type TokenSession struct {
-// 	//Status    bool   `json:"status"`
-// 	ID        string `json:"id"`
-// 	ExpiresIn int64  `json:"expiresIn"`
-// 	ExpiresAt int64  `json:"expiresAt"`
-// }
+type TokenSession struct {
+	//Status    bool   `json:"status"`
+	ID        string `json:"id"`
+	ExpiresIn int64  `json:"expiresIn"`
+	ExpiresAt int64  `json:"expiresAt"`
+}
 
 type MyCustomClaims struct {
 	UserId uint `json:"userid"`
@@ -269,4 +271,164 @@ func RemoveSession(tokenHeader string) error {
 
 	return nil
 
+}
+
+func LoginHandlersV1(c *gin.Context) {
+
+	account := &Account{}
+	err := json.NewDecoder(c.Request.Body).Decode(account) //decode the request body into struct and failed if any error occur
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		c.JSON(http.StatusBadRequest, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	dataLogin, ExpiresAt, DurationSec, err := Login(account.Login, account.Password)
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		c.JSON(http.StatusBadRequest, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	TokenSession := TokenSession{ID: dataLogin, ExpiresAt: ExpiresAt, ExpiresIn: DurationSec}
+	// byteData, err := json.Marshal(TokenSession)
+	// if err != nil {
+	// 	AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	// 	c.JSON(http.StatusBadRequest, AnswerWebV1)
+	// 	log.Impl.Error(err.Error())
+	// 	return
+	// }
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = TokenSession
+	AnswerWebV1.Error = nil
+
+	//c.Data(http.StatusOK, "application/json", byteData)
+	c.JSON(http.StatusOK, AnswerWebV1)
+}
+
+func LoginBasicHandlersV1(c *gin.Context) {
+
+	// Get the Basic Authentication credentials
+	user, password, hasAuth := c.Request.BasicAuth()
+	_ = hasAuth
+
+	dataLogin, ExpiresAt, DurationSec, err := Login(user, password)
+	if err != nil {
+		c.Abort()
+		c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		c.JSON(http.StatusBadRequest, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	TokenSession := TokenSession{ID: dataLogin, ExpiresAt: ExpiresAt, ExpiresIn: DurationSec}
+	// byteData, err := json.Marshal(TokenSession)
+	// if err != nil {
+	// 	c.Abort()
+	// 	c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
+	// 	AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	// 	c.JSON(http.StatusBadRequest, AnswerWebV1)
+	// 	log.Impl.Error(err.Error())
+	// 	return
+	// }
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = TokenSession
+	AnswerWebV1.Error = nil
+
+	//c.Data(http.StatusOK, "application/json", byteData)
+	c.JSON(http.StatusOK, AnswerWebV1)
+}
+
+func RemoveSessionHandlersV1(c *gin.Context) {
+
+	tokenHeader := c.GetHeader("TokenBearer")
+	err := fmt.Errorf("Отправлен пустой токен")
+	if tokenHeader == "" {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		c.JSON(http.StatusBadRequest, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	err = RemoveSession(tokenHeader)
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		c.JSON(http.StatusBadRequest, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = "Идентификатор вашей сессии удален"
+	AnswerWebV1.Error = nil
+
+	c.JSON(http.StatusOK, AnswerWebV1)
+}
+
+func ValidateSessionHandlersV1(c *gin.Context) {
+
+	tokenHeader := c.GetHeader("TokenBearer")
+	if tokenHeader == "" {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Отсутствует токен авторизации"}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error("Отсутствует токен авторизации")
+		return
+	}
+
+	DurationExpired, err := ValidateSession(tokenHeader)
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, err.Error()}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	if DurationExpired < 0 {
+		if -1 == DurationExpired {
+			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key will not expire"}}
+			c.JSON(http.StatusUnauthorized, AnswerWebV1)
+			log.Impl.Error("The key will not expire")
+			return
+		} else if -2 == DurationExpired {
+			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key does not exist"}}
+			c.JSON(http.StatusUnauthorized, AnswerWebV1)
+			log.Impl.Error("The key does not exist")
+			return
+		} else {
+
+			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Unexpected error"}}
+			c.JSON(http.StatusUnauthorized, AnswerWebV1)
+			log.Impl.Error("Unexpected error")
+			//c.JSON(http.StatusOK, gin.H{"Unexpected error": DurationExpired.Seconds()})
+			return
+		}
+	}
+
+	DataAnswer := struct {
+		//Status    bool    `json:"status"`
+		ExpiresIn float64 `json:"expiresIn"`
+		ExpiresAt int64
+	}{
+		//Status:    true,
+		ExpiresIn: DurationExpired.Seconds(),
+		ExpiresAt: time.Now().Add(DurationExpired).Unix(),
+	}
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = DataAnswer
+	AnswerWebV1.Error = nil
+
+	//c.Data(http.StatusOK, "application/json", byteData)
+	c.JSON(http.StatusOK, AnswerWebV1)
+
+	//c.JSON(http.StatusOK, DataAnswer)
 }
