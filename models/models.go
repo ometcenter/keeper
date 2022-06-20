@@ -154,7 +154,7 @@ type QuantityMetric struct {
 	CountRecords   int       // Количество строк в запросе
 	DateBeginQuery string    // Дата/время начала выполнения запроса в 1С
 	DataEndQuery   string    // Дата/время окончания запроса в 1С
-	DataSendQuery  string    // Дата/время отправки ответа в 1С
+	DataSendQuery  string    // Дата/время отправки ответа в 1С.
 }
 
 type DeleteDataForArea struct {
