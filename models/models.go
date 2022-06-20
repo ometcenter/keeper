@@ -193,6 +193,7 @@ type FileAndBinary struct {
 	Type      string
 	TextStore string
 	ByteStore []byte `gorm:"type:bytea"`
+	Notes     string
 }
 
 type RESTRequestUniversal struct {
