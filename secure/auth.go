@@ -145,10 +145,10 @@ func MiddleWareCheckAuth() gin.HandlerFunc {
 	}
 }
 
-func Login(email, password string) (string, int64, int64, error) {
+func Login(login, password string) (string, int64, int64, error) {
 
 	var argsquery []interface{}
-	argsquery = append(argsquery, email)
+	argsquery = append(argsquery, login)
 
 	queryText := `select
 	id,
@@ -158,7 +158,7 @@ func Login(email, password string) (string, int64, int64, error) {
 from
 	public.lk_users
 where
-	email = $1;`
+	login = $1;`
 
 	DB, err := shareStore.GetDB(config.Conf.DatabaseURL)
 	if err != nil {
@@ -186,7 +186,7 @@ where
 	// 	return "", fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
 	// }
 
-	usernameHash := sha256.Sum256([]byte(email))
+	usernameHash := sha256.Sum256([]byte(login))
 	passwordHash := sha256.Sum256([]byte(password))
 	expectedUsernameHash := sha256.Sum256([]byte(UserID))
 	expectedPasswordHash := sha256.Sum256([]byte(PasswordDB))
