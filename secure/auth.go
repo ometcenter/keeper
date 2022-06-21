@@ -181,7 +181,7 @@ where
 
 	defer rows.Close()
 
-	// err = bcrypt.CompareHashAndPassword([]byte(PasswordDB), []byte(password))
+	// err = bcrypt.CompareHashAndPassword([]byte(PasswordDB ), []byte(password))
 	// if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
 	// 	return "", fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
 	// }
