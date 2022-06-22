@@ -1029,7 +1029,7 @@ select
 	end,
 	replace(otpuska.year, ' ', '') as year
 from
-	otpuska as otpuska
+	lkr_otpuska as otpuska
 left join collaborators_posle as collaborators_posle on
 	otpuska.collaborator_id = collaborators_posle.collaborator_id
 where
