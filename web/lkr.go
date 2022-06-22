@@ -302,7 +302,7 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 		end,
 		replace(year, ' ', '') as year
 	from
-		otpuska
+		lkr_otpuska as otpuska
 	where
 		collaborator_id = $1`
 
