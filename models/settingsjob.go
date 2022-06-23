@@ -82,6 +82,7 @@ type QueryToBI struct {
 	SendUseREST                   bool                   `json:"ОтправлятьПоREST"`
 	RemoteCollect                 bool                   `json:"УдаленныйСбор"`
 	TypeDataGetting               string                 `json:"ВидПолученияДанных"`
+	DataUploadMethod              string                 `json:"CпособЗагрузкиДанных"`
 	Portions                      int                    `json:"Порции"`
 	Query                         []Query                `json:"Запросы"`
 	AddParam                      AdditionParam          `json:"ДополнительныеПараметрыJSON"`
