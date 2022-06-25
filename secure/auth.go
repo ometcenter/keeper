@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	shareRedis "github.com/ometcenter/keeper/redis"
@@ -204,11 +205,15 @@ where
 	var Duration time.Duration // ExpiresIn
 	Duration = time.Hour * 672
 
+	uuid := uuid.New()
+	//uuid--- := strings.Replace(uuid.String(), "-", "", -1)
+
 	//Create JWT token
 	ExpiresAt := time.Now().Add(Duration).Unix() // 186 - 7 days
 	claims := jwt.StandardClaims{
 		ExpiresAt: ExpiresAt,
 		Issuer:    "auth.keeper",
+		Id:        uuid.String(),
 	}
 	tk := &MyCustomClaims{uint(ID), claims}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
