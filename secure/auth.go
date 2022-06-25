@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -154,7 +155,7 @@ func Login(login, password string) (string, int64, int64, error) {
 	queryText := `select
 	id,
 	coalesce(exp_sec, 0) as exp_sec,
-	user_id,
+	login,
 	password
 from
 	public.lk_users
@@ -171,11 +172,11 @@ where
 		return "", 0, 0, err
 	}
 
-	var UserID, PasswordDB string
+	var LoginDB, PasswordDB string
 	var ExpSec int64
 	var ID int
 	for rows.Next() {
-		err = rows.Scan(&ID, &ExpSec, &UserID, &PasswordDB)
+		err = rows.Scan(&ID, &ExpSec, &LoginDB, &PasswordDB)
 		if err != nil {
 			return "", 0, 0, err
 		}
@@ -188,10 +189,10 @@ where
 	// 	return "", fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
 	// }
 
-	usernameHash := sha256.Sum256([]byte(login))
-	passwordHash := sha256.Sum256([]byte(password))
-	expectedUsernameHash := sha256.Sum256([]byte(UserID))
-	expectedPasswordHash := sha256.Sum256([]byte(PasswordDB))
+	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
+	passwordHash := sha256.Sum256([]byte(strings.ToLower(password)))
+	expectedUsernameHash := sha256.Sum256([]byte(strings.ToLower(LoginDB)))
+	expectedPasswordHash := sha256.Sum256([]byte(strings.ToLower(PasswordDB)))
 
 	usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
 	passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
