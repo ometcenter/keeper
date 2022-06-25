@@ -153,7 +153,7 @@ func Login(login, password string) (string, int64, int64, error) {
 
 	queryText := `select
 	id,
-	jw_ttoken,
+	exp_sec,
 	user_id,
 	password
 from
@@ -171,10 +171,11 @@ where
 		return "", 0, 0, err
 	}
 
-	var JWTtoken, UserID, PasswordDB string
+	var UserID, PasswordDB string
+	var ExpSec int64
 	var ID int
 	for rows.Next() {
-		err = rows.Scan(&ID, &JWTtoken, &UserID, &PasswordDB)
+		err = rows.Scan(&ID, &ExpSec, &UserID, &PasswordDB)
 		if err != nil {
 			return "", 0, 0, err
 		}
@@ -203,7 +204,12 @@ where
 	}
 
 	var Duration time.Duration // ExpiresIn
-	Duration = time.Hour * 672
+
+	if ExpSec == 0 {
+		Duration = time.Hour * 672 // 30 Дней
+	} else {
+		Duration = time.Second * time.Duration(ExpSec)
+	}
 
 	uuid := uuid.New()
 	//uuid--- := strings.Replace(uuid.String(), "-", "", -1)
