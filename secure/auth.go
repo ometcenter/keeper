@@ -153,7 +153,7 @@ func Login(login, password string) (string, int64, int64, error) {
 
 	queryText := `select
 	id,
-	exp_sec,
+	coalesce(exp_sec, 0) as exp_sec,
 	user_id,
 	password
 from
