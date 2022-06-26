@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
+	"github.com/ometcenter/keeper/models"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	shareStore "github.com/ometcenter/keeper/store"
 	web "github.com/ometcenter/keeper/web"
@@ -147,7 +148,14 @@ func MiddleWareCheckAuth() gin.HandlerFunc {
 	}
 }
 
-func Login(login, password string) (string, int64, int64, error) {
+type LoginAnswer struct {
+	JWTtoken    string
+	ExpiresAt   int64
+	DurationSec int64
+	User        models.LkUsers
+}
+
+func Login(login, password string) (LoginAnswer, error) {
 
 	var argsquery []interface{}
 	argsquery = append(argsquery, login)
@@ -155,6 +163,7 @@ func Login(login, password string) (string, int64, int64, error) {
 	queryText := `select
 	id,
 	coalesce(exp_sec, 0) as exp_sec,
+	role,
 	login,
 	password
 from
@@ -162,23 +171,22 @@ from
 where
 	login = $1;`
 
+	var LkUsers models.LkUsers
+
 	DB, err := shareStore.GetDB(config.Conf.DatabaseURL)
 	if err != nil {
-		return "", 0, 0, err
+		return LoginAnswer{}, err
 	}
 
 	rows, err := DB.Query(queryText, argsquery...)
 	if err != nil {
-		return "", 0, 0, err
+		return LoginAnswer{}, err
 	}
 
-	var LoginDB, PasswordDB string
-	var ExpSec int64
-	var ID int
 	for rows.Next() {
-		err = rows.Scan(&ID, &ExpSec, &LoginDB, &PasswordDB)
+		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password)
 		if err != nil {
-			return "", 0, 0, err
+			return LoginAnswer{}, err
 		}
 	}
 
@@ -191,8 +199,8 @@ where
 
 	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
 	passwordHash := sha256.Sum256([]byte(strings.ToLower(password)))
-	expectedUsernameHash := sha256.Sum256([]byte(strings.ToLower(LoginDB)))
-	expectedPasswordHash := sha256.Sum256([]byte(strings.ToLower(PasswordDB)))
+	expectedUsernameHash := sha256.Sum256([]byte(strings.ToLower(LkUsers.Login)))
+	expectedPasswordHash := sha256.Sum256([]byte(strings.ToLower(LkUsers.Password)))
 
 	usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
 	passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
@@ -201,15 +209,15 @@ where
 		// 	next.ServeHTTP(w, r)
 		// 	return
 	} else {
-		return "", 0, 0, fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
+		return LoginAnswer{}, fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
 	}
 
 	var Duration time.Duration // ExpiresIn
 
-	if ExpSec == 0 {
+	if LkUsers.ExpSec == 0 {
 		Duration = time.Hour * 672 // 30 Дней
 	} else {
-		Duration = time.Second * time.Duration(ExpSec)
+		Duration = time.Second * time.Duration(LkUsers.ExpSec)
 	}
 
 	uuid := uuid.New()
@@ -222,24 +230,31 @@ where
 		Issuer:    "auth.keeper",
 		Id:        uuid.String(),
 	}
-	tk := &MyCustomClaims{uint(ID), claims}
+	tk := &MyCustomClaims{uint(LkUsers.ID), claims}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
 	tokenString, _ := token.SignedString([]byte(config.Conf.SecretKeyJWT))
 
 	// При большем обращении нужны разные клиенты для получения токена.
 	err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12)
 	if err != nil {
-		return "", 0, 0, err
+		return LoginAnswer{}, err
 	}
 
 	DurationSec := int64(Duration.Seconds())
 
-	err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, tokenString, 12, DurationSec)
+	LkUsers.Password = ""
+	LoginAnswerReturn := LoginAnswer{JWTtoken: tokenString, ExpiresAt: ExpiresAt, DurationSec: DurationSec, User: LkUsers}
+	byteData, err := json.Marshal(LoginAnswerReturn)
 	if err != nil {
-		return "", 0, 0, err
+		return LoginAnswer{}, err
 	}
 
-	return tokenString, ExpiresAt, DurationSec, nil
+	err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec)
+	if err != nil {
+		return LoginAnswer{}, err
+	}
+
+	return LoginAnswerReturn, nil
 }
 
 func ValidateSession(tokenHeader string) (time.Duration, error) {
@@ -296,7 +311,7 @@ func LoginHandlersV1(c *gin.Context) {
 		return
 	}
 
-	dataLogin, ExpiresAt, DurationSec, err := Login(account.Login, account.Password)
+	LoginAnswer, err := Login(account.Login, account.Password)
 	if err != nil {
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
@@ -304,7 +319,7 @@ func LoginHandlersV1(c *gin.Context) {
 		return
 	}
 
-	TokenSession := TokenSession{ID: dataLogin, ExpiresAt: ExpiresAt, ExpiresIn: DurationSec}
+	TokenSession := TokenSession{ID: LoginAnswer.JWTtoken, ExpiresAt: LoginAnswer.ExpiresAt, ExpiresIn: LoginAnswer.DurationSec}
 	// byteData, err := json.Marshal(TokenSession)
 	// if err != nil {
 	// 	AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
@@ -328,7 +343,7 @@ func LoginBasicHandlersV1(c *gin.Context) {
 	user, password, hasAuth := c.Request.BasicAuth()
 	_ = hasAuth
 
-	dataLogin, ExpiresAt, DurationSec, err := Login(user, password)
+	LoginAnswer, err := Login(user, password)
 	if err != nil {
 		c.Abort()
 		c.Writer.Header().Set("WWW-Authenticate", "Basic realm=Restricted")
@@ -338,7 +353,7 @@ func LoginBasicHandlersV1(c *gin.Context) {
 		return
 	}
 
-	TokenSession := TokenSession{ID: dataLogin, ExpiresAt: ExpiresAt, ExpiresIn: DurationSec}
+	TokenSession := TokenSession{ID: LoginAnswer.JWTtoken, ExpiresAt: LoginAnswer.ExpiresAt, ExpiresIn: LoginAnswer.DurationSec}
 	// byteData, err := json.Marshal(TokenSession)
 	// if err != nil {
 	// 	c.Abort()
