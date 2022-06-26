@@ -137,12 +137,10 @@ func MiddleWareCheckAuth() gin.HandlerFunc {
 			return
 		}
 
-		//str := fmt.Sprint(claims.UserId) //Useful for monitoring
-		//fmt.Println(str)
-		// ctx := context.WithValue(r.Context(), "user", tk.UserId)
-
 		// c.Set("user-id", claims["userid"])
 		// log.Impl.Errorf("Запрос к ЛК от пользователя: %s Путь: %s\n ", claims["userid"], c.FullPath())
+
+		c.Set("user-data", dataRedis)
 
 		c.Next()
 	}
