@@ -1,11 +1,15 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 type LkUsers struct {
 	gorm.Model
 	FullName     string
-	UserID       string
+	UserID       string // Он же collaborator_id
 	Login        string `json:"login"`
 	Password     string `json:"Password"`
 	HashPassword string
@@ -16,5 +20,8 @@ type LkUsers struct {
 	Role            string
 	InsuranceNumber string
 	Email           string
+	Status          string //Уволен и т.д
+	DateDismissals  time.Time
+	Blocked         bool
 	Notes           string
 }
