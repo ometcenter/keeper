@@ -171,7 +171,7 @@ func Login(login, password string) (LoginAnswer, error) {
 	coalesce(notes, '') as notes,
 	coalesce(status, '') as status,
 	coalesce(source, '') as source,
-	coalesce(person_json_byte '') as person_json_byte
+	coalesce(person_json_byte, '') as person_json_byte
 from
 	public.lk_users
 where
