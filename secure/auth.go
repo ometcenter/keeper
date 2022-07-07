@@ -13,7 +13,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
-	"github.com/ometcenter/keeper/models"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	shareStore "github.com/ometcenter/keeper/store"
 	web "github.com/ometcenter/keeper/web"
@@ -150,7 +149,7 @@ type LoginAnswer struct {
 	JWTtoken    string
 	ExpiresAt   int64
 	DurationSec int64
-	User        models.LkUsers
+	User        web.LkUsers
 }
 
 func Login(login, password string) (LoginAnswer, error) {
@@ -178,7 +177,7 @@ from
 where
 	login = $1;`
 
-	var LkUsers models.LkUsers
+	var LkUsers web.LkUsers
 
 	DB, err := shareStore.GetDB(config.Conf.DatabaseURL)
 	if err != nil {

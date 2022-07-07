@@ -18,6 +18,8 @@ import (
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
 	utilityShare "github.com/ometcenter/keeper/utility"
+	"gorm.io/datatypes"
+	"gorm.io/gorm"
 )
 
 type V1HolidayStatResponds struct {
@@ -128,6 +130,29 @@ func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
 // 	Position_tag      string    `json:"position_tag"`
 // 	UpdatedAt         time.Time `json:"updatedAt"`
 // }
+
+type LkUsers struct {
+	gorm.Model
+	FullName     string
+	UserID       string // Он же collaborator_id
+	Login        string `json:"login"`
+	Password     string `json:"Password"`
+	HashPassword string
+	SecretJWT    string //`gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
+	//JWTtoken        string
+	//JWTExp          int64
+	ExpSec          int64
+	Role            string
+	InsuranceNumber string
+	Email           string
+	Status          string //Уволен и т.д
+	DateDismissals  time.Time
+	Blocked         bool
+	Source          string
+	PersonJSONByte  datatypes.JSON
+	Person          V1ActiveWorkers
+	Notes           string
+}
 
 type SalaryResponds struct {
 	Area             string
