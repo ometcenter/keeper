@@ -23,5 +23,6 @@ type LkUsers struct {
 	Status          string //Уволен и т.д
 	DateDismissals  time.Time
 	Blocked         bool
+	Source          string
 	Notes           string
 }
