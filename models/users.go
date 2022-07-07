@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -24,5 +25,6 @@ type LkUsers struct {
 	DateDismissals  time.Time
 	Blocked         bool
 	Source          string
+	PersonJSONByte  datatypes.JSON
 	Notes           string
 }
