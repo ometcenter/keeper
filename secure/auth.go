@@ -193,7 +193,7 @@ where
 	var V1ActiveWorkers web.V1ActiveWorkers
 
 	for rows.Next() {
-		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
+		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, &blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
 			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers)
 		if err != nil {
 			return LoginAnswer{}, err
