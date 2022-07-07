@@ -163,7 +163,16 @@ func Login(login, password string) (LoginAnswer, error) {
 	coalesce(exp_sec, 0) as exp_sec,
 	role,
 	login,
-	password
+	password,
+	coalesce(blocked, false) as blocked,
+	coalesce(user_id, '') as user_id,
+	coalesce(full_name, '') as full_name,
+	coalesce(email, '') as email,
+	coalesce(insurance_number, '') as insurance_number,
+	coalesce(notes, '') as notes,
+	coalesce(status, '') as status,
+	coalesce(source, '') as source,
+	coalesce(person_json_byte '') as person_json_byte
 from
 	public.lk_users
 where
@@ -181,11 +190,22 @@ where
 		return LoginAnswer{}, err
 	}
 
+	var blocked bool
+	var V1ActiveWorkers web.V1ActiveWorkers
+
 	for rows.Next() {
-		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password)
+		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
+			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers)
 		if err != nil {
 			return LoginAnswer{}, err
 		}
+	}
+
+	LkUsers.Person = V1ActiveWorkers
+
+	if blocked {
+		err := fmt.Errorf("Учетная запись заблокированна")
+		return LoginAnswer{}, err
 	}
 
 	defer rows.Close()

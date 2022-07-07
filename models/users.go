@@ -3,6 +3,7 @@ package models
 import (
 	"time"
 
+	"github.com/ometcenter/keeper/web"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -26,5 +27,6 @@ type LkUsers struct {
 	Blocked         bool
 	Source          string
 	PersonJSONByte  datatypes.JSON
+	Person          web.V1ActiveWorkers
 	Notes           string
 }

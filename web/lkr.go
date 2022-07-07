@@ -2,6 +2,7 @@ package web
 
 import (
 	"encoding/json"
+	"errors"
 	"math"
 	"net/http"
 	"regexp"
@@ -89,6 +90,22 @@ type V1ActiveWorkers struct {
 	Position_tag      string    `json:"position_tag"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 	DateDismissals    time.Time `json:"dateDismissals"`
+}
+
+func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
+	switch value.(type) {
+	case string:
+		err = json.Unmarshal([]byte(value.(string)), &V1ActiveWorkers)
+	case []byte:
+		err = json.Unmarshal(value.([]byte), &V1ActiveWorkers)
+	default:
+		return errors.New("incompatible type for skills")
+	}
+	if err != nil {
+		return
+	}
+
+	return nil
 }
 
 // type V1JobPlaces struct {
