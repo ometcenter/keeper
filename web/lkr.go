@@ -150,7 +150,7 @@ type LkUsers struct {
 	Blocked         bool
 	Source          string
 	PersonJSONByte  datatypes.JSON
-	Person          V1ActiveWorkers
+	Person          V1ActiveWorkers `gorm:"-"`
 	Notes           string
 }
 
