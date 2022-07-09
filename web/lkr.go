@@ -826,6 +826,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		}
 
 		r.EmailArray = JSONString
+		r.EmailEPS = ""
 
 		//ColumnsStructSlice = append(ColumnsStructSlice, r)
 
