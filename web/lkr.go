@@ -82,6 +82,7 @@ type V1ActiveWorkers struct {
 	OrganizationName  string    `json:"organizationName"`
 	Status            string    `json:"status"`
 	Email             string    `json:"email"`
+	EmailEPS          string    `json:"emailEPS"`
 	MobilePhone       string    `json:"mobilePhone"`
 	WorkPhone         string    `json:"workPhone"`
 	EmailArray        string    `json:"emailArray"`
@@ -779,6 +780,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		organizations_zkgu.name as organization_name,
 		collaborators_posle.status as status,
 		coalesce(contact_inf_pochta_posle.email, '') as email,
+		coalesce(contact_inf_pochta_posle."emailEPS", '') as emailEPS,
 		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
 		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
 		collaborators_posle.date_birth as date_birth,
@@ -813,7 +815,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 	for rows.Next() {
 		var r V1ActiveWorkers
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
-			&r.Email, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.UpdatedAt, &r.DateDismissals)
+			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.UpdatedAt, &r.DateDismissals)
 		if err != nil {
 			return nil, err
 		}
