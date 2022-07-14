@@ -295,3 +295,10 @@ type DataChangingStatusJob struct {
 	Status        string   `json:"Состояние"`
 	Areas         []string `json:"Области"`
 }
+
+type RequestHistoryAPI struct {
+	gorm.Model
+	User   string
+	Method string
+	Amount int
+}
