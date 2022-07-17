@@ -161,6 +161,22 @@ type AdditionalSettingsUser struct {
 	AccessToSystemTables bool `json:"accessToSystemTables"`
 }
 
+func (AdditionalSettingsUser *AdditionalSettingsUser) Scan(value interface{}) (err error) {
+	switch value.(type) {
+	case string:
+		err = json.Unmarshal([]byte(value.(string)), &AdditionalSettingsUser)
+	case []byte:
+		err = json.Unmarshal(value.([]byte), &AdditionalSettingsUser)
+	default:
+		return errors.New("incompatible type for skills")
+	}
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
 type SalaryResponds struct {
 	Area             string
 	Snils            string
