@@ -171,7 +171,8 @@ func Login(login, password string) (LoginAnswer, error) {
 	coalesce(notes, '') as notes,
 	coalesce(status, '') as status,
 	coalesce(source, '') as source,
-	coalesce(person_json_byte, '{}'::jsonb) as person_json_byte
+	coalesce(person_json_byte, '{}'::jsonb) as person_json_byte,
+	coalesce(additional_settings_user_json_byte, '{}'::jsonb) as additional_settings_user_json_byte
 from
 	public.lk_users
 where
@@ -191,16 +192,18 @@ where
 
 	var blocked bool
 	var V1ActiveWorkers web.V1ActiveWorkers
+	var AdditionalSettingsUser web.AdditionalSettingsUser
 
 	for rows.Next() {
 		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, &blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
-			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers)
+			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers, &AdditionalSettingsUser)
 		if err != nil {
 			return LoginAnswer{}, err
 		}
 	}
 
 	LkUsers.Person = V1ActiveWorkers
+	LkUsers.AdditionalSettingsUser = AdditionalSettingsUser
 
 	if blocked {
 		err := fmt.Errorf("Учетная запись заблокированна")

@@ -158,7 +158,7 @@ type LkUsers struct {
 }
 
 type AdditionalSettingsUser struct {
-	AccessToSystemTables bool
+	AccessToSystemTables bool `json:"accessToSystemTables"`
 }
 
 type SalaryResponds struct {
