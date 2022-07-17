@@ -91,13 +91,14 @@ func (J *Job) GetJobStatus(DB *sql.DB) error {
 
 	// *J = Job
 
-	var LoadValue Job
-	err := DB.QueryRow("SELECT * FROM jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	var Job Job
+	err := DB.QueryRow("SELECT id, created_at, updated_at, deleted_at, job_id, status, priod FROM jobs WHERE job_id = $1", argsquery...).Scan(&Job.ID, &Job.CreatedAt,
+		&Job.UpdatedAt, &Job.DeletedAt, &Job.JobID, &Job.Status, &Job.Priod)
 	if err != nil {
 		return err
 	}
 
-	*J = LoadValue
+	*J = Job
 
 	return nil
 }

@@ -142,17 +142,23 @@ type LkUsers struct {
 	SecretJWT    string //`gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
 	//JWTtoken        string
 	//JWTExp          int64
-	ExpSec          int64
-	Role            string
-	InsuranceNumber string
-	Email           string
-	Status          string //Уволен и т.д
-	DateDismissals  time.Time
-	Blocked         bool
-	Source          string
-	PersonJSONByte  datatypes.JSON
-	Person          V1ActiveWorkers `gorm:"-"`
-	Notes           string
+	ExpSec                         int64
+	Role                           string
+	InsuranceNumber                string
+	Email                          string
+	Status                         string //Уволен и т.д
+	DateDismissals                 time.Time
+	Blocked                        bool
+	Source                         string
+	PersonJSONByte                 datatypes.JSON
+	Person                         V1ActiveWorkers `gorm:"-"`
+	AdditionalSettingsUserJSONByte datatypes.JSON
+	AdditionalSettingsUser         AdditionalSettingsUser `gorm:"-"`
+	Notes                          string
+}
+
+type AdditionalSettingsUser struct {
+	AccessToSystemTables bool
 }
 
 type SalaryResponds struct {
