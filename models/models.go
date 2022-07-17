@@ -2,6 +2,7 @@ package models
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -9,6 +10,7 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/ometcenter/keeper/logging"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -56,6 +58,48 @@ type ExchangeJob struct {
 	Event         string `json:"Событие"`
 	Priod         string `json:"Дата"`
 	Notes         string `json:"Заметки"`
+}
+
+// Job структура задания
+type Job struct {
+	gorm.Model
+	JobID  string `json:"ИдентификаторЗадания"`
+	Status string `json:"Состояние"`
+	Priod  string `json:"Дата"`
+}
+
+func (J *Job) GetJobStatus(DB *sql.DB) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, J.JobID)
+
+	// queryAllColumns := `SELECT status, priod from jobs where job_id = $1`
+	// rows, err := DB.Query(queryAllColumns, argsquery...)
+	// if err != nil {
+	// 	return err
+	// }
+
+	// defer rows.Close()
+
+	// Job := Job{}
+	// for rows.Next() {
+	// 	err = rows.Scan(&Job.Status, &Job.Priod)
+	// 	if err != nil {
+	// 		return nil
+	// 	}
+	// }
+
+	// *J = Job
+
+	var LoadValue Job
+	err := DB.QueryRow("SELECT * FROM jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	*J = LoadValue
+
+	return nil
 }
 
 type ExchangeJobAllInform struct {
@@ -301,4 +345,61 @@ type RequestHistoryAPI struct {
 	User   string
 	Method string
 	Amount int
+}
+
+func (RequestHistoryAPI *RequestHistoryAPI) CheckLimit(DB *sql.DB, firstday, lastday time.Time) (int, error) {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, RequestHistoryAPI.User)
+	argsquery = append(argsquery, RequestHistoryAPI.Method)
+	argsquery = append(argsquery, firstday)
+	argsquery = append(argsquery, lastday)
+
+	//fmt.Println(firstday, " - ", lastday)
+
+	queryText := `select
+		count(request_history_apis.amount) as amount
+	from
+		request_history_apis as request_history_apis
+	where
+		"user" = $1 and method = $2 and created_at >=$3 and created_at <=$4`
+
+	rows, err := DB.Query(queryText, argsquery...)
+	if err != nil {
+		return 0, err
+	}
+
+	defer rows.Close()
+
+	var amount int
+	for rows.Next() {
+		err = rows.Scan(&amount)
+		if err != nil {
+			return 0, err
+		}
+
+	}
+
+	return amount, nil
+
+}
+
+func (RequestHistoryAPI *RequestHistoryAPI) AddNewRecordLimit(DB *sql.DB) error {
+
+	var argsInsert []interface{}
+	argsInsert = append(argsInsert, RequestHistoryAPI.Method)
+	argsInsert = append(argsInsert, RequestHistoryAPI.User)
+	argsInsert = append(argsInsert, 1)
+	argsInsert = append(argsInsert, time.Now())
+
+	_, err := DB.Exec(`INSERT INTO request_history_apis (method, "user", amount, created_at)
+		VALUES($1, $2, $3, $4);`, argsInsert...)
+
+	if err != nil {
+		log.Impl.Error(err.Error())
+		return err
+	}
+
+	return nil
+
 }
