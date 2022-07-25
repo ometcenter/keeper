@@ -216,7 +216,7 @@ type Options struct {
 	CompressBody                      bool                                `json:"СжиматьОтвет"`
 	AnonymizingFields                 []AnonymizingFields                 `json:"АнонимизацияПолей"`
 	DataVisualizationSystemParameters []DataVisualizationSystemParameters `json:"ПараметрыСистемыВизуализацииДанных"`
-	CleaningFieldsBeforeLoading       string                              `json:"ПоляОчисткиПередЗагрузкой"`
+	CleaningFieldsBeforeLoading       []CleaningFieldsBeforeLoading       `json:"ПоляОчисткиПередЗагрузкой"`
 }
 
 type AnonymizingFields struct {
@@ -226,5 +226,11 @@ type AnonymizingFields struct {
 
 type DataVisualizationSystemParameters struct {
 	Name      string `json:"Name"`
+	ValueData string `json:"Value"`
+}
+
+type CleaningFieldsBeforeLoading struct {
+	Name      string `json:"Name"`
+	Type      string `json:"Type"`
 	ValueData string `json:"Value"`
 }
