@@ -245,6 +245,7 @@ where
 
 	//Create JWT token
 	ExpiresAt := time.Now().Add(Duration).Unix() // 186 - 7 days
+	//ExpiresAt := time.Now().UTC().Add(Duration).Unix() // 186 - 7 days
 	claims := jwt.StandardClaims{
 		ExpiresAt: ExpiresAt,
 		Issuer:    "auth.keeper",
