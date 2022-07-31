@@ -264,8 +264,12 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
-	startDateFilter := time.Now()
+	// startDateFilter := time.Now()
+	// endDateFilter := startDateFilter.AddDate(0, 0, 7)
+	startDateFilter := utilityShare.StartOfWeek(time.Now())
+	//startDateFilter = startDateFilter.Truncate(24 * time.Hour)
 	endDateFilter := startDateFilter.AddDate(0, 0, 7)
+	//fmt.Println(startDateFilter, " - ", endDateFilter)
 	var HolidayStatForColleagues interface{}
 	HolidayStatForColleagues, err = V1HolidayStatForColleaguesGeneral(workerID, startDateFilter, endDateFilter)
 	if err != nil {
