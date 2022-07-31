@@ -343,3 +343,20 @@ func InTimeSpan(start, end, check time.Time) bool {
 	}
 	return !start.After(check) || !end.Before(check)
 }
+
+func Weekday(d time.Weekday) int {
+	day := (d - 1) % 7
+	if day < 0 {
+		day += 7
+	}
+	return int(day)
+}
+
+func StartOfWeek(t time.Time) time.Time {
+	// Figure out number of days to back up until Mon:
+	// Sun is 0 -> 6, Sat is 6 -> 5, etc.
+	toMon := Weekday(t.Weekday())
+	y, m, d := t.AddDate(0, 0, -int(toMon)).Date()
+	// Result is 00:00:00 on that year, month, day.
+	return time.Date(y, m, d, 0, 0, 0, 0, t.Location())
+}
