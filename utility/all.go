@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"strconv"
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
@@ -247,10 +248,43 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	queryBuilder := psql.Select("*").From(TableNameParam)
 
-	//queryBuilder := sq.Select("*").From(TableNameParam)
+	PaginatioRegim := false
+	var Limit, Offset int
+	//Page := c.Query("page")
+	//PerPage := c.Query("per_page")
+	Page := QueryURL.Get("page")
+	PerPage := QueryURL.Get("per_page")
+
+	if Page != "" && PerPage != "" {
+		PaginatioRegim = true
+		PageInt, err := strconv.Atoi(Page)
+		if err != nil {
+			return nil, err
+		}
+
+		PerPageInt, err := strconv.Atoi(PerPage)
+		if err != nil {
+			return nil, err
+		}
+
+		Limit = PerPageInt
+		Offset = PageInt*PerPageInt - PerPageInt
+	}
+
+	getCountOnFieldForPagination := QueryURL.Get("getCountOnFieldForPagination")
+	//fmt.Printf("PaginatioRegim: %t Limit: %d Offset: %d getCountOnFieldForPagination: %s\n", PaginatioRegim, Limit, Offset, getCountOnFieldForPagination)
+
 	param := []interface{}{}
 
-	if len(QueryURL) != 0 {
+	if PaginatioRegim {
+
+		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+
+	} else if getCountOnFieldForPagination != "" {
+		queryBuilder = psql.Select(getCountOnFieldForPagination, "count(1)").From(TableNameParam).GroupBy(getCountOnFieldForPagination).OrderBy(getCountOnFieldForPagination)
+		//SELECT area, count(1) FROM collaborators_posle group by area;
+
+	} else if len(QueryURL) != 0 {
 		//var conditionSlice []sq.Eq
 		//conditionMap := make(map[string]interface{})
 		//var conditionSlice sq.Eq
@@ -269,7 +303,6 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 			sqEq[key] = ""
 
 		}
-		//queryBuilder = sq.Select("*").From(TableNameParam).Where(sqEq)
 		queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
 	}
 
