@@ -272,17 +272,41 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 	}
 
 	getCountOnFieldForPagination := QueryURL.Get("getCountOnFieldForPagination")
+
+	daydeepFilter := QueryURL.Get("daysDeep")
+	var daydeep int
+	if daydeepFilter == "" {
+		daydeep = 2
+	} else {
+		var err error
+		daydeep, err = strconv.Atoi(daydeepFilter)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	//fmt.Printf("PaginatioRegim: %t Limit: %d Offset: %d getCountOnFieldForPagination: %s\n", PaginatioRegim, Limit, Offset, getCountOnFieldForPagination)
 
 	param := []interface{}{}
 
-	if PaginatioRegim {
+	if daydeepFilter != "" {
 
-		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+		timeNow := time.Now()
+		timePast := timeNow.AddDate(0, 0, -daydeep)
+
+		//where
+		//updated_at > $1
+		//argsquery = append(argsquery, timePast)
+
+		queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
 
 	} else if getCountOnFieldForPagination != "" {
 		queryBuilder = psql.Select(getCountOnFieldForPagination, "count(1)").From(TableNameParam).GroupBy(getCountOnFieldForPagination).OrderBy(getCountOnFieldForPagination)
 		//SELECT area, count(1) FROM collaborators_posle group by area;
+
+	} else if PaginatioRegim {
+
+		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
 
 	} else if len(QueryURL) != 0 {
 		//var conditionSlice []sq.Eq
@@ -307,7 +331,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 	}
 
 	queryText, _, err := queryBuilder.ToSql()
-	//fmt.Println(queryText)
+	fmt.Println(queryText)
 	if err != nil {
 		return nil, err
 	}
