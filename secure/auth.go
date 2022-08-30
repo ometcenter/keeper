@@ -187,7 +187,7 @@ where
 
 	rows, err := DB.Query(queryText, argsquery...)
 	if err != nil {
-		fmt.Println("Auth err --- ", err)
+		fmt.Println("Auth err --- rows, err := DB.Query(queryText, argsquery...) ---", err)
 		return LoginAnswer{}, err
 	}
 
@@ -199,7 +199,7 @@ where
 		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, &blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
 			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers, &AdditionalSettingsUser)
 		if err != nil {
-			fmt.Println("Auth err --- ", err)
+			fmt.Println("Auth err --- for rows.Next() { ---", err)
 			return LoginAnswer{}, err
 		}
 	}
@@ -209,7 +209,6 @@ where
 
 	if blocked {
 		err := fmt.Errorf("Учетная запись заблокированна")
-		fmt.Println("Auth err --- ", err)
 		return LoginAnswer{}, err
 	}
 
@@ -261,7 +260,7 @@ where
 	// При большем обращении нужны разные клиенты для получения токена.
 	err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12)
 	if err != nil {
-		fmt.Println("Auth err --- ", err)
+		fmt.Println("Auth err --- err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12) ----", err)
 		return LoginAnswer{}, err
 	}
 
@@ -271,13 +270,13 @@ where
 	LoginAnswerReturn := LoginAnswer{JWTtoken: tokenString, ExpiresAt: ExpiresAt, DurationSec: DurationSec, User: LkUsers}
 	byteData, err := json.Marshal(LoginAnswerReturn)
 	if err != nil {
-		fmt.Println("Auth err --- ", err)
+		fmt.Println("Auth err --- byteData, err := json.Marshal(LoginAnswerReturn) --- ", err)
 		return LoginAnswer{}, err
 	}
 
 	err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec)
 	if err != nil {
-		fmt.Println("Auth err --- ", err)
+		fmt.Println("Auth err --- err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec) ----", err)
 		return LoginAnswer{}, err
 	}
 
