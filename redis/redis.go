@@ -19,7 +19,7 @@ func IntiClientLibraryRediGo(AddressPort string) (*libraryRediGo.Pool, error) {
 
 	Pool := &libraryRediGo.Pool{
 
-		MaxIdle:     3,
+		MaxIdle:     10,
 		IdleTimeout: 240 * time.Second,
 
 		Dial: func() (libraryRediGo.Conn, error) {
@@ -64,6 +64,7 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, R
 
 	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
 	if err != nil {
+		fmt.Println("Auth err --- _, err := conn.Do(SELECT, RedisDB) // 10 секунд ----", err)
 		return err
 	}
 
@@ -75,6 +76,7 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, R
 		// 	v = v[0:12] + "..."
 		// }
 		// return fmt.Errorf("error setting key %s to %s: %v", key, v, err)
+		fmt.Println("Auth err --- _, err = conn.Do(SET, key, value) ----", err)
 		return err
 	}
 
@@ -91,6 +93,7 @@ func SetLibraryRediGo(Pool *libraryRediGo.Pool, key string, value interface{}, R
 			// 	v = v[0:12] + "..."
 			// }
 			// return fmt.Errorf("error EXPIRE key %s to %s: %v", key, v, err)
+			fmt.Println("Auth err --- _, err := conn.Do(EXPIRE, key, TTL) ----", err)
 			return err
 		}
 	}
