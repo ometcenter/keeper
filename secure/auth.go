@@ -274,9 +274,13 @@ where
 		return LoginAnswer{}, err
 	}
 
-	err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec)
+	// err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec)
+	// if err != nil {
+	// 	return LoginAnswer{}, err
+	// }
+
+	err = shareRedis.SetLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, tokenString, byteData, 12, DurationSec)
 	if err != nil {
-		fmt.Println("Auth err --- err = shareRedis.SetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenString, byteData, 12, DurationSec) ----", err)
 		return LoginAnswer{}, err
 	}
 
