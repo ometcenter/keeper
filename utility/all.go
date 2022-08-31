@@ -298,7 +298,11 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 		//updated_at > $1
 		//argsquery = append(argsquery, timePast)
 
-		queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
+		if PaginatioRegim {
+			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast}).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+		} else {
+			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
+		}
 		param = append(param, timePast)
 
 	} else if getCountOnFieldForPagination != "" {
