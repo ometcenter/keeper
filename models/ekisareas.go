@@ -50,7 +50,7 @@ type EkisOrganizationDesctiption struct {
 	Ogrn                         string `json:"ogrn"`
 	Kpp                          string `json:"kpp"`
 	Founder                      string `json:"founder"`
-	PropertyTypeId               int    `json:"property_type_id"`
+	PropertyTypeId               string `json:"property_type_id"`
 	PropertyType                 string `json:"property_type"`
 	LegalOrganizationId          int    `json:"legal_organization_id"`
 	LegalOrganization            string `json:"legal_organization"`
