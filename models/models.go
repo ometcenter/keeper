@@ -330,6 +330,19 @@ type QueryResult struct {
 	ElapsedSaveSpeed             time.Duration
 }
 
+// TODO: Выкидываем все что можем взять из настроек
+type QueryResultShort struct {
+	Area                int                      `json:"НомерОбласти"`
+	ResultRequest       []map[string]interface{} `json:"РезультатЗапроса"`
+	ErrorExecution      bool                     `json:"ОшибкаВыполнения"`
+	EmptyRequest        bool                     `json:"ПустойЗапрос"`
+	ExchangeJobID       string                   `json:"УИД"`
+	JobID               string                   `json:"УИД_Пакета"`
+	ResultRequestBase64 string                   `json:"РезультатЗапросаBase64"`
+	HashSum             int64                    `json:"ХешСумма"`
+	//Metrics                      Metrics                  `json:"Метрики"`
+}
+
 type Metrics struct {
 	CountRecords   int    `json:"КоличествоЗаписей"`
 	DateBeginQuery string `json:"ДатаНачалаЗапроса"`
