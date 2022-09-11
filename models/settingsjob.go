@@ -78,28 +78,30 @@ func (S *SettingsJobSliceQueryToBI) LoadSettingsFromPgByJobID(DB *sql.DB, JobID 
 }
 
 type QueryToBI struct {
-	JobID                         string                 `json:"ИдентификаторЗадания"`
-	SendUseREST                   bool                   `json:"ОтправлятьПоREST"`
-	RemoteCollect                 bool                   `json:"УдаленныйСбор"`
-	TypeDataGetting               string                 `json:"ВидПолученияДанных"`
-	DataUploadMethod              string                 `json:"CпособЗагрузкиДанных"`
-	Portions                      int                    `json:"Порции"`
-	Query                         []Query                `json:"Запросы"`
-	AddParam                      AdditionParam          `json:"ДополнительныеПараметрыJSON"`
-	AddParamJSNOString            string                 `json:"JSONСтрокаДополнительныеПараметры"`
-	Connect                       Connect                `json:"ПараметрыПодключения"`
-	ConnectContur                 ConnectContur          `json:"ПараметрыПодключенияКонтура"`
-	ConnectBI1C                   ConnectBI1C            `json:"ПараметрыПодключенияBI1C"`
-	ConnectConturJSNOString       string                 `json:"JSONСтрокаПараметрыПодключенияКонтура"`
-	Schedule                      Schedule               `json:"РасписаниеПланировщика"`
-	SaveResultToHistory           bool                   `json:"СохранятьРезультатВИсторию"`
-	SaveToDataVisualizationSystem bool                   `json:"СохранятьВСистемуВизуализацииДанных"`
-	UseDataProcessingAlgorithms   bool                   `json:"ИспользоватьАлгоритмыОбработкиДанных"`
-	ListDataProcessingAlgorithms  []string               `json:"СписокАлгоритмовОбработкиДанных"`
-	UseHandleAfterLoadAlgorithms  bool                   `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
-	ListHandleAfterLoadAlgorithms []string               `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
-	Webhooks                      []string               `json:"Webhooks"`
-	MappingForExcelArray          []MappingForExcelArray `json:"СопоставлениеДляExcalМассив"`
+	JobID                            string                 `json:"ИдентификаторЗадания"`
+	SendUseREST                      bool                   `json:"ОтправлятьПоREST"`
+	RemoteCollect                    bool                   `json:"УдаленныйСбор"`
+	TypeDataGetting                  string                 `json:"ВидПолученияДанных"`
+	DataUploadMethod                 string                 `json:"CпособЗагрузкиДанных"`
+	Portions                         int                    `json:"Порции"`
+	Query                            []Query                `json:"Запросы"`
+	AddParam                         AdditionParam          `json:"ДополнительныеПараметрыJSON"`
+	AddParamJSNOString               string                 `json:"JSONСтрокаДополнительныеПараметры"`
+	Connect                          Connect                `json:"ПараметрыПодключения"`
+	ConnectContur                    ConnectContur          `json:"ПараметрыПодключенияКонтура"`
+	ConnectBI1C                      ConnectBI1C            `json:"ПараметрыПодключенияBI1C"`
+	ConnectConturJSNOString          string                 `json:"JSONСтрокаПараметрыПодключенияКонтура"`
+	Schedule                         Schedule               `json:"РасписаниеПланировщика"`
+	SaveResultToHistory              bool                   `json:"СохранятьРезультатВИсторию"`
+	SaveToDataVisualizationSystem    bool                   `json:"СохранятьВСистемуВизуализацииДанных"`
+	UseDataProcessingAlgorithms      bool                   `json:"ИспользоватьАлгоритмыОбработкиДанных"`
+	ListDataProcessingAlgorithms     []string               `json:"СписокАлгоритмовОбработкиДанных"`
+	UseHandleAfterLoadAlgorithms     bool                   `json:"ИспользоватьАлгоритмыОбработкиДанныхПослеЗагрузки"`
+	ListHandleAfterLoadAlgorithms    []string               `json:"СписокАлгоритмовОбработкиДанныхПослеЗагрузки"`
+	Webhooks                         []string               `json:"Webhooks"`
+	MappingForExcelArray             []MappingForExcelArray `json:"СопоставлениеДляExcalМассив"`
+	RuleExternalSource               string                 `json:"ПравилоВнешнийИсточник"`
+	InternalProcessingExternalSource bool                   `json:"ВнутренняяОбработкаВнешнегоИсточника"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {
