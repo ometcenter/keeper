@@ -90,7 +90,7 @@ type EkisOrganizationDesctiptionRespons struct {
 }
 
 type EkisOrganizationAddresses struct {
-	gorm.Model
+	gorm.Model                    `json:"-"`
 	EoId                          int    `json:"eo_id"`            // Номер организации ЕКИС
 	Unom                          int    `json:"unom"`             // Уникальный номер статкарты БТИ
 	Unad                          int    `json:"unad"`             // UNAD
@@ -106,11 +106,11 @@ type EkisOrganizationAddresses struct {
 	FiasAddressUnrestrictedDadata string `json:"address_fias_unrestricted_dadata"`
 	IsTempAccom                   string `json:"is_temp_accom"` // Временное размещение
 	TempEnd                       string `json:"temp_end"`      // Дата окончания временного размещения
-	FullName                      string //full_name
-	ShortName                     string //short_name
-	Inn                           string
-	Number                        int    //number
-	XaIsActive                    string //xa_is_active
+	FullName                      string `json:"full_name"`
+	ShortName                     string `json:"short_name"`
+	Inn                           string `json:"inn"`
+	Number                        int    `json:"number"`
+	XaIsActive                    string `json:"xa_is_active"`
 }
 
 type EkisOrganizationAddressesRespons struct {
