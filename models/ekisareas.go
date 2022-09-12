@@ -95,7 +95,7 @@ type EkisOrganizationAddresses struct {
 	Unom                          int    `json:"unom"`             // Уникальный номер статкарты БТИ
 	Unad                          int    `json:"unad"`             // UNAD
 	District                      string `json:"district"`         // Муниципальный округ (Район)
-	AreaArea                      string `json:"area"`             // Административный округ
+	AreaArea                      string `json:"area_area"`        // Административный округ
 	Address                       string `json:"address"`          // Адрес
 	AddressAsur                   string `json:"address_asur"`     // Адрес (другой формат)
 	IsMainBuilding                string `json:"is_main_building"` // Признак главного здания
