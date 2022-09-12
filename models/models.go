@@ -428,3 +428,28 @@ func (RequestHistoryAPI *RequestHistoryAPI) AddNewRecordLimit(DB *sql.DB) error 
 	return nil
 
 }
+
+type AllAreaFromCOD struct {
+	Status         string           `json:"status"`
+	Date           string           `json:"date"`
+	Query          string           `json:"query"`
+	Number         string           `json:"number"`
+	ID             string           `json:"id"`
+	RegionsFromCOD []RegionsFromCOD `json:"regions"`
+}
+
+type RegionsFromCOD struct {
+	Error  bool   `json:"error"`
+	Empty  bool   `json:"empty"`
+	Status string `json:"status"`
+	Code   int    `json:"code"`
+	// DataStart time.Time "date_start"
+	// DataEnd   time.Time "date_end"
+	DataStart string "date_start"
+	DataEnd   string "date_end"
+}
+
+type ChangeStatusJobSimple struct {
+	JobID  string `json:"jobID"`
+	Status string `json:"status"`
+}
