@@ -102,10 +102,10 @@ type EkisOrganizationAddresses struct {
 	AdrLng                        string `json:"adr_lng"`          // X_center
 	AdrLat                        string `json:"adr_lat"`          // Y_center
 	Fias                          string `json:"fias"`
-	FiasAddressDadata             string `json:"address_fias_dadata"`
-	FiasAddressUnrestrictedDadata string `json:"address_fias_unrestricted_dadata"`
-	IsTempAccom                   string `json:"is_temp_accom"` // Временное размещение
-	TempEnd                       string `json:"temp_end"`      // Дата окончания временного размещения
+	FiasAddressDadata             string `json:"fias_address_dadata"`              //`json:"address_fias_dadata"`
+	FiasAddressUnrestrictedDadata string `json:"fias_address_unrestricted_dadata"` //`json:"address_fias_unrestricted_dadata"`
+	IsTempAccom                   string `json:"is_temp_accom"`                    // Временное размещение
+	TempEnd                       string `json:"temp_end"`                         // Дата окончания временного размещения
 	FullName                      string `json:"full_name"`
 	ShortName                     string `json:"short_name"`
 	Inn                           string `json:"inn"`
