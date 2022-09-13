@@ -330,7 +330,7 @@ type QueryResult struct {
 	ElapsedSaveSpeed             time.Duration
 }
 
-// TODO: Выкидываем все что можем взять из настроек
+// TODO: Перевести на type DataToETL struct {
 type QueryResultShort struct {
 	Area                int                      `json:"НомерОбласти"`
 	ResultRequest       []map[string]interface{} `json:"РезультатЗапроса"`
@@ -341,6 +341,17 @@ type QueryResultShort struct {
 	ResultRequestBase64 string                   `json:"РезультатЗапросаBase64"`
 	HashSum             int64                    `json:"ХешСумма"`
 	//Metrics                      Metrics                  `json:"Метрики"`
+	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
+}
+
+type DataToETL struct {
+	Area                        int                           `json:"area"`
+	Data                        []map[string]interface{}      `json:"data"`
+	ExchangeJobID               string                        `json:"exchangeJobID"`
+	JobID                       string                        `json:"jobID"`
+	DataBase64                  string                        `json:"dataBase64"`
+	HashSum                     int64                         `json:"hashSum"`
+	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
 }
 
 type Metrics struct {
