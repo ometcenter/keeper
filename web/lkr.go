@@ -814,7 +814,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenie_id,
 		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
 		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
-		coalesce(collaborators_posle.updated_at, DATE '0001-01-01') as updated_at,
+		coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
 		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date
 	from
 		collaborators_posle as collaborators_posle
