@@ -321,6 +321,10 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 		sqEq := make(sq.Eq)
 
 		for key, value := range QueryURL {
+
+			if key == "total" {
+				continue
+			}
 			//conditionSlice = append(conditionSlice, sq.Eq{key: value})
 			//conditionMap[key] = value
 			if len(value) == 0 {
