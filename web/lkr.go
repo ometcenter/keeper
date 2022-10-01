@@ -18,6 +18,7 @@ import (
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
 	utilityShare "github.com/ometcenter/keeper/utility"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -155,6 +156,37 @@ type LkUsers struct {
 	AdditionalSettingsUserJSONByte datatypes.JSON
 	AdditionalSettingsUser         AdditionalSettingsUser `gorm:"-"`
 	Notes                          string
+}
+
+func (LkUsers *LkUsers) HashAndSalt() ([]byte, error) {
+
+	// Use GenerateFromPassword to hash & salt pwd
+	// MinCost is just an integer constant provided by the bcrypt
+	// package along with DefaultCost & MaxCost.
+	// The cost can be any value you want provided it isn't lower
+	// than the MinCost (4)
+	hash, err := bcrypt.GenerateFromPassword([]byte(LkUsers.Password), bcrypt.DefaultCost) //bcrypt.MinCost)
+	if err != nil {
+		return nil, err
+	}
+
+	LkUsers.HashPassword = string(hash)
+
+	// GenerateFromPassword returns a byte slice so we need to
+	// convert the bytes to a string and return it
+	return hash, nil
+}
+
+func (LkUsers *LkUsers) ComparePasswords(hashedPwd string, plainPwd string) bool {
+	// Since we'll be getting the hashed password from the DB it
+	// will be a string so we'll need to convert it to a byte slice
+	err := bcrypt.CompareHashAndPassword([]byte(hashedPwd), []byte(plainPwd))
+	if err != nil {
+		return false
+	}
+	//if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
+
+	return true
 }
 
 type AdditionalSettingsUser struct {

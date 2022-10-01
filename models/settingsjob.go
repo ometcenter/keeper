@@ -93,6 +93,7 @@ type QueryToBI struct {
 	ConnectConturJSNOString          string                 `json:"JSONСтрокаПараметрыПодключенияКонтура"`
 	Schedule                         Schedule               `json:"РасписаниеПланировщика"`
 	SaveResultToHistory              bool                   `json:"СохранятьРезультатВИсторию"`
+	PublishTableToAPI                bool                   `json:"ПубликоватьТаблицуВAPI"`
 	SaveToDataVisualizationSystem    bool                   `json:"СохранятьВСистемуВизуализацииДанных"`
 	UseDataProcessingAlgorithms      bool                   `json:"ИспользоватьАлгоритмыОбработкиДанных"`
 	ListDataProcessingAlgorithms     []string               `json:"СписокАлгоритмовОбработкиДанных"`

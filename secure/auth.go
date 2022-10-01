@@ -171,6 +171,7 @@ func Login(login, password string) (LoginAnswer, error) {
 	coalesce(notes, '') as notes,
 	coalesce(status, '') as status,
 	coalesce(source, '') as source,
+	coalesce(hash_password, '') as hash_password,
 	coalesce(person_json_byte, '{}'::jsonb) as person_json_byte,
 	coalesce(additional_settings_user_json_byte, '{}'::jsonb) as additional_settings_user_json_byte
 from
@@ -187,7 +188,7 @@ where
 
 	rows, err := DB.Query(queryText, argsquery...)
 	if err != nil {
-		fmt.Println("Auth err --- rows, err := DB.Query(queryText, argsquery...) ---", err)
+		//fmt.Println("Auth err --- rows, err := DB.Query(queryText, argsquery...) ---", err)
 		return LoginAnswer{}, err
 	}
 
@@ -197,9 +198,9 @@ where
 
 	for rows.Next() {
 		err = rows.Scan(&LkUsers.ID, &LkUsers.ExpSec, &LkUsers.Role, &LkUsers.Login, &LkUsers.Password, &blocked, &LkUsers.UserID, &LkUsers.FullName, &LkUsers.Email,
-			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &V1ActiveWorkers, &AdditionalSettingsUser)
+			&LkUsers.InsuranceNumber, &LkUsers.Notes, &LkUsers.Status, &LkUsers.Source, &LkUsers.HashPassword, &V1ActiveWorkers, &AdditionalSettingsUser)
 		if err != nil {
-			fmt.Println("Auth err --- for rows.Next() { ---", err)
+			//fmt.Println("Auth err --- for rows.Next() { ---", err)
 			return LoginAnswer{}, err
 		}
 	}
@@ -214,10 +215,12 @@ where
 
 	defer rows.Close()
 
-	// err = bcrypt.CompareHashAndPassword([]byte(PasswordDB ), []byte(password))
-	// if err != nil && err == bcrypt.ErrMismatchedHashAndPassword { //Password does not match!
-	// 	return "", fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
-	// }
+	// Another method for obtaining salt password
+	validPassword := LkUsers.ComparePasswords(LkUsers.HashPassword, strings.ToLower(password))
+	if !validPassword {
+		//Password does not match!
+		fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз --- LkUsers.ComparePasswords")
+	}
 
 	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
 	passwordHash := sha256.Sum256([]byte(strings.ToLower(password)))
@@ -260,7 +263,7 @@ where
 	// При большем обращении нужны разные клиенты для получения токена.
 	err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12)
 	if err != nil {
-		fmt.Println("Auth err --- err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12) ----", err)
+		//fmt.Println("Auth err --- err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12) ----", err)
 		return LoginAnswer{}, err
 	}
 
@@ -270,7 +273,7 @@ where
 	LoginAnswerReturn := LoginAnswer{JWTtoken: tokenString, ExpiresAt: ExpiresAt, DurationSec: DurationSec, User: LkUsers}
 	byteData, err := json.Marshal(LoginAnswerReturn)
 	if err != nil {
-		fmt.Println("Auth err --- byteData, err := json.Marshal(LoginAnswerReturn) --- ", err)
+		//fmt.Println("Auth err --- byteData, err := json.Marshal(LoginAnswerReturn) --- ", err)
 		return LoginAnswer{}, err
 	}
 
