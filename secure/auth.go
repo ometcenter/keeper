@@ -216,16 +216,16 @@ where
 	defer rows.Close()
 
 	// Another method for obtaining salt password
-	validPassword := LkUsers.ComparePasswords(LkUsers.HashPassword, strings.ToLower(password))
+	validPassword := LkUsers.ComparePasswords(LkUsers.HashPassword, password)
 	if !validPassword {
 		//Password does not match!
 		fmt.Println("Неверные логин или пароль. Пожалуйста, попробуйте еще раз --- LkUsers.ComparePasswords")
 	}
 
 	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
-	passwordHash := sha256.Sum256([]byte(strings.ToLower(password)))
+	passwordHash := sha256.Sum256([]byte(password))
 	expectedUsernameHash := sha256.Sum256([]byte(strings.ToLower(LkUsers.Login)))
-	expectedPasswordHash := sha256.Sum256([]byte(strings.ToLower(LkUsers.Password)))
+	expectedPasswordHash := sha256.Sum256([]byte(LkUsers.Password))
 
 	usernameMatch := (subtle.ConstantTimeCompare(usernameHash[:], expectedUsernameHash[:]) == 1)
 	passwordMatch := (subtle.ConstantTimeCompare(passwordHash[:], expectedPasswordHash[:]) == 1)
