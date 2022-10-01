@@ -219,7 +219,7 @@ where
 	validPassword := LkUsers.ComparePasswords(LkUsers.HashPassword, strings.ToLower(password))
 	if !validPassword {
 		//Password does not match!
-		fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз --- LkUsers.ComparePasswords")
+		fmt.Println("Неверные логин или пароль. Пожалуйста, попробуйте еще раз --- LkUsers.ComparePasswords")
 	}
 
 	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
