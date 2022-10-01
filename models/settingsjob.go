@@ -146,6 +146,27 @@ func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) 
 	return nil
 }
 
+func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobIDByTableName(DB *sql.DB, TableName string) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, TableName)
+
+	var LoadValue SettingsJobSliceQueryToBI
+	err := DB.QueryRow("SELECT json_byte FROM settings_jobs WHERE table_name = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	if len(LoadValue.SliceQueryToBI) > 0 {
+		// TODO: Переделать по нормальному эту конструкцию
+		*Q = LoadValue.SliceQueryToBI[0]
+	} else {
+		return fmt.Errorf("получена пустая настройка")
+	}
+
+	return nil
+}
+
 type Query struct {
 	QueryText                            string `json:"Запрос"`
 	Base                                 string `json:"База"`
