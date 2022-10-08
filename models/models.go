@@ -2,7 +2,9 @@ package models
 
 import (
 	"bytes"
+	"compress/gzip"
 	"database/sql"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"io/ioutil"
@@ -10,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -342,6 +345,80 @@ type QueryResultShort struct {
 	HashSum             int64                    `json:"ХешСумма"`
 	//Metrics                      Metrics                  `json:"Метрики"`
 	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
+}
+
+func (Q *QueryResultShort) ZipAnswerGzip() error {
+
+	byteValue, err := json.Marshal(Q.ResultRequest)
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println("Json: ", string(byteValue))
+
+	var buf bytes.Buffer
+	g := gzip.NewWriter(&buf)
+	if _, err = g.Write(byteValue); err != nil {
+		return err
+	}
+	if err = g.Close(); err != nil {
+		return err
+	}
+
+	sDec := base64.StdEncoding.EncodeToString(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println(sDec)
+
+	//QueryResult.ResultRequest = nil
+	var NilMap []map[string]interface{}
+	Q.ResultRequest = NilMap
+	Q.ResultRequestBase64 = sDec
+
+	return nil
+
+}
+
+func (Q *QueryResultShort) SendResultThroughREST(TableName, UrlToCall string) error {
+
+	var QueryResultSlice []QueryResultShort //[]modelsShare.QueryResultShort
+
+	QueryResultSlice = append(QueryResultSlice, *Q)
+	byteResult, err := json.Marshal(QueryResultSlice)
+	if err != nil {
+		return err
+	}
+
+	AreaString := strconv.Itoa(Q.Area)
+
+	var RESTRequestUniversal2 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = config.Conf.TokenBearer
+	Headers["JobID"] = Q.JobID
+	Headers["Area"] = AreaString
+	Headers["TableName"] = TableName
+	Headers["ExchangeJobID"] = Q.ExchangeJobID
+	//layoutISO := "2006-01-02"
+	//Headers["NoteCOD"] = fmt.Sprintf(" - статут в ЦОД: дата начала = %s, дата окончания = %s", item.DataStart.Format(layoutISO), item.DataEnd.Format(layoutISO))
+	//fmt.Println(Headers["NoteCOD"])
+	//fmt.Printf("%v\n", item)
+
+	RESTRequestUniversal2.Headers = Headers
+	RESTRequestUniversal2.Method = "POST"
+	RESTRequestUniversal2.Body = byteResult
+	RESTRequestUniversal2.UrlToCall = UrlToCall
+
+	//for i := 0; i < 1000; i++ {
+
+	_, err = RESTRequestUniversal2.Send()
+	if err != nil {
+		return err
+	}
+	//}
+
+	return nil
 }
 
 type DataToETL struct {
