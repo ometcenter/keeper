@@ -854,6 +854,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
 	left join organizations_zkgu as organizations_zkgu on
 		collaborators_posle.organization_id = organizations_zkgu.organization_id
+		and collaborators_posle.area = organizations_zkgu.area
 	left join contact_inf_pochta_posle as contact_inf_pochta_posle on
 		collaborators_posle.person_id = contact_inf_pochta_posle.person_id
 	left join contact_inf_telephone_posle as contact_inf_telephone_posle on
