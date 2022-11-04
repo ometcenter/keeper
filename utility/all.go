@@ -315,10 +315,16 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 
 	} else if dataTimeDeep != "" {
 
-		timePast, err := time.Parse("2006-01-02T15:04:05", dataTimeDeep)
+		// timePast, err := time.Parse("2006-01-02T15:04:05", dataTimeDeep)
+		// if err != nil {
+		// 	return nil, err
+		// }
+
+		timePast, err := time.ParseInLocation("2006-01-02T15:04:05", dataTimeDeep, time.Local)
 		if err != nil {
 			return nil, err
 		}
+
 		fmt.Println("timePast - ", timePast)
 
 		if PaginatioRegim {
