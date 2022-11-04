@@ -3,7 +3,6 @@ package utility
 import (
 	"database/sql"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -315,7 +314,27 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 		param = append(param, timePast)
 
 	} else if dataTimeDeep != "" {
-		return nil, errors.New("Функционал не реализован dataTimeDeep")
+
+		timePast, err := time.Parse("2006-01-02T15:04:05", dataTimeDeep)
+		if err != nil {
+			return nil, err
+		}
+		fmt.Println("timePast - ", timePast)
+
+		if PaginatioRegim {
+			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast}).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+			queryBuilder = psql.Select("*").From(TableNameParam).Where(
+				sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}}).Limit(
+				uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+		} else {
+			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
+			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}})
+		}
+		param = append(param, timePast)
+		param = append(param, timePast)
+		param = append(param, timePast)
+
+		//return nil, errors.New("Функционал не реализован dataTimeDeep")
 
 	} else if getCountOnFieldForPagination != "" {
 		queryBuilder = psql.Select(getCountOnFieldForPagination, "count(1)").From(TableNameParam).GroupBy(getCountOnFieldForPagination).OrderBy(getCountOnFieldForPagination)
