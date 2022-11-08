@@ -13,6 +13,7 @@ type NodeExample1 struct {
 	Id              string          `json:"id"`
 	Name            string          `json:"name"`
 	EmployeeBelongs bool            `json:"employeeBelongs"`
+	Leaf            int             `json:"leaf"` //`json:"leaf,omitempty"`
 	Children        []*NodeExample1 `json:"child,omitempty"`
 }
 
