@@ -37,11 +37,11 @@ func AssembleTreeHandler(BranchTree []BranchTree) interface{} {
 	var Node NodeInterface
 
 	// упрощенный вариант
-	// Node = &NodeExample1{Name: "Root", Children: []*NodeExample1{}}
-	// Node.AssembleTree(BranchTree)
-	// ////////_, Result := Node.AssembleTree(BranchTree)
+	Node = &NodeExample1{Name: "root", Children: []*NodeExample1{}}
+	Node.AssembleTree(BranchTree)
+	////////_, Result := Node.AssembleTree(BranchTree)
 
-	//TODO: Смена сортировки ведет к потери узлов в дереве
+	//TODO: Смена сортировки ведет к потери узлов в дереве, если узел добавляется, но его родителя еще нет тоже пропадает
 	Node = &NodeExample2{"", "", "root", false, 0, nil}
 	Node.AssembleTree(BranchTree)
 	///////Node, _ := AssembleTreeExample2(BranchTree)
