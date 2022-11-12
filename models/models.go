@@ -63,6 +63,33 @@ type ExchangeJob struct {
 	Notes         string `json:"Заметки"`
 }
 
+func (E *ExchangeJob) SendStatusCreateExchangeJobIDThroughREST(UrlToCall string) error {
+
+	ExchangeJobByte, err := json.Marshal(E)
+	if err != nil {
+		//cCp.JSON(http.StatusBadRequest, err.Error())
+		//log.Impl.Error(fmt.Errorf("Ошибка по области %s задание %s: Текст ошибки --- %s\n", Area, JobIDParam, err.Error()))
+		return err
+	}
+
+	var RESTRequestUniversal3 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = config.Conf.TokenBearer
+	RESTRequestUniversal3.Headers = Headers
+	RESTRequestUniversal3.Method = "POST"
+	RESTRequestUniversal3.Body = ExchangeJobByte
+	// TODO: Переделать на переменную окружения
+	RESTRequestUniversal3.UrlToCall = UrlToCall //os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/changingstatussimple"
+	_, err = RESTRequestUniversal3.Send()
+	if err != nil {
+		return err
+		//log.Impl.Error(fmt.Errorf("Ошибка по области %s задание %s: Текст ошибки --- %s\n", Area, JobIDParam, err.Error()))
+	}
+
+	return nil
+
+}
+
 // Job структура задания
 type Job struct {
 	gorm.Model
