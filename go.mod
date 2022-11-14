@@ -13,12 +13,13 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.9.1
 	github.com/opentracing/opentracing-go v1.2.0
+	github.com/segmentio/kafka-go v0.4.38
 	github.com/sirupsen/logrus v1.8.1
 	github.com/streadway/amqp v1.0.0
 	github.com/uber/jaeger-client-go v2.29.1+incompatible
 	github.com/uber/jaeger-lib v2.4.1+incompatible // indirect
 	go.uber.org/atomic v1.9.0 // indirect
-	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
+	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
 	gorm.io/datatypes v1.0.4
 	gorm.io/gorm v1.22.4
 )
