@@ -3,11 +3,12 @@ module github.com/ometcenter/keeper
 go 1.14
 
 require (
+	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Masterminds/squirrel v1.5.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/getsentry/sentry-go v0.11.0
 	github.com/gin-gonic/gin v1.4.0
-	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/go-redis/redis v6.15.9+incompatible // indirect
 	github.com/go-redis/redis/v8 v8.11.5
 	github.com/gomodule/redigo v1.7.1-0.20190724094224-574c33c3df38
 	github.com/google/uuid v1.3.0
