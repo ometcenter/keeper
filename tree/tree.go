@@ -312,17 +312,26 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 
 	if node.Size() < len(BranchTree) {
 
-		var data2 []*NodeExample2
+		for i := 1; i < 10; i++ {
 
-		for _, value := range BranchTree {
-			checkResult := node.CheckfindByIdDFS(value.BranchID)
-			fmt.Printf("checkResult : %s for : %v\n", checkResult, value)
-			if !checkResult {
-				data2 = append(data2, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
+			var data2 []*NodeExample2
+
+			for _, value := range BranchTree {
+				checkResult := node.CheckfindByIdDFS(value.BranchID)
+				fmt.Printf("checkResult : %s for : %v\n", checkResult, value)
+				if !checkResult {
+					data2 = append(data2, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
+				}
 			}
-		}
 
-		node.Add(data2...)
+			node.Add(data2...)
+
+			if node.Size() == len(BranchTree) {
+				fmt.Println(i)
+				break
+			}
+
+		}
 
 	}
 
