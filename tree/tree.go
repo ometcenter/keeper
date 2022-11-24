@@ -308,7 +308,25 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 	node.findByIdDFS(CurrectBranchId)
 	//node.findById(CurrectBranchId)
 
-	fmt.Println(node.Size(), " - ", len(BranchTree))
+	fmt.Println("before: ", node.Size(), " - ", len(BranchTree))
+
+	if node.Size() < len(BranchTree) {
+
+		var data2 []*NodeExample2
+
+		for _, value := range BranchTree {
+			checkResult := node.CheckfindByIdDFS(value.BranchID)
+			fmt.Printf("checkResult : %s for : %v\n", checkResult, value)
+			if !checkResult {
+				data2 = append(data2, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
+			}
+		}
+
+		node.Add(data2...)
+
+	}
+
+	fmt.Println("after: ", node.Size(), " - ", len(BranchTree))
 
 	// fmt.Println(node.Add(data...), node.Size())
 	// bytes, _ := json.MarshalIndent(node, "", "\t") //formated output
@@ -334,6 +352,22 @@ func (node *NodeExample2) findByIdDFS(id string) {
 			child.findByIdDFS(id)
 		}
 	}
+}
+
+func (node *NodeExample2) CheckfindByIdDFS(id string) bool {
+	if node.Id == id {
+		return true
+	}
+
+	if len(node.Children) > 0 {
+		for _, child := range node.Children {
+			if child.CheckfindByIdDFS(id) {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 func (node *NodeExample2) findById(id string) {
