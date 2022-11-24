@@ -93,6 +93,7 @@ type V1ActiveWorkers struct {
 	LargeGroupOfPosts string    `json:"large_group_of_posts"`
 	Position_tag      string    `json:"position_tag"`
 	UpdatedAt         time.Time `json:"updatedAt"`
+	CreatedAt         time.Time `json:"createdAt"`
 	DateDismissals    time.Time `json:"dateDismissals"`
 }
 
