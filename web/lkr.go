@@ -820,6 +820,29 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
 
+	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID, 5)
+	//if err != nil {
+	if JSONString == "" {
+		//log.Impl.Error(err.Error())
+		// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
+		// if err != nil {
+		// 	log.Impl.Error(err)
+		// }
+
+		// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	} else {
+		// c.Data(http.StatusOK, "application/json", []byte(JSONString))
+		// //c.JSON(http.StatusOK, JSONString)
+		// return
+		var AnswerWebV1 AnswerWebV1
+		if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+			return nil, err
+		}
+
+		return AnswerWebV1, nil
+	}
+
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
 		return nil, err
