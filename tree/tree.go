@@ -1,5 +1,7 @@
 package tree
 
+import "fmt"
+
 type BranchTree struct {
 	Area            string `json:"area"`
 	BranchName      string `json:"branchName"`
@@ -37,15 +39,15 @@ func AssembleTreeHandler(BranchTree []BranchTree) interface{} {
 
 	var Node NodeInterface
 
-	// упрощенный вариант
-	Node = &NodeExample1{Name: "root", Children: []*NodeExample1{}}
-	Node.AssembleTree(BranchTree)
-	////////_, Result := Node.AssembleTree(BranchTree)
-
-	// //TODO: Смена сортировки ведет к потери узлов в дереве, если узел добавляется, но его родителя еще нет тоже пропадает
-	// Node = &NodeExample2{"", "", "root", false, 0, nil}
+	// // упрощенный вариант
+	// Node = &NodeExample1{Name: "root", Children: []*NodeExample1{}}
 	// Node.AssembleTree(BranchTree)
-	// ///////Node, _ := AssembleTreeExample2(BranchTree)
+	// ////////_, Result := Node.AssembleTree(BranchTree)
+
+	//TODO: Смена сортировки ведет к потери узлов в дереве, если узел добавляется, но его родителя еще нет тоже пропадает
+	Node = &NodeExample2{"", "", "root", false, 0, nil}
+	Node.AssembleTree(BranchTree)
+	///////Node, _ := AssembleTreeExample2(BranchTree)
 
 	///////Node = findByIdDFSInterFace(&NodeExample2{"", "", "root", false, 0, nil}, "187ac25d-ef9d-11eb-9114-005056a2ef46")
 	///////Node = findByIdDFSInterFace(Node, "187ac25d-ef9d-11eb-9114-005056a2ef46")
@@ -305,6 +307,8 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 
 	node.findByIdDFS(CurrectBranchId)
 	//node.findById(CurrectBranchId)
+
+	fmt.Println(node.Size(), " - ", len(BranchTree))
 
 	// fmt.Println(node.Add(data...), node.Size())
 	// bytes, _ := json.MarshalIndent(node, "", "\t") //formated output
