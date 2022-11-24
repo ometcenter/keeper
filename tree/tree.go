@@ -326,6 +326,8 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 
 			node.Add(data2...)
 
+			fmt.Println("middle: ", node.Size(), " - ", len(BranchTree))
+
 			if node.Size() == len(BranchTree) {
 				fmt.Println(i)
 				break
