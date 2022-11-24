@@ -871,6 +871,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
 		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
 		coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
+		coalesce(collaborators_posle.created_at, DATE '1900-01-01') as created_at,
 		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date
 	from
 		collaborators_posle as collaborators_posle
@@ -898,7 +899,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 	for rows.Next() {
 		var r V1ActiveWorkers
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
-			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.UpdatedAt, &r.DateDismissals)
+			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.UpdatedAt, &r.CreatedAt, &r.DateDismissals)
 		if err != nil {
 			return nil, err
 		}
