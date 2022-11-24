@@ -318,8 +318,8 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 
 			for _, value := range BranchTree {
 				checkResult := node.CheckfindByIdDFS(value.BranchID)
-				fmt.Printf("checkResult : %s for : %v\n", checkResult, value)
 				if !checkResult {
+					fmt.Printf("checkResult : %t for : %v\n", checkResult, value)
 					data2 = append(data2, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
 				}
 			}
