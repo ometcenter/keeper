@@ -920,7 +920,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 	var AnswerWebV1 AnswerWebV1
 	AnswerWebV1.Status = true
 	if ColumnsStruct.CollaboratorId == "" {
-		AnswerWebV1.Data = nil
+		//AnswerWebV1.Data = nil
 	} else {
 		AnswerWebV1.Data = ColumnsStruct
 	}
