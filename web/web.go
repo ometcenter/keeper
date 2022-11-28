@@ -2,7 +2,7 @@ package web
 
 type AnswerWebV1 struct {
 	Status bool        `json:"status"`
-	Data   interface{} `json:"data,omitempty"` //`json:"data,omitempty"`
+	Data   interface{} `json:"data"` //`json:"data,omitempty"`
 	Error  *ErrorWebV1 `json:"error,omitempty"`
 }
 
