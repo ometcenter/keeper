@@ -1,6 +1,8 @@
 package tree
 
-import "fmt"
+import (
+	log "github.com/ometcenter/keeper/logging"
+)
 
 type BranchTree struct {
 	Area            string `json:"area"`
@@ -308,7 +310,7 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 	node.findByIdDFS(CurrectBranchId)
 	//node.findById(CurrectBranchId)
 
-	fmt.Println("before: ", node.Size(), " - ", len(BranchTree))
+	//fmt.Println("before: ", node.Size(), " - ", len(BranchTree))
 
 	if node.Size() < len(BranchTree) {
 
@@ -319,17 +321,17 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 			for _, value := range BranchTree {
 				checkResult := node.CheckfindByIdDFS(value.BranchID)
 				if !checkResult {
-					fmt.Printf("checkResult : %t for : %v\n", checkResult, value)
+					//fmt.Printf("checkResult : %t for : %v\n", checkResult, value)
 					data2 = append(data2, &NodeExample2{Id: value.BranchID, ParentId: value.PatentID, Name: value.BranchName})
 				}
 			}
 
 			node.Add(data2...)
 
-			fmt.Println("middle: ", node.Size(), " - ", len(BranchTree))
+			//fmt.Println("middle: ", node.Size(), " - ", len(BranchTree))
 
 			if node.Size() == len(BranchTree) {
-				fmt.Println(i)
+				//fmt.Println(i)
 				break
 			}
 
@@ -337,7 +339,12 @@ func (node *NodeExample2) AssembleTree(BranchTree []BranchTree) error {
 
 	}
 
-	fmt.Println("after: ", node.Size(), " - ", len(BranchTree))
+	if node.Size() < len(BranchTree) {
+		log.Impl.Error("problems with building tree - before: ", node.Size(), " - ", len(BranchTree),
+			" Current collaborator_id : ", CurrectBranchId)
+	}
+
+	//fmt.Println("after: ", node.Size(), " - ", len(BranchTree))
 
 	// fmt.Println(node.Add(data...), node.Size())
 	// bytes, _ := json.MarshalIndent(node, "", "\t") //formated output
