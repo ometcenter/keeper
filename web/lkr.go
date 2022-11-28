@@ -919,7 +919,11 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 	var AnswerWebV1 AnswerWebV1
 	AnswerWebV1.Status = true
-	AnswerWebV1.Data = ColumnsStruct
+	if ColumnsStruct.CollaboratorId == "" {
+		AnswerWebV1.Data = nil
+	} else {
+		AnswerWebV1.Data = ColumnsStruct
+	}
 	AnswerWebV1.Error = nil
 	//c.JSON(http.StatusOK, AnswerWebV1)
 
