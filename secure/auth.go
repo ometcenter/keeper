@@ -208,6 +208,11 @@ where
 	LkUsers.Person = V1ActiveWorkers
 	LkUsers.AdditionalSettingsUser = AdditionalSettingsUser
 
+	if LkUsers.Login == "" {
+		//Password does not match!
+		return LoginAnswer{}, fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
+	}
+
 	if blocked {
 		err := fmt.Errorf("Учетная запись заблокированна")
 		return LoginAnswer{}, err
