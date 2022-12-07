@@ -799,12 +799,12 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 			return nil, err
 		}
 
-		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
-		if err != nil {
-			return err, nil
-		}
+		// JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		// if err != nil {
+		// 	return err, nil
+		// }
 
-		r.EmailArray = JSONString
+		// r.EmailArray = JSONString
 
 		ColumnsStructSlice = append(ColumnsStructSlice, r)
 	}
@@ -875,10 +875,10 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
 		case
 			when (collaborators_posle.created_at >contact_inf_pochta_posle.created_at
-			and collaborators_posle.created_at >contact_inf_telephone_posle.created_at) then collaborators_posle.created_at
+			and collaborators_posle.created_at >contact_inf_telephone_posle.created_at) then coalesce(collaborators_posle.created_at, DATE '1900-01-01')
 			when (contact_inf_pochta_posle.created_at>collaborators_posle.created_at
-			and contact_inf_pochta_posle.created_at>contact_inf_telephone_posle.created_at) then contact_inf_pochta_posle.created_at
-			else contact_inf_telephone_posle.created_at
+			and contact_inf_pochta_posle.created_at>contact_inf_telephone_posle.created_at) then coalesce(contact_inf_pochta_posle.created_at, DATE '1900-01-01')
+			else coalesce(contact_inf_telephone_posle.created_at, DATE '1900-01-01')
 		end as created_at,
 		case
 			when (collaborators_posle.updated_at>contact_inf_pochta_posle.updated_at
@@ -919,12 +919,12 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 			return nil, err
 		}
 
-		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
-		if err != nil {
-			return err, nil
-		}
+		//JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		//if err != nil {
+		//	return err, nil
+		//}
 
-		r.EmailArray = JSONString
+		//r.EmailArray = JSONString
 		//r.EmailEPS = ""
 
 		//ColumnsStructSlice = append(ColumnsStructSlice, r)
@@ -1000,12 +1000,12 @@ func V1JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 			return nil, err
 		}
 
-		JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
-		if err != nil {
-			return err, nil
-		}
+		// JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		// if err != nil {
+		// 	return err, nil
+		// }
 
-		r.EmailArray = JSONString
+		// r.EmailArray = JSONString
 
 		ColumnsStructSlice = append(ColumnsStructSlice, r)
 	}
