@@ -495,7 +495,7 @@ func ShortDur(d time.Duration) string {
 //Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
 //1 month --- 330275
 func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, DurationTimeRemaindRows time.Duration,
-	DataFieldForCondition string) error {
+	DataFieldForCondition string, UseLimitOnly bool) error {
 
 	// queryAllColumns := `SELECT count(*)
 	// FROM public.quantity_metrics;`
@@ -522,24 +522,40 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 	//TODO: Может быть брать из системных таблиц размер таблицы и тогда чистить? а не ориентироваться по количеству
 	if counter > CounterLimit {
 
-		now := time.Now()
-		//after := now.Add(-25 * time.Hour)
-		after := now.Add(-1 * DurationTimeRemaindRows)
-		//after := now.AddDate(0, -6, 0)
-		fmt.Println("Subtract:", after)
+		if UseLimitOnly {
 
-		queryBuilderDelete := psql.Delete("").From(TableName).Where(sq.LtOrEq{DataFieldForCondition: after})
+			queryBuilderDelete := psql.Delete("").From(TableName).Offset(uint64(CounterLimit)).OrderBy(DataFieldForCondition)
 
-		queryTextDelete, _, err := queryBuilderDelete.ToSql()
-		//fmt.Println(queryTextDelete)
-		fmt.Printf("ShrinkTables: %s query: %s", TableName, queryTextDelete)
-		if err != nil {
-			return err
-		}
+			queryTextDelete, _, err := queryBuilderDelete.ToSql()
+			//fmt.Println(queryTextDelete)
+			fmt.Printf("ShrinkTables: %s query: %s", TableName, queryTextDelete)
+			if err != nil {
+				return err
+			}
+			//_, err = DB.Exec(queryTextDelete)
+			//if err != nil {
+			//	return err
+			//}
 
-		_, err = DB.Exec(queryTextDelete, after)
-		if err != nil {
-			return err
+		} else {
+			now := time.Now()
+			//after := now.Add(-25 * time.Hour)
+			after := now.Add(-1 * DurationTimeRemaindRows)
+			//after := now.AddDate(0, -6, 0)
+			//fmt.Println("Subtract:", after)
+
+			queryBuilderDelete := psql.Delete("").From(TableName).Where(sq.LtOrEq{DataFieldForCondition: after})
+
+			queryTextDelete, _, err := queryBuilderDelete.ToSql()
+			//fmt.Println(queryTextDelete)
+			fmt.Printf("ShrinkTables: %s query: %s", TableName, queryTextDelete)
+			if err != nil {
+				return err
+			}
+			_, err = DB.Exec(queryTextDelete, after)
+			if err != nil {
+				return err
+			}
 		}
 
 		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение больше чем %-8v",
