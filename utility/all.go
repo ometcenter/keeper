@@ -504,7 +504,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 	queryBuilder := psql.Select("count(*)").From(TableName)
 
 	queryText, _, err := queryBuilder.ToSql()
-	fmt.Printf("ShrinkTables: %s query: %s", TableName, queryText)
+	fmt.Printf("ShrinkTables: %s query: %s\n", TableName, queryText)
 	if err != nil {
 		return err
 	}
@@ -514,8 +514,6 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 	if err != nil {
 		return err
 	}
-
-	fmt.Printf("ShrinkTables: %s counter: %d", TableName, counter)
 
 	//Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
 	//1 month --- 330275
@@ -530,7 +528,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 
 			// queryTextDelete, _, err := queryBuilderDelete.ToSql()
 			// //fmt.Println(queryTextDelete)
-			fmt.Printf("ShrinkTables: %s query: %s", TableName, queryTextDelete)
+			fmt.Printf("ShrinkTables: %s - query: %s\n", TableName, queryTextDelete)
 			// if err != nil {
 			// 	return err
 			// }
@@ -550,7 +548,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 
 			queryTextDelete, _, err := queryBuilderDelete.ToSql()
 			//fmt.Println(queryTextDelete)
-			fmt.Printf("ShrinkTables: %s query: %s", TableName, queryTextDelete)
+			fmt.Printf("ShrinkTables: %s - query: %s\n", TableName, queryTextDelete)
 			if err != nil {
 				return err
 			}
