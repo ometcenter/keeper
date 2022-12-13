@@ -528,14 +528,14 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 
 			// queryTextDelete, _, err := queryBuilderDelete.ToSql()
 			// //fmt.Println(queryTextDelete)
-			fmt.Printf("ShrinkTables: %s - query: %s\n", TableName, queryTextDelete)
+			fmt.Printf("ShrinkTables: %s - query: %s - counter %d\n", TableName, queryTextDelete, counter)
 			// if err != nil {
 			// 	return err
 			// }
-			//_, err = DB.Exec(queryTextDelete)
-			//if err != nil {
-			//	return err
-			//}
+			_, err = DB.Exec(queryTextDelete)
+			if err != nil {
+				return err
+			}
 
 		} else {
 			now := time.Now()
@@ -548,7 +548,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 
 			queryTextDelete, _, err := queryBuilderDelete.ToSql()
 			//fmt.Println(queryTextDelete)
-			fmt.Printf("ShrinkTables: %s - query: %s\n", TableName, queryTextDelete)
+			fmt.Printf("ShrinkTables: %s - query: %s - counter %d\n", TableName, queryTextDelete, counter)
 			if err != nil {
 				return err
 			}
