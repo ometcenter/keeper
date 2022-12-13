@@ -491,3 +491,61 @@ func ShortDur(d time.Duration) string {
 	}
 	return s
 }
+
+//Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
+//1 month --- 330275
+func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, DurationTimeRemaindRows time.Duration,
+	DataFieldForCondition string) error {
+
+	// queryAllColumns := `SELECT count(*)
+	// FROM public.quantity_metrics;`
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryBuilder := psql.Select("count(*)").From(TableName)
+
+	queryText, _, err := queryBuilder.ToSql()
+	fmt.Println(queryText)
+	if err != nil {
+		return err
+	}
+
+	var counter int
+	err = DB.QueryRow(queryText).Scan(&counter)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("counter: ", counter)
+
+	//Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
+	//1 month --- 330275
+	//TODO: Может быть брать из системных таблиц размер таблицы и тогда чистить? а не ориентироваться по количеству
+	if counter > CounterLimit {
+
+		now := time.Now()
+		//after := now.Add(-25 * time.Hour)
+		after := now.Add(-1 * DurationTimeRemaindRows)
+		//after := now.AddDate(0, -6, 0)
+		fmt.Println("Subtract:", after)
+
+		queryBuilderDelete := psql.Delete("").From(TableName).Where(sq.LtOrEq{DataFieldForCondition: after})
+
+		queryTextDelete, _, err := queryBuilderDelete.ToSql()
+		fmt.Println(queryTextDelete)
+		if err != nil {
+			return err
+		}
+
+		_, err = DB.Exec(queryTextDelete, after)
+		if err != nil {
+			return err
+		}
+
+		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение больше чем %-8v",
+			TableName, counter, DurationTimeRemaindRows)
+
+	}
+
+	return nil
+
+}
