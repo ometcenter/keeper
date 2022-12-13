@@ -524,7 +524,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 
 		if UseLimitOnly {
 
-			queryBuilderDelete := psql.Delete("").From(TableName).Offset(uint64(CounterLimit)).OrderBy(DataFieldForCondition)
+			queryBuilderDelete := psql.Delete("").From(TableName).Offset(uint64(CounterLimit)).OrderBy(DataFieldForCondition + " DESC")
 
 			queryTextDelete, _, err := queryBuilderDelete.ToSql()
 			//fmt.Println(queryTextDelete)
