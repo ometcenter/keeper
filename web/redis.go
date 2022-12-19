@@ -55,7 +55,10 @@ where
 	//InsuranceNumber := "" //c.Params.ByName("worker_id")
 
 	UseYearFilter := false
-	yearFilter := "2022"
+
+	//yearFilter := "2022"
+	yearFilter := utilityShare.GetCurrentYearAsString()
+
 	if yearFilter != "" {
 		UseYearFilter = true
 	}
@@ -161,8 +164,10 @@ where
 	// 	UseYearFilter = true
 	// }
 
-	yearFilterFrom := "2022"
-	yearFilterTo := "2022"
+	//yearFilterFrom := "2022"
+	//yearFilterTo := "2022"
+	yearFilterFrom := utilityShare.GetCurrentYearAsString()
+	yearFilterTo := utilityShare.GetCurrentYearAsString()
 	if yearFilterFrom != "" && yearFilterTo != "" {
 		UseYearFilter = true
 	}
@@ -255,9 +260,12 @@ where
 	// 	UseYearFilter = true
 	// }
 
-	yearFilterFrom := "2022"
-	yearFilterTo := "2022"
-	yearFilter := "2022"
+	// yearFilterFrom := "2022"
+	// yearFilterTo := "2022"
+	// yearFilter := "2022"
+	yearFilterFrom := utilityShare.GetCurrentYearAsString()
+	yearFilterTo := utilityShare.GetCurrentYearAsString()
+	yearFilter := utilityShare.GetCurrentYearAsString()
 	if yearFilterFrom != "" && yearFilterTo != "" {
 		UseYearFilter = true
 	}

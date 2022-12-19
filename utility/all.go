@@ -566,3 +566,9 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 	return nil
 
 }
+
+func GetCurrentYearAsString() string {
+	today := time.Now()
+	yearFilterInt := today.Year() //"2022"
+	return strconv.Itoa(yearFilterInt)
+}
