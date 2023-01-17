@@ -319,10 +319,11 @@ func (requestUniversal *RESTRequestUniversal) Send() ([]byte, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		//return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode))
-		return nil, err
-	}
+
+	// if resp.StatusCode != http.StatusOK {
+	// 	//return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode))
+	// 	return nil, err
+	// }
 
 	bodyRespons, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
