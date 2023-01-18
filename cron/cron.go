@@ -1,6 +1,10 @@
 package cron
 
-import "github.com/robfig/cron/v3"
+import (
+	"time"
+
+	"github.com/robfig/cron/v3"
+)
 
 var CronScheduler *cron.Cron
 
@@ -12,4 +16,11 @@ type SetScheduleCronMessage struct {
 	JobID        string
 	Cron         string
 	JSONParam    string
+}
+
+type JobsCronBackGroundTask struct {
+	ID   int
+	Job  string
+	Next time.Time
+	Prev time.Time
 }

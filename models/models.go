@@ -219,13 +219,6 @@ type RowPass struct {
 	Db_userpwd     string `json:"db_userpwd"`
 }
 
-type JobsCronBackGroundTask struct {
-	ID   int
-	Job  string
-	Next time.Time
-	Prev time.Time
-}
-
 type QuantityMetric struct {
 	ID             int
 	DateMetric     time.Time // Дата метрики
