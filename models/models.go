@@ -219,6 +219,17 @@ type RowPass struct {
 	Db_userpwd     string `json:"db_userpwd"`
 }
 
+type JobDescription struct {
+	Name1C    string
+	Code1C    string
+	TableName string
+}
+
+type MessageTelegram struct {
+	ChatID string `json:"chat_id"`
+	Text   string `json:"text"`
+}
+
 type QuantityMetric struct {
 	ID             int
 	DateMetric     time.Time // Дата метрики

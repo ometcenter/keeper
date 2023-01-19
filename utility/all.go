@@ -1,10 +1,15 @@
 package utility
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -15,6 +20,7 @@ import (
 	"github.com/ometcenter/keeper/models"
 	tracing "github.com/ometcenter/keeper/tracing/jaeger"
 	tracingRabbitMQ "github.com/ometcenter/keeper/tracing/jaeger/rabbitmq"
+	"github.com/ometcenter/keeper/version"
 	"github.com/streadway/amqp"
 )
 
@@ -492,8 +498,8 @@ func ShortDur(d time.Duration) string {
 	return s
 }
 
-//Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
-//1 month --- 330275
+// Если таблица вестит больше 500МБ, а это примерно 3 000 000 записей, то чистим за 6 месяцев метрики.
+// 1 month --- 330275
 func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, DurationTimeRemaindRows time.Duration,
 	DataFieldForCondition string, UseLimitOnly bool) error {
 
@@ -571,4 +577,211 @@ func GetCurrentYearAsString() string {
 	today := time.Now()
 	yearFilterInt := today.Year() //"2022"
 	return strconv.Itoa(yearFilterInt)
+}
+
+func CloseStatusJob(DB *sql.DB) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, "Выполнено")
+
+	// Мы не закрываем задания удаленного сбора, они закрываются в отдельном микросервисе
+	queryAllColumns := `select
+		jobs.job_id as job_id1,
+		coalesce(settings_jobs.code_external, '') as code_external,
+		coalesce(settings_jobs.name_external, '') as name_external,
+		coalesce(settings_jobs.table_name, '') as table_name,
+		coalesce(exchange_jobs."event", '') as status,
+		count(exchange_jobs."event") as event_count
+	from
+		public.jobs as jobs
+	left join public.settings_jobs as settings_jobs on
+		jobs.job_id = settings_jobs.job_id
+	left join public.exchange_jobs as exchange_jobs on
+		jobs.job_id = exchange_jobs.job_id
+	where
+		status <> $1
+		and coalesce(settings_jobs.use_remote_collection, false) <> true
+	group by
+		job_id1,
+		code_external,
+		name_external,
+		table_name,
+		exchange_jobs."event"
+	order by
+		job_id1,
+		"event"`
+
+	rows, err := DB.Query(queryAllColumns, argsquery...)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	ResultMap := make(map[string][]string)
+	ResultSettingsMap := make(map[string]models.JobDescription)
+
+	for rows.Next() {
+		var JobID, Status, Event_count string
+		var JobDescription models.JobDescription
+		err = rows.Scan(&JobID, &JobDescription.Code1C, &JobDescription.Name1C, &JobDescription.TableName, &Status, &Event_count)
+		if err != nil {
+			return err
+		}
+
+		Records, ok := ResultMap[JobID]
+		if ok != true {
+			var NewRecord []string
+			NewRecord = append(NewRecord, Status)
+			ResultMap[JobID] = NewRecord
+		} else {
+			Records = append(Records, Status)
+			ResultMap[JobID] = Records
+		}
+
+		ResultSettingsMap[JobID] = JobDescription
+
+	}
+
+	// 	var strBuilder strings.Builder
+	// 	strBuilder.WriteString(JobID + " ")
+	// 	flagExecuteJob := true
+	// 	for rows2.Next() {
+
+	// 		var Status string
+	// 		var jobs_count int
+	// 		err = rows2.Scan(&jobs_count, &Status)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+
+	// 		if Status != "Выполнено" {
+	// 			flagExecuteJob = false
+	// 		}
+
+	// 		strBuilder.WriteString(fmt.Sprintf("%s:%d\n", Status, jobs_count))
+
+	// 	}
+
+	// Закрываем задание
+	for JobID, value := range ResultMap {
+
+		if len(value) == 1 && value[0] == "Выполнено" {
+
+			// var argsUpdate []interface{}
+			// argsUpdate = append(argsUpdate, JobID)
+			// argsUpdate = append(argsUpdate, "Выполнено")
+			// argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
+
+			// _, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
+			// WHERE job_id = $1;`, argsUpdate...)
+
+			// if err != nil {
+			// 	return err
+			// }
+
+			err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
+			if err != nil {
+				return nil
+			}
+
+			ResultSettings := ResultSettingsMap[JobID]
+
+			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C, ResultSettings.TableName, version.Commit))
+			if err != nil {
+				log.Impl.Error(err)
+			}
+
+			var QueryToBI models.QueryToBI
+			err = QueryToBI.LoadSettingsFirstRowFromPgByJobID(DB, JobID)
+			if err != nil {
+				err = fmt.Errorf("НастройкиМодели not filled in QueryResult для JobId %s", JobID)
+				log.Impl.Error(err)
+			}
+
+			if QueryToBI.UseHandleAfterLoadAlgorithms {
+
+				var HandleAfterLoad models.HandleAfterLoad
+				HandleAfterLoad.JobID = JobID
+				HandleAfterLoad.Algorithms = QueryToBI.ListHandleAfterLoadAlgorithms
+
+				var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
+				MessageQueueGeneralInterface.Type = "HandleAfterLoad"
+				MessageQueueGeneralInterface.Body = HandleAfterLoad
+
+				MessageQueueGeneralInterfaceByte, err := json.Marshal(MessageQueueGeneralInterface)
+				if err != nil {
+					return err
+				}
+
+				var RESTRequestUniversal models.RESTRequestUniversal
+				Headers := make(map[string]string)
+				Headers["TokenBearer"] = config.Conf.TokenBearer
+				RESTRequestUniversal.Headers = Headers
+				RESTRequestUniversal.Method = "POST"
+				RESTRequestUniversal.Body = MessageQueueGeneralInterfaceByte
+				// TODO: Переделать на переменную окружения
+				RESTRequestUniversal.UrlToCall = os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/save-event-to-queue"
+				_, err = RESTRequestUniversal.Send()
+				if err != nil {
+					log.Impl.Error(err)
+				}
+			}
+
+			log.Impl.Infof("Обновленно задание %s \n", JobID)
+		}
+
+	}
+
+	return nil
+
+}
+
+// sendTextToTelegramChat sends a text message to the Telegram chat identified by its chat Id
+// func SendTextToTelegramChat(chatId int, text string) (string, error) {
+func SendTextToTelegramChat(Text string) error {
+
+	var MessageTelegram models.MessageTelegram
+	MessageTelegram.ChatID = os.Getenv("TELEGRAM_CHAT_ID")
+	MessageTelegram.Text = Text
+
+	JsonByteMessageBody, err := json.Marshal(&MessageTelegram)
+	if err != nil {
+		return err
+	}
+
+	method := "POST"
+	//urlToCall := "https://1d56fe65.proxy.webhookapp.com"
+	urlToCall := "https://api.telegram.org"
+	tokenBot := os.Getenv("TELEGRAM_TOKEN_BOT")
+	urlToCall += "/bot" + tokenBot + "/" + "sendMessage"
+
+	body := bytes.NewBuffer(JsonByteMessageBody)
+	//useAuth := true
+
+	req, err := http.NewRequest(method, urlToCall, body)
+	req.Header.Set("Content-Type", "application/json")
+	// if useAuth {
+	// 	req.Header.Set("Authorization", "Basic "+token)
+	// }
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Impl.Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		bodyResp, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Impl.Error(err)
+			return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode))
+		}
+
+		return errors.New("status code not ok: " + strconv.Itoa(resp.StatusCode) + " body: " + string(bodyResp) + " url: " + urlToCall)
+	}
+
+	return nil
+
 }
