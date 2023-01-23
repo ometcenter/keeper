@@ -573,3 +573,17 @@ type ChangeStatusJobSimple struct {
 	JobID  string `json:"jobID"`
 	Status string `json:"status"`
 }
+
+type RemoteJobs struct {
+	JobId        string
+	RemoteBaseId string
+}
+
+type HistoryReceivedMessages struct {
+	gorm.Model
+	Area          string `json:"Область"`
+	TableName     string `json:"ИмяТаблицы"`
+	DateRecord    time.Time
+	MessageResult datatypes.JSON
+	Settings      datatypes.JSON
+}
