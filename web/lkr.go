@@ -539,7 +539,7 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		settlement_group,
 		calculation_type,
 		days_worked,
-		replace(hours_worked, ' ', '') as hours_worked
+		replace(hours_worked, ' ', '') as hours_worked,
 		replace(replace(summa, ' ', ''), ' ', '') as summa
 	from
 		lkr_nachisleniy_zp2020
