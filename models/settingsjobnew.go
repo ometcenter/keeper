@@ -2,6 +2,8 @@ package models
 
 import (
 	"database/sql"
+	"database/sql/driver"
+	"errors"
 
 	"encoding/json"
 
@@ -184,6 +186,43 @@ type SettingsJobsAllV2 struct {
 	HashAnswer                       bool                     `json:"hashAnswer"`                       //ХешироватьРезультат
 	CodeExternal                     string                   `json:"codeExternal"`                     // Внешний код задания
 	NameExternal                     string                   `json:"nameExternal"`                     // Внешнее имя задания
+}
+
+func (S *SettingsJobsAllV2) Scan(value interface{}) (err error) {
+	switch value.(type) {
+	case string:
+		err = json.Unmarshal([]byte(value.(string)), &S)
+	case []byte:
+		err = json.Unmarshal(value.([]byte), &S)
+	default:
+		return errors.New("incompatible type for skills")
+	}
+	if err != nil {
+		return
+	}
+
+	return nil
+}
+
+func (S SettingsJobsAllV2) Value() (driver.Value, error) {
+	return json.Marshal(S)
+}
+
+func (S *SettingsJobsAllV2) LoadSettingsFromPgByJobID(DB *sql.DB, JobID string) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, JobID)
+
+	var LoadValue SettingsJobsAllV2
+	err := DB.QueryRow("SELECT settings_jobs_json_byte FROM settings_jobs_v2 WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Переделать по нормальному эту конструкцию
+	*S = LoadValue
+
+	return nil
 }
 
 type ScheduleV2 struct {
