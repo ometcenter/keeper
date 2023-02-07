@@ -275,6 +275,11 @@ func AutoMigrategORM() error {
 		return err
 	}
 
+	err = gormDB.AutoMigrate(&models.SettingsJobsV2{})
+	if err != nil {
+		return err
+	}
+
 	return nil
 
 }
