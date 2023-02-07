@@ -6,7 +6,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
 
+	"github.com/jinzhu/copier"
 	"gorm.io/datatypes"
 )
 
@@ -128,20 +131,51 @@ func (QueryToBI QueryToBI) Value() (driver.Value, error) {
 
 func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) error {
 
-	var argsquery []interface{}
-	argsquery = append(argsquery, JobID)
+	if strings.EqualFold(os.Getenv("USE_SETTINGS_JOB_V2"), "true") {
 
-	var LoadValue SettingsJobSliceQueryToBI
-	err := DB.QueryRow("SELECT json_byte FROM settings_jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
-	if err != nil {
-		return err
-	}
+		var SettingsJobsAllV2 SettingsJobsAllV2
+		err := SettingsJobsAllV2.LoadSettingsFromPgByJobID(DB, JobID)
+		if err != nil {
+			return err
+		}
 
-	if len(LoadValue.SliceQueryToBI) > 0 {
-		// TODO: Переделать по нормальному эту конструкцию
-		*Q = LoadValue.SliceQueryToBI[0]
+		Q.AddParam.Options.TableName = SettingsJobsAllV2.TableName
+		//SettingsJobsAllV2.CodeExternal
+		Q.AddParam.Options.DSNconnection = SettingsJobsAllV2.DSNconnection
+		Q.DataUploadMethod = SettingsJobsAllV2.DataUploadMethod
+		Q.AddParam.HashAnswer = SettingsJobsAllV2.HashAnswer
+		Q.InternalProcessingExternalSource = SettingsJobsAllV2.InternalProcessingExternalSource
+		Q.JobID = SettingsJobsAllV2.JobID
+		Q.ListDataProcessingAlgorithms = SettingsJobsAllV2.ListDataProcessingAlgorithms
+		Q.ListHandleAfterLoadAlgorithms = SettingsJobsAllV2.ListHandleAfterLoadAlgorithms
+		copier.Copy(&Q.MappingForExcelArray, &SettingsJobsAllV2.MappingForExcelArray)
+		//SettingsJobsAllV2.NameExternal
+		Q.PublishTableToAPI = SettingsJobsAllV2.PublishTableToAPI
+		Q.RuleExternalSource = SettingsJobsAllV2.RuleExternalSource
+		Q.SaveToDataVisualizationSystem = SettingsJobsAllV2.SaveToDataVisualizationSystem
+		Q.TypeDataGetting = SettingsJobsAllV2.TypeDataGetting
+		Q.UseDataProcessingAlgorithms = SettingsJobsAllV2.UseDataProcessingAlgorithms
+		Q.UseHandleAfterLoadAlgorithms = SettingsJobsAllV2.UseHandleAfterLoadAlgorithms
+		Q.Webhooks = SettingsJobsAllV2.Webhooks
+		Q.AddParam.ZipAnswer = SettingsJobsAllV2.ZipAnswer
+
 	} else {
-		return fmt.Errorf("получена пустая настройка")
+
+		var argsquery []interface{}
+		argsquery = append(argsquery, JobID)
+
+		var LoadValue SettingsJobSliceQueryToBI
+		err := DB.QueryRow("SELECT json_byte FROM settings_jobs WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+		if err != nil {
+			return err
+		}
+
+		if len(LoadValue.SliceQueryToBI) > 0 {
+			// TODO: Переделать по нормальному эту конструкцию
+			*Q = LoadValue.SliceQueryToBI[0]
+		} else {
+			return fmt.Errorf("получена пустая настройка")
+		}
 	}
 
 	return nil

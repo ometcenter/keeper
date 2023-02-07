@@ -12,6 +12,7 @@ require (
 	github.com/gomodule/redigo v1.7.1-0.20190724094224-574c33c3df38
 	github.com/google/uuid v1.3.0
 	github.com/hashicorp/consul/api v1.9.1
+	github.com/jinzhu/copier v0.3.5 // indirect
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/segmentio/kafka-go v0.4.38
