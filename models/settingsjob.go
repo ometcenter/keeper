@@ -103,7 +103,7 @@ type QueryToBI struct {
 	MappingForExcelArray             []MappingForExcelArray `json:"СопоставлениеДляExcalМассив"`
 	RuleExternalSource               string                 `json:"ПравилоВнешнийИсточник"`
 	InternalProcessingExternalSource bool                   `json:"ВнутренняяОбработкаВнешнегоИсточника"`
-	SettingsJobsV2                   SettingsJobsV2         `json:"settingsJobsV2"`
+	//SettingsJobsV2                   SettingsJobsV2         `json:"settingsJobsV2"`
 }
 
 func (QueryToBI *QueryToBI) Scan(value interface{}) (err error) {

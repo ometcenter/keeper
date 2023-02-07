@@ -534,32 +534,6 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 	argsquery = append(argsquery, WorkerID)
 	//queryAllColumns := "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = $1;"
 
-	// queryAllColumns := `select
-	// 	date_registration,
-	// 	settlement_group,
-	// 	calculation_type,
-	// 	days_worked,
-	// 	hours_worked,
-	// 	replace(summa, ' ', '')
-	// from
-	// 	lkr_nachisleniy_zp
-	// where
-	// 	collaborator_id = $1
-	// union all
-	// select
-	// 	date_registration,
-	// 	settlement_group,
-	// 	calculation_type,
-	// 	days_worked,
-	// 	hours_worked,
-	// 	replace(summa, ' ', '')
-	// from
-	// 	lkr_nachisleniy_zp2022
-	// where
-	// 	collaborator_id = $1
-	// order by
-	// 	1`
-
 	queryAllColumns := `select
 		date_registration,
 		settlement_group,
@@ -593,6 +567,18 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		replace(summa, ' ', '')
 	from
 		lkr_nachisleniy_zp2022
+	where
+		collaborator_id = $1
+	union all
+	select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		hours_worked,
+		replace(summa, ' ', '')
+	from
+		lkr_nachisleniy_zp2023
 	where
 		collaborator_id = $1
 	order by
