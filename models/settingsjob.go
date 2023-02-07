@@ -139,11 +139,20 @@ func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) 
 			return err
 		}
 
-		Q.AddParam.Options.TableName = SettingsJobsAllV2.TableName
+		var AddParam AdditionParam
+		AddParam.HashAnswer = SettingsJobsAllV2.HashAnswer
+		AddParam.ZipAnswer = SettingsJobsAllV2.ZipAnswer
+
+		var Options Options
+		Options.TableName = SettingsJobsAllV2.TableName
 		//SettingsJobsAllV2.CodeExternal
-		Q.AddParam.Options.DSNconnection = SettingsJobsAllV2.DSNconnection
+		Options.DSNconnection = SettingsJobsAllV2.DSNconnection
+
+		AddParam.Options = &Options
+		Q.AddParam = AddParam
+
 		Q.DataUploadMethod = SettingsJobsAllV2.DataUploadMethod
-		Q.AddParam.HashAnswer = SettingsJobsAllV2.HashAnswer
+
 		Q.InternalProcessingExternalSource = SettingsJobsAllV2.InternalProcessingExternalSource
 		Q.JobID = SettingsJobsAllV2.JobID
 		Q.ListDataProcessingAlgorithms = SettingsJobsAllV2.ListDataProcessingAlgorithms
@@ -157,7 +166,6 @@ func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) 
 		Q.UseDataProcessingAlgorithms = SettingsJobsAllV2.UseDataProcessingAlgorithms
 		Q.UseHandleAfterLoadAlgorithms = SettingsJobsAllV2.UseHandleAfterLoadAlgorithms
 		Q.Webhooks = SettingsJobsAllV2.Webhooks
-		Q.AddParam.ZipAnswer = SettingsJobsAllV2.ZipAnswer
 
 	} else {
 
