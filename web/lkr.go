@@ -539,8 +539,8 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		settlement_group,
 		calculation_type,
 		days_worked,
-		hours_worked,
-		replace(summa, ' ', '')
+		replace(hours_worked, ' ', '') as hours_worked
+		replace(replace(summa, ' ', ''), ' ', '') as summa
 	from
 		lkr_nachisleniy_zp2020
 	where
@@ -551,8 +551,8 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		settlement_group,
 		calculation_type,
 		days_worked,
-		hours_worked,
-		replace(summa, ' ', '')
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
 	from
 		lkr_nachisleniy_zp2021
 	where
@@ -563,8 +563,8 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		settlement_group,
 		calculation_type,
 		days_worked,
-		hours_worked,
-		replace(summa, ' ', '')
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
 	from
 		lkr_nachisleniy_zp2022
 	where
@@ -575,8 +575,8 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		settlement_group,
 		calculation_type,
 		days_worked,
-		hours_worked,
-		replace(summa, ' ', '')
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
 	from
 		lkr_nachisleniy_zp2023
 	where
