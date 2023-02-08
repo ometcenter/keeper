@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"fmt"
+
+	sq "github.com/Masterminds/squirrel"
 
 	"encoding/json"
 
@@ -215,6 +218,33 @@ func (S *SettingsJobsAllV2) LoadSettingsFromPgByJobID(DB *sql.DB, JobID string) 
 
 	var LoadValue SettingsJobsAllV2
 	err := DB.QueryRow("SELECT settings_jobs_json_byte FROM settings_jobs_v2 WHERE job_id = $1", argsquery...).Scan(&LoadValue)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Переделать по нормальному эту конструкцию
+	*S = LoadValue
+
+	return nil
+}
+
+func (S *SettingsJobsAllV2) LoadSettingsFromPgByFileds(DB *sql.DB, FieldName string, Value interface{}) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, Value)
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	queryBuilder := psql.Select("settings_jobs_json_byte").From("settings_jobs_v2").Where(sq.Eq{FieldName: Value})
+
+	queryText, _, err := queryBuilder.ToSql()
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(queryText)
+
+	var LoadValue SettingsJobsAllV2
+	err = DB.QueryRow(queryText, argsquery...).Scan(&LoadValue)
 	if err != nil {
 		return err
 	}
