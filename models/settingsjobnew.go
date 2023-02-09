@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/jinzhu/copier"
 
 	"encoding/json"
 
@@ -189,6 +190,8 @@ type SettingsJobsAllV2 struct {
 	HashAnswer                       bool                     `json:"hashAnswer"`                       //ХешироватьРезультат
 	CodeExternal                     string                   `json:"codeExternal"`                     // Внешний код задания
 	NameExternal                     string                   `json:"nameExternal"`                     // Внешнее имя задания
+	SelectionFields                  []string                 `json:"selectionFields"`                  //ПоляОтбора
+	ComparionFields                  []string                 `json:"comparionFields"`                  //ПоляСравнения
 }
 
 func (S *SettingsJobsAllV2) Scan(value interface{}) (err error) {
@@ -253,6 +256,43 @@ func (S *SettingsJobsAllV2) LoadSettingsFromPgByFileds(DB *sql.DB, FieldName str
 	*S = LoadValue
 
 	return nil
+}
+
+func (SettingsJobsAllV2 *SettingsJobsAllV2) TranformToOldSettings() (QueryToBI, error) {
+
+	var Q QueryToBI
+
+	var AddParam AdditionParam
+	AddParam.HashAnswer = SettingsJobsAllV2.HashAnswer
+	AddParam.ZipAnswer = SettingsJobsAllV2.ZipAnswer
+
+	var Options Options
+	Options.TableName = SettingsJobsAllV2.TableName
+	//SettingsJobsAllV2.CodeExternal
+	Options.DSNconnection = SettingsJobsAllV2.DSNconnection
+	Options.SelectionFields = SettingsJobsAllV2.SelectionFields
+	Options.ComparionFields = SettingsJobsAllV2.ComparionFields
+
+	AddParam.Options = &Options
+	Q.AddParam = AddParam
+
+	Q.DataUploadMethod = SettingsJobsAllV2.DataUploadMethod
+
+	Q.InternalProcessingExternalSource = SettingsJobsAllV2.InternalProcessingExternalSource
+	Q.JobID = SettingsJobsAllV2.JobID
+	Q.ListDataProcessingAlgorithms = SettingsJobsAllV2.ListDataProcessingAlgorithms
+	Q.ListHandleAfterLoadAlgorithms = SettingsJobsAllV2.ListHandleAfterLoadAlgorithms
+	copier.Copy(&Q.MappingForExcelArray, &SettingsJobsAllV2.MappingForExcelArray)
+	//SettingsJobsAllV2.NameExternal
+	Q.PublishTableToAPI = SettingsJobsAllV2.PublishTableToAPI
+	Q.RuleExternalSource = SettingsJobsAllV2.RuleExternalSource
+	Q.SaveToDataVisualizationSystem = SettingsJobsAllV2.SaveToDataVisualizationSystem
+	Q.TypeDataGetting = SettingsJobsAllV2.TypeDataGetting
+	Q.UseDataProcessingAlgorithms = SettingsJobsAllV2.UseDataProcessingAlgorithms
+	Q.UseHandleAfterLoadAlgorithms = SettingsJobsAllV2.UseHandleAfterLoadAlgorithms
+	Q.Webhooks = SettingsJobsAllV2.Webhooks
+
+	return Q, nil
 }
 
 type ScheduleV2 struct {

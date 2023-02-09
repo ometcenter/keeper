@@ -9,7 +9,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/jinzhu/copier"
 	"gorm.io/datatypes"
 )
 
@@ -139,33 +138,12 @@ func (Q *QueryToBI) LoadSettingsFirstRowFromPgByJobID(DB *sql.DB, JobID string) 
 			return err
 		}
 
-		var AddParam AdditionParam
-		AddParam.HashAnswer = SettingsJobsAllV2.HashAnswer
-		AddParam.ZipAnswer = SettingsJobsAllV2.ZipAnswer
+		QTranform, err := SettingsJobsAllV2.TranformToOldSettings()
+		if err != nil {
+			return err
+		}
 
-		var Options Options
-		Options.TableName = SettingsJobsAllV2.TableName
-		//SettingsJobsAllV2.CodeExternal
-		Options.DSNconnection = SettingsJobsAllV2.DSNconnection
-
-		AddParam.Options = &Options
-		Q.AddParam = AddParam
-
-		Q.DataUploadMethod = SettingsJobsAllV2.DataUploadMethod
-
-		Q.InternalProcessingExternalSource = SettingsJobsAllV2.InternalProcessingExternalSource
-		Q.JobID = SettingsJobsAllV2.JobID
-		Q.ListDataProcessingAlgorithms = SettingsJobsAllV2.ListDataProcessingAlgorithms
-		Q.ListHandleAfterLoadAlgorithms = SettingsJobsAllV2.ListHandleAfterLoadAlgorithms
-		copier.Copy(&Q.MappingForExcelArray, &SettingsJobsAllV2.MappingForExcelArray)
-		//SettingsJobsAllV2.NameExternal
-		Q.PublishTableToAPI = SettingsJobsAllV2.PublishTableToAPI
-		Q.RuleExternalSource = SettingsJobsAllV2.RuleExternalSource
-		Q.SaveToDataVisualizationSystem = SettingsJobsAllV2.SaveToDataVisualizationSystem
-		Q.TypeDataGetting = SettingsJobsAllV2.TypeDataGetting
-		Q.UseDataProcessingAlgorithms = SettingsJobsAllV2.UseDataProcessingAlgorithms
-		Q.UseHandleAfterLoadAlgorithms = SettingsJobsAllV2.UseHandleAfterLoadAlgorithms
-		Q.Webhooks = SettingsJobsAllV2.Webhooks
+		*Q = QTranform
 
 	} else {
 
