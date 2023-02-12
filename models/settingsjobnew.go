@@ -15,10 +15,10 @@ import (
 )
 
 type SettingsJobsV2 struct {
-	JobID        string `json:"jobID"`        //ИдентификаторЗадания
-	CodeExternal string `json:"codeExternal"` //Код1С
-	NameExternal string `json:"nameExternal"` //Наименование1С
-	TableName    string `json:"tableName"`    //ИмяТаблицы
+	JobID        string `json:"jobID" gorm:"primaryKey"` //ИдентификаторЗадания
+	CodeExternal string `json:"codeExternal"`            //Код1С
+	NameExternal string `json:"nameExternal"`            //Наименование1С
+	TableName    string `json:"tableName"`               //ИмяТаблицы
 	//UseRemoteCollection    bool   `json:"УдаленныйСбор"`      //УдаленныйСбор
 	//ConfigName             string `json:"ИмяКонфигурации"`    //ИмяКонфигурации
 	TypeDataGetting  string `json:"typeDataGetting"`  //ВидПолученияДанных
