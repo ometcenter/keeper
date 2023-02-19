@@ -66,7 +66,7 @@ func GetMiddleWareLight() gin.HandlerFunc {
 	}
 }
 
-//a struct to rep user account
+// a struct to rep user account
 type Account struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`
@@ -210,7 +210,7 @@ where
 
 	if LkUsers.Login == "" {
 		//Password does not match!
-		return LoginAnswer{}, fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
+		return LoginAnswer{}, fmt.Errorf("Wrong credentials")
 	}
 
 	if blocked {
@@ -224,7 +224,8 @@ where
 	validPassword := LkUsers.ComparePasswords(LkUsers.HashPassword, password)
 	if !validPassword {
 		//Password does not match!
-		fmt.Println("Неверные логин или пароль. Пожалуйста, попробуйте еще раз --- LkUsers.ComparePasswords")
+		log.Impl.Info("Wrong credentials --- LkUsers.ComparePasswords")
+		//fmt.Println("Wrong credentials --- LkUsers.ComparePasswords")
 	}
 
 	usernameHash := sha256.Sum256([]byte(strings.ToLower(login)))
@@ -239,7 +240,7 @@ where
 		// 	next.ServeHTTP(w, r)
 		// 	return
 	} else {
-		return LoginAnswer{}, fmt.Errorf("Неверные логин или пароль. Пожалуйста, попробуйте еще раз")
+		return LoginAnswer{}, fmt.Errorf("Wrong credentials")
 	}
 
 	var Duration time.Duration // ExpiresIn
@@ -353,7 +354,9 @@ func LoginHandlersV1(c *gin.Context) {
 	if err != nil {
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
-		log.Impl.Error(err.Error())
+		//log.Impl.Error(err.Error())
+		log.Impl.Errorf("Wrong credentials. Details: Error - %s Login - %s Password - %s, IP - %s, X-FORWARDED-FOR - %s",
+			err.Error(), account.Login, account.Password, c.ClientIP(), c.GetHeader("X-FORWARDED-FOR"))
 		return
 	}
 
