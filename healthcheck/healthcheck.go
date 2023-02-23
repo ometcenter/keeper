@@ -113,7 +113,7 @@ func HealthCheckTestGoroutines() {
 
 	for i := 0; i < 320; i++ {
 		go func(counter int) {
-			for j := 0; j < 10; j++ {
+			for j := 0; j < 100; j++ {
 
 				// select {
 				// case msg1 := <-done:
@@ -131,7 +131,7 @@ func HealthCheckTestGoroutines() {
 	}
 
 	go func() {
-		time.Sleep(20 * time.Second)
+		time.Sleep(120 * time.Second)
 		fmt.Println("sent all jobs")
 		done <- true
 		close(jobs)
