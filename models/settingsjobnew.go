@@ -165,7 +165,8 @@ type SettingsJobsAllV2 struct {
 	TypeDataGetting  string `json:"typeDataGetting"`  // ВидПолученияДанных
 	DataUploadMethod string `json:"dataUploadMethod"` // CпособЗагрузкиДанных
 	//Portions                         int                    `json:"Порции"`
-	QueryDetails []QueryV2 `json:"queryDetails"`
+	QueryDetails []QueryV2     `json:"queryDetails"`
+	QueryParams  []QueryParams `json:"queryParams"`
 	//AddParam                         AdditionParam          `json:"ДополнительныеПараметрыJSON"`
 	//AddParamJSNOString               string                 `json:"JSONСтрокаДополнительныеПараметры"`
 	//Connect                          Connect                `json:"ПараметрыПодключения"`
@@ -259,12 +260,17 @@ func (S *SettingsJobsAllV2) LoadSettingsFromPgByFileds(DB *sql.DB, FieldName str
 }
 
 type QueryV2 struct {
-	//QueryText string `json:"queryText"`
+	QueryText string `json:"queryText"`
 	//Base                                 string `json:"База"`
 	Areas         string `json:"areas"`
 	ExchangeJobID string `json:"exchangeJobID"`
-	//PText         string `json:"ПараметрыЗапроса"`
 	//UsedCalculatedFieldsInQueryParametrs bool   `json:"ИспользуетсяВычисляемыеПоляВПараметрахЗапроса"`
+}
+
+type QueryParams struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+	Type  string `json:"type"`
 }
 
 func (SettingsJobsAllV2 *SettingsJobsAllV2) TranformToOldSettings() (QueryToBI, error) {
