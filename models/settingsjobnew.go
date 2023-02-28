@@ -165,8 +165,7 @@ type SettingsJobsAllV2 struct {
 	TypeDataGetting  string `json:"typeDataGetting"`  // ВидПолученияДанных
 	DataUploadMethod string `json:"dataUploadMethod"` // CпособЗагрузкиДанных
 	//Portions                         int                    `json:"Порции"`
-	QueryDetails []QueryV2     `json:"queryDetails"`
-	QueryParams  []QueryParams `json:"queryParams"`
+	QueryDetails []QueryV2 `json:"queryDetails"`
 	//AddParam                         AdditionParam          `json:"ДополнительныеПараметрыJSON"`
 	//AddParamJSNOString               string                 `json:"JSONСтрокаДополнительныеПараметры"`
 	//Connect                          Connect                `json:"ПараметрыПодключения"`
@@ -265,6 +264,7 @@ type QueryV2 struct {
 	Areas         string `json:"areas"`
 	ExchangeJobID string `json:"exchangeJobID"`
 	//UsedCalculatedFieldsInQueryParametrs bool   `json:"ИспользуетсяВычисляемыеПоляВПараметрахЗапроса"`
+	QueryParams []QueryParams `json:"queryParams"`
 }
 
 type QueryParams struct {
