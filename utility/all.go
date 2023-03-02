@@ -633,7 +633,6 @@ left join public.exchange_jobs as exchange_jobs on
 	jobs.job_id = exchange_jobs.job_id
 where
 	status <> $1
-	and coalesce(settings_jobs.use_remote_collection, false) <> true
 group by
 	job_id1,
 	code_external,
@@ -643,7 +642,7 @@ group by
 order by
 	job_id1,
 	"event"`
-
+		//and coalesce(settings_jobs.use_remote_collection, false) <> true
 	}
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
