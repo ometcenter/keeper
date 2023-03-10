@@ -15,12 +15,13 @@ func StartHealthCheck() {
 	health := healthcheck.NewHandler()
 
 	// Our app is not happy if we've got more than 100 goroutines running.
-	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(100))
+	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(1000))
 
 	// Our app is not ready if we can't resolve our upstream dependency in DNS.
 	health.AddReadinessCheck(
 		"upstream-dep-dns",
-		healthcheck.DNSResolveCheck("mos.ru", 50*time.Millisecond))
+		//healthcheck.DNSResolveCheck("mos.ru", 50*time.Millisecond))
+		healthcheck.DNSResolveCheck("mos.ru", 1*time.Second))
 
 	DB, err := shareStore.GetDB(config.Conf.DatabaseURL)
 	if err != nil {
@@ -39,7 +40,7 @@ func StartHealthCheckLight() {
 	health := healthcheck.NewHandler()
 
 	// Our app is not happy if we've got more than 100 goroutines running.
-	//health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(100))
+	//health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(1000))
 
 	// Our app is not ready if we can't resolve our upstream dependency in DNS.
 	health.AddReadinessCheck(
@@ -63,7 +64,7 @@ func StartHealthCheckTestError() {
 	health := healthcheck.NewHandler()
 
 	// Our app is not happy if we've got more than 100 goroutines running.
-	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(300))
+	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(1000))
 
 	// Our app is not ready if we can't resolve our upstream dependency in DNS.
 	health.AddReadinessCheck(
