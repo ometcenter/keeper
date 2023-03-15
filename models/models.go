@@ -254,6 +254,14 @@ type DeleteDataForArea struct {
 	DataBaseID string
 }
 
+type ErrorOrEmptyQuery struct {
+	JobID            string `json:"jobID"`
+	ExchangeJobID    string `json:"exchangeJobID"`
+	Area             string `json:"area"`
+	EmptyQuery       bool   `json:"emptyQuery"`
+	ErrorDescription bool   `json:"errorDescription"`
+}
+
 type ErrorOnBI struct {
 	JobID            string `json:"УИД_Пакета"`
 	ExchangeJobID    string `json:"УИД"`
