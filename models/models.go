@@ -259,7 +259,7 @@ type ErrorOrEmptyQuery struct {
 	ExchangeJobID    string `json:"exchangeJobID"`
 	Area             string `json:"area"`
 	EmptyQuery       bool   `json:"emptyQuery"`
-	ErrorDescription bool   `json:"errorDescription"`
+	ErrorDescription string `json:"errorDescription"`
 }
 
 type ErrorOnBI struct {
