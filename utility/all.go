@@ -586,11 +586,11 @@ func CloseStatusJob(DB *sql.DB) error {
 	var argsquery []interface{}
 	argsquery = append(argsquery, "Выполнено")
 
-	queryAllColumns := ""
+	//	queryAllColumns := ""
 
-	if strings.EqualFold(os.Getenv("USE_SETTINGS_JOB_V2"), "true") {
+	//	if strings.EqualFold(os.Getenv("USE_SETTINGS_JOB_V2"), "true") {
 
-		queryAllColumns = `select
+	queryAllColumns := `select
 		jobs.job_id as job_id1,
 		coalesce(settings_jobs.code_external, '') as code_external,
 		coalesce(settings_jobs.name_external, '') as name_external,
@@ -615,35 +615,35 @@ func CloseStatusJob(DB *sql.DB) error {
 		job_id1,
 		"event"`
 
-	} else {
+	//	} else {
 
-		// Мы не закрываем задания удаленного сбора, они закрываются в отдельном микросервисе
-		queryAllColumns = `select
-	jobs.job_id as job_id1,
-	coalesce(settings_jobs.code_external, '') as code_external,
-	coalesce(settings_jobs.name_external, '') as name_external,
-	coalesce(settings_jobs.table_name, '') as table_name,
-	coalesce(exchange_jobs."event", '') as status,
-	count(exchange_jobs."event") as event_count
-from
-	public.jobs as jobs
-left join public.settings_jobs as settings_jobs on
-	jobs.job_id = settings_jobs.job_id
-left join public.exchange_jobs as exchange_jobs on
-	jobs.job_id = exchange_jobs.job_id
-where
-	status <> $1
-group by
-	job_id1,
-	code_external,
-	name_external,
-	table_name,
-	exchange_jobs."event"
-order by
-	job_id1,
-	"event"`
-		//and coalesce(settings_jobs.use_remote_collection, false) <> true
-	}
+	// 		// Мы не закрываем задания удаленного сбора, они закрываются в отдельном микросервисе
+	// 		queryAllColumns = `select
+	// 	jobs.job_id as job_id1,
+	// 	coalesce(settings_jobs.code_external, '') as code_external,
+	// 	coalesce(settings_jobs.name_external, '') as name_external,
+	// 	coalesce(settings_jobs.table_name, '') as table_name,
+	// 	coalesce(exchange_jobs."event", '') as status,
+	// 	count(exchange_jobs."event") as event_count
+	// from
+	// 	public.jobs as jobs
+	// left join public.settings_jobs as settings_jobs on
+	// 	jobs.job_id = settings_jobs.job_id
+	// left join public.exchange_jobs as exchange_jobs on
+	// 	jobs.job_id = exchange_jobs.job_id
+	// where
+	// 	status <> $1
+	// group by
+	// 	job_id1,
+	// 	code_external,
+	// 	name_external,
+	// 	table_name,
+	// 	exchange_jobs."event"
+	// order by
+	// 	job_id1,
+	// 	"event"`
+	// 		//and coalesce(settings_jobs.use_remote_collection, false) <> true
+	// 	}
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {
