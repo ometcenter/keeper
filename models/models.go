@@ -471,6 +471,74 @@ type DataToETL struct {
 	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
 }
 
+func (D *DataToETL) SendResultThroughREST(TableName, UrlToCall string) error {
+
+	byteResult, err := json.Marshal(*D)
+	if err != nil {
+		return err
+	}
+
+	var RESTRequestUniversal2 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = config.Conf.TokenBearer
+	// Headers["TableName"] = TableName
+	// Headers["ExchangeJobID"] = Q.ExchangeJobID
+
+	RESTRequestUniversal2.Headers = Headers
+	RESTRequestUniversal2.Method = "POST"
+	RESTRequestUniversal2.Body = byteResult
+	RESTRequestUniversal2.UrlToCall = UrlToCall
+
+	//for i := 0; i < 1000; i++ {
+
+	_, err = RESTRequestUniversal2.Send()
+	if err != nil {
+		return err
+	}
+	//}
+
+	return nil
+}
+
+func (d *DataToETL) ZipAnswerGzip() error {
+
+	byteValue, err := json.Marshal(d.Data)
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println("Json: ", string(byteValue))
+
+	var buf bytes.Buffer
+	g := gzip.NewWriter(&buf)
+	if _, err = g.Write(byteValue); err != nil {
+		return err
+	}
+	if err = g.Close(); err != nil {
+		return err
+	}
+
+	sDec := base64.StdEncoding.EncodeToString(buf.Bytes())
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println(sDec)
+
+	//QueryResult.ResultRequest = nil
+	var NilMap []map[string]interface{}
+	d.Data = NilMap
+	d.DataBase64 = sDec
+
+	return nil
+
+}
+
+func (d *DataToETL) GetAreaString() string {
+	AreaString := strconv.Itoa(d.Area)
+	return AreaString
+}
+
 type Metrics struct {
 	CountRecords   int    `json:"КоличествоЗаписей"`
 	DateBeginQuery string `json:"ДатаНачалаЗапроса"`

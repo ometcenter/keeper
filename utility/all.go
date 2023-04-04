@@ -716,7 +716,8 @@ func CloseStatusJob(DB *sql.DB) error {
 
 			err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
 			if err != nil {
-				return nil
+				//return nil
+				continue
 			}
 
 			ResultSettings := ResultSettingsMap[JobID]
@@ -726,18 +727,21 @@ func CloseStatusJob(DB *sql.DB) error {
 				log.Impl.Error(err)
 			}
 
-			var QueryToBI models.QueryToBI
-			err = QueryToBI.LoadSettingsFirstRowFromPgByJobID(DB, JobID)
+			// var QueryToBI models.QueryToBI
+			// err = QueryToBI.LoadSettingsFirstRowFromPgByJobID(DB, JobID)
+			var SettingsJobsAllV2 models.SettingsJobsAllV2
+			err = SettingsJobsAllV2.LoadSettingsFromPgByJobID(DB, JobID)
 			if err != nil {
 				err = fmt.Errorf("НастройкиМодели not filled in QueryResult для JobId %s", JobID)
 				log.Impl.Error(err)
+				continue
 			}
 
-			if QueryToBI.UseHandleAfterLoadAlgorithms {
+			if SettingsJobsAllV2.UseHandleAfterLoadAlgorithms {
 
 				var HandleAfterLoad models.HandleAfterLoad
 				HandleAfterLoad.JobID = JobID
-				HandleAfterLoad.Algorithms = QueryToBI.ListHandleAfterLoadAlgorithms
+				HandleAfterLoad.Algorithms = SettingsJobsAllV2.ListHandleAfterLoadAlgorithms
 
 				var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
 				MessageQueueGeneralInterface.Type = "HandleAfterLoad"
