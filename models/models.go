@@ -471,7 +471,7 @@ type DataToETL struct {
 	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
 }
 
-func (D *DataToETL) SendResultThroughREST(TableName, UrlToCall string) error {
+func (D *DataToETL) SendResultThroughREST(TokenBearer, UrlToCall string) error {
 
 	byteResult, err := json.Marshal(*D)
 	if err != nil {
@@ -480,9 +480,11 @@ func (D *DataToETL) SendResultThroughREST(TableName, UrlToCall string) error {
 
 	var RESTRequestUniversal2 RESTRequestUniversal
 	Headers := make(map[string]string)
-	Headers["TokenBearer"] = config.Conf.TokenBearer
-	// Headers["TableName"] = TableName
-	// Headers["ExchangeJobID"] = Q.ExchangeJobID
+	Headers["TokenBearer"] = TokenBearer
+	Headers["JobID"] = D.JobID
+	Headers["Area"] = D.GetAreaString()
+	//Headers["TableName"] = TableName
+	Headers["ExchangeJobID"] = D.ExchangeJobID
 
 	RESTRequestUniversal2.Headers = Headers
 	RESTRequestUniversal2.Method = "POST"
