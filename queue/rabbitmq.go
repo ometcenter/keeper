@@ -1,6 +1,8 @@
 package queue
 
 import (
+	"encoding/json"
+
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	tracing "github.com/ometcenter/keeper/tracing/jaeger"
@@ -180,6 +182,43 @@ func SendInRabbitMQUniversalV2newChannel(messageBody []byte, topicName string, C
 		amqpPublishing)
 	if err != nil {
 		return err
+	}
+
+	return nil
+
+}
+
+// TODO: Replace this
+type MessageNSQ struct {
+	Type string `json:"Тип"`
+	Body string `json:"Тело"`
+}
+
+func SaveStatus(BodyString string, TypeMessage string, ConnectRabbitMQ *amqp.Connection) error {
+
+	MessageNSQMarshal := MessageNSQ{Type: TypeMessage, Body: BodyString}
+
+	JsonMessage, err := json.Marshal(&MessageNSQMarshal)
+	if err != nil {
+		log.Impl.Errorf("ошибка маршалинга: %s", err)
+		return err
+	}
+
+	switch config.Conf.QueueType {
+	case "RabbitMQ":
+		headers := map[string]interface{}{}
+		err = SendInRabbitMQUniversalV2newChannel(JsonMessage, "go-keeper-status", ConnectRabbitMQ, headers)
+		if err != nil {
+			log.Impl.Errorf("ошибка отправки в RabbitMQ: %s", err)
+			return err
+		}
+
+	default:
+		// err = SendInQueueNSQ(JsonMessage, "go-keeper-status")
+		// if err != nil {
+		// 	log.Impl.Errorf("ошибка отправки в RabbitMQ: %s", err)
+		// 	return err
+		// }
 	}
 
 	return nil
