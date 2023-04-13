@@ -90,6 +90,37 @@ func (E *ExchangeJob) SendStatusCreateExchangeJobIDThroughREST(UrlToCall string)
 
 }
 
+type ExchangeJobV2 struct {
+	JobID         string `json:"jobID"`
+	ExchangeJobID string `json:"exchangeJobID"`
+	Area          string `json:"area"`
+	Event         string `json:"status"`
+	Priod         string `json:"period"`
+	Notes         string `json:"notes"`
+}
+
+func (E *ExchangeJobV2) SendStatusCreateExchangeJobIDThroughREST(UrlToCall, TokenBearer string) error {
+
+	ExchangeJobByte, err := json.Marshal(E)
+	if err != nil {
+		return err
+	}
+
+	var RESTRequestUniversal3 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = TokenBearer
+	RESTRequestUniversal3.Headers = Headers
+	RESTRequestUniversal3.Method = "POST"
+	RESTRequestUniversal3.Body = ExchangeJobByte
+	RESTRequestUniversal3.UrlToCall = UrlToCall //os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/changingstatussimple"
+	_, err = RESTRequestUniversal3.Send()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Job структура задания
 type Job struct {
 	gorm.Model
@@ -102,24 +133,6 @@ func (J *Job) GetJobStatus(DB *sql.DB) error {
 
 	var argsquery []interface{}
 	argsquery = append(argsquery, J.JobID)
-
-	// queryAllColumns := `SELECT status, priod from jobs where job_id = $1`
-	// rows, err := DB.Query(queryAllColumns, argsquery...)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// defer rows.Close()
-
-	// Job := Job{}
-	// for rows.Next() {
-	// 	err = rows.Scan(&Job.Status, &Job.Priod)
-	// 	if err != nil {
-	// 		return nil
-	// 	}
-	// }
-
-	// *J = Job
 
 	var NullTimeCreatedAt sql.NullTime
 	var NullTimeUpdatedAt sql.NullTime
@@ -142,6 +155,13 @@ func (J *Job) GetJobStatus(DB *sql.DB) error {
 	*J = Job
 
 	return nil
+}
+
+type JobV2 struct {
+	JobID  string `json:"jobID"`
+	Status string `json:"status"`
+	Priod  string `json:"period"`
+	Notes  string `json:"notes"`
 }
 
 type ExchangeJobAllInform struct {
