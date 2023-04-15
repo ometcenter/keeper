@@ -121,6 +121,77 @@ func (E *ExchangeJobV2) SendStatusCreateExchangeJobIDThroughREST(UrlToCall, Toke
 	return nil
 }
 
+func (E *ExchangeJobV2) SaveDirectSQL(DB *sql.DB) error {
+
+	area := string(E.Area)
+	if area == "" {
+		area = "0"
+	}
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, E.JobID)
+	argsquery = append(argsquery, E.ExchangeJobID)
+	argsquery = append(argsquery, area)
+
+	query := `SELECT * FROM exchange_jobs WHERE job_id = $1 AND exchange_job_id = $2 AND area = $3`
+
+	rows, err := DB.Query(query, argsquery...)
+	if err != nil {
+		return err
+	}
+
+	defer rows.Close()
+
+	flag := false
+	for rows.Next() {
+		flag = true
+		break
+	}
+
+	if flag == true {
+
+		var argsUpdate []interface{}
+		argsUpdate = append(argsUpdate, E.JobID)
+		argsUpdate = append(argsUpdate, E.ExchangeJobID)
+		argsUpdate = append(argsUpdate, area)
+		argsUpdate = append(argsUpdate, E.Event)
+		argsUpdate = append(argsUpdate, E.Priod)
+		argsUpdate = append(argsUpdate, E.Notes)
+
+		_, err := DB.Exec(`UPDATE exchange_jobs SET job_id=$1, exchange_job_id=$2, area=$3, "event"=$4, priod=$5, notes=$6
+		WHERE job_id = $1 AND exchange_job_id = $2 AND area = $3;`, argsUpdate...)
+		if err != nil {
+			return err
+		}
+
+		// `UPDATE exchange_jobs SET created_at='', updated_at='', deleted_at='', job_id='', exchange_job_id='', area='', "event"='', priod=''
+		// WHERE id=nextval('exchange_jobs_id_seq'::regclass);`
+
+	} else {
+
+		//  `INSERT INTO exchange_jobs (job_id, exchange_job_id, area, "event", priod)
+		//  VALUES('$1, $2, $3, $4, $5);`
+
+		var argsInsert []interface{}
+		argsInsert = append(argsInsert, E.JobID)
+		argsInsert = append(argsInsert, E.ExchangeJobID)
+		argsInsert = append(argsInsert, area)
+		argsInsert = append(argsInsert, E.Event)
+		argsInsert = append(argsInsert, E.Priod)
+		argsInsert = append(argsInsert, E.Notes)
+
+		_, err := DB.Exec(`INSERT INTO exchange_jobs (job_id, exchange_job_id, area, event, priod, notes)
+		VALUES($1, $2, $3, $4, $5, $6);`, argsInsert...)
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+}
+
 // Job структура задания
 type Job struct {
 	gorm.Model
@@ -162,6 +233,46 @@ type JobV2 struct {
 	Status string `json:"status"`
 	Priod  string `json:"period"`
 	Notes  string `json:"notes"`
+}
+
+func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
+
+	var argsUpdate []interface{}
+	argsUpdate = append(argsUpdate, J.JobID)
+	argsUpdate = append(argsUpdate, J.Status)
+	argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
+
+	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
+		WHERE job_id = $1;`, argsUpdate...)
+	if err != nil {
+		return err
+	}
+
+	//LastInsertId, _ := result.LastInsertId()
+	RowsAffected, _ := result.RowsAffected()
+
+	//fmt.Println("LastInsertId: ", LastInsertId)
+	//fmt.Println("RowsAffected: ", RowsAffected)
+
+	// Если не обновленно не одной записи, значит это новая запись и ее надо добавить
+	if RowsAffected == 0 {
+
+		var argsInsert []interface{}
+		argsInsert = append(argsInsert, J.JobID)
+		argsInsert = append(argsInsert, J.Status)
+		argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+
+		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod)
+			VALUES($1, $2, $3);`, argsInsert...)
+
+		if err != nil {
+			return err
+		}
+
+	}
+
+	return nil
+
 }
 
 type ExchangeJobAllInform struct {
