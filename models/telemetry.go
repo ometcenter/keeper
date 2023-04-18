@@ -7,9 +7,11 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type TelemetryClientInfo struct {
+	gorm.Model
 	JobID                 string    `json:"jobID"`               //`json:"ИдентификаторЗадания"`
 	RemoteBaseID          string    `json:"remoteBaseID"`        //`json:"ИдентификаторУдаленнойБазы"`
 	DateTelemetry         time.Time `json:"dateTelemetry"`       //`json:"ДатаМетрики"`
