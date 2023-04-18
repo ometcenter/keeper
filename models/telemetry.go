@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"encoding/base64"
+	"encoding/json"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -46,4 +47,30 @@ func (TelemetryClientInfo *TelemetryClientInfo) GetTelemetryFromHeaderBASE64(c *
 	// }
 
 	return sDec, nil
+}
+
+func (TelemetryClientInfo *TelemetryClientInfo) FillTelemetryFromHeaderBASE64(c *gin.Context, TelemetryClientInfoBodyString string) error {
+
+	sDec, err := base64.StdEncoding.DecodeString(TelemetryClientInfoBodyString)
+	if err != nil {
+		return nil
+	}
+
+	//fmt.Printf("Телеметрия2: %v\n", string(sDec))
+
+	sDec = bytes.TrimPrefix(sDec, []byte("\xef\xbb\xbf")) // Or []byte{239, 187, 191}
+
+	err = json.Unmarshal(sDec, &TelemetryClientInfo)
+	if err != nil {
+		return err
+	}
+
+	// //TelemetryClientInfo.DateTelemetry = time.Now()
+
+	// JsonMessageBody, err := json.Marshal(&TelemetryClientInfo)
+	// if err != nil {
+	// 	return err
+	// }
+
+	return nil
 }
