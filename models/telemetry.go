@@ -9,17 +9,17 @@ import (
 )
 
 type TelemetryClientInfo struct {
-	JobID                 string    `json:"ИдентификаторЗадания"`
-	RemoteBaseID          string    `json:"ИдентификаторУдаленнойБазы"`
-	DateTelemetry         time.Time `json:"ДатаМетрики"`
-	Version1CConfig       string    `json:"ВерсияКонфигурацииМетоданные"`
-	Name1CBase            string    `json:"ИмяБазыМетоданные"`
-	StringConnection      string    `json:"СтрокаСоединения"`
-	PlatformType          string    `json:"ТипПлатформы"`
-	ApplicationVersion    string    `json:"ВерсияПриложения"`
-	ClientID              string    `json:"ИдентификаторКлиента"`
-	VersionOS             string    `json:"ВерсияОС"`
-	NumberVersion1CScript string    `json:"НомерВерсииОбработки"`
+	JobID                 string    `json:"jobID"`               //`json:"ИдентификаторЗадания"`
+	RemoteBaseID          string    `json:"remoteBaseID"`        //`json:"ИдентификаторУдаленнойБазы"`
+	DateTelemetry         time.Time `json:"dateTelemetry"`       //`json:"ДатаМетрики"`
+	Version1CConfig       string    `json:"versionConfig"`       //`json:"ВерсияКонфигурацииМетоданные"`
+	Name1CBase            string    `json:"nameBase"`            //`json:"ИмяБазыМетоданные"`
+	StringConnection      string    `json:"stringConnection"`    //`json:"СтрокаСоединения"`
+	PlatformType          string    `json:"platformType"`        //`json:"ТипПлатформы"`
+	ApplicationVersion    string    `json:"applicationVersion"`  //`json:"ВерсияПриложения"`
+	ClientID              string    `json:"clientID"`            //`json:"ИдентификаторКлиента"`
+	VersionOS             string    `json:"versionOS"`           //`json:"ВерсияОС"`
+	NumberVersion1CScript string    `json:"numberVersionScript"` //`json:"НомерВерсииОбработки"`
 }
 
 func (TelemetryClientInfo *TelemetryClientInfo) GetTelemetryFromHeaderBASE64(c *gin.Context, TelemetryClientInfoBodyString string) ([]byte, error) {

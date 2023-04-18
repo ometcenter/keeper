@@ -192,6 +192,19 @@ func (E *ExchangeJobV2) SaveDirectSQL(DB *sql.DB) error {
 	return nil
 }
 
+// func (E *models.ExchangeJobV2) SaveToRabbitMQ(ConnectRabbitMQ *amqp.Connection) error {
+// 	var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
+// 	MessageQueueGeneralInterface.Type = "ChangeStatusForExchangeJobV2"
+// 	MessageQueueGeneralInterface.Body = E
+
+// 	err := SendInQueueRabbitMQUniversal(MessageQueueGeneralInterface.Type, MessageQueueGeneralInterface.Body, "go-keeper-status", ConnectRabbitMQ)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	return nil
+// }
+
 // Job структура задания
 type Job struct {
 	gorm.Model
