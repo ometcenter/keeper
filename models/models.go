@@ -54,6 +54,12 @@ type IndexesStruct struct {
 	INDEXDEF  string
 }
 
+type CheckVersionFile struct {
+	CheckResult   bool   `json:"checkResult"`
+	LatestVersion string `json:"latestVersion"`
+	Notes         string `json:"notes"`
+}
+
 type ExchangeJob struct {
 	JobID         string `json:"ИдентификаторЗадания"`
 	ExchangeJobID string `json:"ИдентификаторЗапроса"`
