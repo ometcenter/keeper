@@ -412,6 +412,32 @@ type ErrorOrEmptyQuery struct {
 	ErrorDescription string `json:"errorDescription"`
 }
 
+func (E *ErrorOrEmptyQuery) SendResultThroughREST(TokenBearer, UrlToCall string) error {
+
+	byteResult, err := json.Marshal(*E)
+	if err != nil {
+		return err
+	}
+
+	var RESTRequestUniversal2 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = TokenBearer
+	RESTRequestUniversal2.Headers = Headers
+	RESTRequestUniversal2.Method = "POST"
+	RESTRequestUniversal2.Body = byteResult
+	RESTRequestUniversal2.UrlToCall = UrlToCall
+
+	//for i := 0; i < 1000; i++ {
+
+	_, err = RESTRequestUniversal2.Send()
+	if err != nil {
+		return err
+	}
+	//}
+
+	return nil
+}
+
 type ErrorOnBI struct {
 	JobID            string `json:"УИД_Пакета"`
 	ExchangeJobID    string `json:"УИД"`
