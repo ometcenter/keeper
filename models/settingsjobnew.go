@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
-	"fmt"
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/jinzhu/copier"
@@ -244,7 +243,7 @@ func (S *SettingsJobsAllV2) LoadSettingsFromPgByFileds(DB *sql.DB, FieldName str
 		return err
 	}
 
-	fmt.Println(queryText)
+	//fmt.Println(queryText)
 
 	var LoadValue SettingsJobsAllV2
 	err = DB.QueryRow(queryText, argsquery...).Scan(&LoadValue)

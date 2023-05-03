@@ -20,6 +20,7 @@ import (
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	"github.com/ometcenter/keeper/models"
+	queue "github.com/ometcenter/keeper/queue"
 	tracing "github.com/ometcenter/keeper/tracing/jaeger"
 	tracingRabbitMQ "github.com/ometcenter/keeper/tracing/jaeger/rabbitmq"
 	"github.com/ometcenter/keeper/version"
@@ -747,23 +748,31 @@ func CloseStatusJob(DB *sql.DB) error {
 				MessageQueueGeneralInterface.Type = "HandleAfterLoad"
 				MessageQueueGeneralInterface.Body = HandleAfterLoad
 
-				MessageQueueGeneralInterfaceByte, err := json.Marshal(MessageQueueGeneralInterface)
+				JsonMessageBody, err := json.Marshal(MessageQueueGeneralInterface)
 				if err != nil {
 					return err
 				}
 
-				var RESTRequestUniversal models.RESTRequestUniversal
-				Headers := make(map[string]string)
-				Headers["TokenBearer"] = config.Conf.TokenBearer
-				RESTRequestUniversal.Headers = Headers
-				RESTRequestUniversal.Method = "POST"
-				RESTRequestUniversal.Body = MessageQueueGeneralInterfaceByte
-				// TODO: Переделать на переменную окружения
-				RESTRequestUniversal.UrlToCall = os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/save-event-to-queue"
-				_, err = RESTRequestUniversal.Send()
+				// var RESTRequestUniversal models.RESTRequestUniversal
+				// Headers := make(map[string]string)
+				// Headers["TokenBearer"] = config.Conf.TokenBearer
+				// RESTRequestUniversal.Headers = Headers
+				// RESTRequestUniversal.Method = "POST"
+				// RESTRequestUniversal.Body = MessageQueueGeneralInterfaceByte
+				// // TODO: Переделать на переменную окружения
+				// RESTRequestUniversal.UrlToCall = os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/save-event-to-queue"
+				// _, err = RESTRequestUniversal.Send()
+				// if err != nil {
+				// 	log.Impl.Error(err)
+				// }
+
+				headers := map[string]interface{}{}
+				err = queue.RabbitMQConnectorVb.SendInRabbitMQUniversalV2newChannel(JsonMessageBody, "go-keeper-events", headers)
 				if err != nil {
 					log.Impl.Error(err)
+					continue
 				}
+
 			}
 
 			log.Impl.Infof("Обновленно задание %s \n", JobID)
