@@ -238,12 +238,14 @@ type RedisConnector struct {
 
 var RedisConnectorVb *RedisConnector
 
-func NewRedisConnector() *RedisConnector {
+func NewRedisConnector(redislibraries map[string]string, currentLibary string) *RedisConnector {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	redislibraries := make(map[string]string)
-	redislibraries["LibraryRediGo"] = "LibraryRediGo"
-	redislibraries["LibraryGoRedis"] = "LibraryGoRedis"
+	// redislibraries := make(map[string]string)
+	// redislibraries["LibraryRediGo"] = "LibraryRediGo"
+	// redislibraries["LibraryGoRedis"] = "LibraryGoRedis"
+
+	//currentLibary:            "LibraryRediGo",
 
 	var sayHelloWorld = func() {
 		//fmt.Println("Hello World !")
@@ -253,7 +255,7 @@ func NewRedisConnector() *RedisConnector {
 		commandChannel: make(chan string),
 		// out:            make(chan interface{}, 10),
 		connectPool:              make(map[string]interface{}),
-		currentLibary:            "LibraryRediGo",
+		currentLibary:            currentLibary,
 		redislibraries:           redislibraries,
 		ctx:                      ctx,
 		ctxCancelFn:              cancel,
@@ -297,17 +299,25 @@ func (t *RedisConnector) Run() error {
 	}
 }
 
-func (t *RedisConnector) Connect() error {
+func (r *RedisConnector) ChangeCurrentLibrary(currentLibary string) error {
 
-	for key, _ := range t.redislibraries {
+	r.currentLibary = currentLibary
+
+	return nil
+
+}
+
+func (r *RedisConnector) Connect() error {
+
+	for key, _ := range r.redislibraries {
 		if key == "LibraryRediGo" {
-			err := t.IntiClientLibraryRediGo(config.Conf.RedisAddressPort)
+			err := r.IntiClientLibraryRediGo(config.Conf.RedisAddressPort)
 			if err != nil {
 				return err
 			}
 		}
 		if key == "LibraryGoRedis" {
-			err := t.IntiClientLibraryGoRedis(config.Conf.RedisAddressPort)
+			err := r.IntiClientLibraryGoRedis(config.Conf.RedisAddressPort)
 			if err != nil {
 				return err
 			}
@@ -383,6 +393,61 @@ func (r *RedisConnector) Select(RedisDB int) error {
 	return nil
 }
 
+func (r *RedisConnector) Set(Key string, Value interface{}, RedisDB int, TTLsec int64) error {
+
+	if r.currentLibary == "LibraryRediGo" {
+		err := r.SetLibraryRediGo(Key, Value, RedisDB, TTLsec)
+		if err != nil {
+			return err
+		}
+	} else if r.currentLibary == "LibraryGoRedis" {
+		err := r.SetLibraryGoRedis(Key, Value, RedisDB, TTLsec)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *RedisConnector) Get(Key string, RedisDB int) (string, error) {
+
+	if r.currentLibary == "LibraryRediGo" {
+		resultStr, err := r.GetLibraryRediGo(Key, RedisDB)
+		if err != nil {
+			return "", err
+		}
+		return resultStr, nil
+
+	} else if r.currentLibary == "LibraryGoRedis" {
+		resultStr, err := r.GetLibraryGoRedis(Key, RedisDB)
+		if err != nil {
+			return "", err
+		}
+		return resultStr, nil
+	}
+
+	return "", nil
+}
+
+func (r *RedisConnector) Flushdb(RedisDB int) error {
+
+	if r.currentLibary == "LibraryRediGo" {
+		err := r.FlushdbLibraryGoRedis(RedisDB)
+		if err != nil {
+			return err
+		}
+	} else if r.currentLibary == "LibraryGoRedis" {
+		// TODO: Implement this function
+		// err := r.SelectLibraryGoRedis(RedisDB)
+		// if err != nil {
+		// 	return err
+		// }
+	}
+
+	return nil
+}
+
 func (r *RedisConnector) SelectLibraryRediGo(RedisDB int) error {
 
 	conn := r.connectPoolRedisRediGolibrary.Get()
@@ -406,6 +471,134 @@ func (r *RedisConnector) SelectLibraryGoRedis(RedisDB int) error {
 	}
 
 	return nil
+}
+
+func (r *RedisConnector) FlushdbLibraryGoRedis(RedisDB int) error {
+
+	_, err := r.connectRedisClientGoRedisLibrary.Do(context.Background(), "select", RedisDB).Result()
+	if err != nil {
+		return err
+	}
+	_, err = r.connectRedisClientGoRedisLibrary.Do(context.Background(), "flushdb").Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// "github.com/gomodule/redigo/redis"
+func (r *RedisConnector) SetLibraryRediGo(key string, value interface{}, RedisDB int, TTL int64) error {
+
+	conn := r.connectPoolRedisRediGolibrary.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
+	if err != nil {
+		fmt.Println("Auth err --- _, err := conn.Do(SELECT, RedisDB) // 10 секунд ----", err)
+		return err
+	}
+
+	//_, err := conn.Do("SET", key, value) --- _, err = conn.Do("SET", key, value, "EX", "100") // 10 секунд
+	_, err = conn.Do("SET", key, value)
+	if err != nil {
+		// v := string(value)
+		// if len(v) > 15 {
+		// 	v = v[0:12] + "..."
+		// }
+		// return fmt.Errorf("error setting key %s to %s: %v", key, v, err)
+		fmt.Println("Auth err --- _, err = conn.Do(SET, key, value) ----", err)
+		return err
+	}
+
+	// // Установить время истечения 24 часа
+	// //n, _ := conn.Do("EXPIRE", key, 24*3600)
+	if TTL != 0 {
+		_, err := conn.Do("EXPIRE", key, TTL)
+		// if n == int64(1) {
+		// 	fmt.Println("success: ", n)
+		// }
+		if err != nil {
+			// v := string(value)
+			// if len(v) > 15 {
+			// 	v = v[0:12] + "..."
+			// }
+			// return fmt.Errorf("error EXPIRE key %s to %s: %v", key, v, err)
+			fmt.Println("Auth err --- _, err := conn.Do(EXPIRE, key, TTL) ----", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+// "github.com/go-redis/redis/v8"
+func (r *RedisConnector) SetLibraryGoRedis(Key string, Value interface{}, RedisDB int, TTLsec int64) error {
+
+	_, err := r.connectRedisClientGoRedisLibrary.Do(context.Background(), "select", RedisDB).Result()
+	if err != nil {
+		return err
+	}
+
+	if TTLsec == 0 {
+		err = r.connectRedisClientGoRedisLibrary.Set(context.Background(), Key, Value, 0).Err()
+	} else {
+		err = r.connectRedisClientGoRedisLibrary.Set(context.Background(), Key, Value, time.Second*time.Duration(TTLsec)).Err()
+	}
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// "github.com/gomodule/redigo/redis"
+func (r *RedisConnector) GetLibraryRediGo(key string, RedisDB int) (string, error) {
+
+	conn := r.connectPoolRedisRediGolibrary.Get()
+	defer conn.Close()
+
+	_, err := conn.Do("SELECT", RedisDB) // 10 секунд
+	if err != nil {
+		return "", err
+	}
+
+	//var data []byte
+	//data, err = libraryRediGo.Bytes(conn.Do("GET", key))
+	data, err := libraryRediGo.String(conn.Do("GET", key))
+	if err != nil {
+		ErrReturn := fmt.Errorf("error getting key %s: %v", key, err)
+		fmt.Println(ErrReturn)
+		return "", ErrReturn
+	}
+
+	return data, nil
+}
+
+// "github.com/go-redis/redis/v8"
+func (r *RedisConnector) GetLibraryGoRedis(Key string, RedisDB int) (string, error) {
+
+	var Result string
+
+	_, err := r.connectRedisClientGoRedisLibrary.Do(context.Background(), "select", RedisDB).Result()
+	if err != nil {
+		return Result, err
+	}
+
+	val, err := r.connectRedisClientGoRedisLibrary.Get(context.Background(), Key).Result()
+	if err == libraryGoRedis.Nil {
+		//fmt.Println("key2 does not exist")
+		//return Result, fmt.Errorf("Не найден ключ для JobId: %s в Redis", InsuranceNumber)
+		return Result, nil
+	} else if err != nil {
+		//panic(err)
+		return Result, err
+		//return Result, nil
+	} else {
+		//fmt.Println("key2", val2)
+		return val, nil
+	}
+
 }
 
 func (t *RedisConnector) Stop() {

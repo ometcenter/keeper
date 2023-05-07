@@ -775,7 +775,7 @@ func CloseStatusJob(DB *sql.DB) error {
 
 			}
 
-			log.Impl.Infof("Обновленно задание %s \n", JobID)
+			log.Impl.Infof("Обновленно задание: %s", JobID)
 		}
 
 	}
