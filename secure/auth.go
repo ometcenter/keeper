@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
@@ -96,7 +97,7 @@ func MiddleWareCheckAuth() gin.HandlerFunc {
 		tokenHeader := c.GetHeader("TokenBearer")
 
 		// При большем обращении нужны разные клиенты для получения токена.
-		dataRedis, err := shareRedis.GetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenHeader, 12)
+		dataRedis, err := shareRedis.RedisConnectorVb.Get(tokenHeader, 12)
 
 		if dataRedis == "" {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Токен просрочен"}}
@@ -267,7 +268,7 @@ where
 	tokenString, _ := token.SignedString([]byte(config.Conf.SecretKeyJWT))
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12)
+	err = shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		//fmt.Println("Auth err --- err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12) ----", err)
 		return LoginAnswer{}, err
@@ -288,7 +289,7 @@ where
 	// 	return LoginAnswer{}, err
 	// }
 
-	err = shareRedis.SetLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, tokenString, byteData, 12, DurationSec)
+	err = shareRedis.RedisConnectorVb.Set(tokenString, byteData, 12, DurationSec)
 	if err != nil {
 		return LoginAnswer{}, err
 	}
@@ -299,12 +300,19 @@ where
 func ValidateSession(tokenHeader string) (time.Duration, error) {
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err := shareRedis.SelectLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, 12)
+	err := shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		return 0, err
 	}
 
-	ttl, err := shareRedis.RedisClientGoRedisLibrary.TTL(context.Background(), tokenHeader).Result()
+	RedisClientInterface := shareRedis.RedisConnectorVb.GetCurrentConnection()
+
+	RedisClient, ok := RedisClientInterface.(*libraryGoRedis.Client)
+	if !ok {
+		return 0, fmt.Errorf("Internal error convert type failed")
+	}
+
+	ttl, err := RedisClient.TTL(context.Background(), tokenHeader).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -325,12 +333,19 @@ func ValidateSession(tokenHeader string) (time.Duration, error) {
 func RemoveSession(tokenHeader string) error {
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err := shareRedis.SelectLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, 12)
+	err := shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		return err
 	}
 
-	_, err = shareRedis.RedisClientGoRedisLibrary.Del(context.Background(), tokenHeader).Result()
+	RedisClientInterface := shareRedis.RedisConnectorVb.GetCurrentConnection()
+
+	RedisClient, ok := RedisClientInterface.(*libraryGoRedis.Client)
+	if !ok {
+		return fmt.Errorf("Internal error convert type failed")
+	}
+
+	_, err = RedisClient.Del(context.Background(), tokenHeader).Result()
 	if err != nil {
 		return err
 	}

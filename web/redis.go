@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"time"
 
-	libraryGoRedis "github.com/go-redis/redis/v8"
 	log "github.com/ometcenter/keeper/logging"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	utilityShare "github.com/ometcenter/keeper/utility"
@@ -16,7 +15,7 @@ import (
 //////////////////// Заполнение кэша Redis //////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -69,7 +68,7 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
@@ -79,7 +78,7 @@ where
 		workerID := item
 
 		var BudgetStat interface{}
-		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisClient)
+		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisConnector)
 		if err != nil {
 			BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -91,7 +90,7 @@ where
 		}
 
 		//err = RedisClient.Set(ctxRedis, r.InsuranceNumber, r, 0).Err()
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilter, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item+yearFilter, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}
@@ -120,7 +119,7 @@ where
 
 }
 
-func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -178,7 +177,7 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
@@ -189,7 +188,7 @@ where
 		//?from=2020&to=2023
 
 		var HolidayStat interface{}
-		HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
+		HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
 		if err != nil {
 			HolidayStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -200,7 +199,7 @@ where
 			return err
 		}
 
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}
@@ -217,7 +216,7 @@ where
 
 }
 
-func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -276,7 +275,7 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
@@ -287,7 +286,7 @@ where
 		//?from=2020&to=2023
 
 		var AllInformationV1 interface{}
-		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, shareRedis.RedisClientGoRedisLibrary)
+		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
 		if err != nil {
 			AllInformationV1 = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -299,12 +298,12 @@ where
 		}
 
 		// TODO: Внтури сборки частных частей кеша происходит изменения на другую область, поэтому тут меняем.
-		err = shareRedis.SelectLibraryGoRedis(RedisClient, RedisDB)
+		err = RedisConnector.Select(RedisDB)
 		if err != nil {
 			return err
 		}
 
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}
@@ -321,7 +320,7 @@ where
 
 }
 
-func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -357,7 +356,7 @@ where
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
@@ -367,7 +366,7 @@ where
 		workerID := item
 
 		var V3JobPlaces interface{}
-		V3JobPlaces, err = V3JobPlacesGeneral(workerID, RedisClient)
+		V3JobPlaces, err = V3JobPlacesGeneral(workerID, RedisConnector)
 		if err != nil {
 			V3JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -379,7 +378,7 @@ where
 		}
 
 		//err = RedisClient.Set(ctxRedis, r.InsuranceNumber, r, 0).Err()
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}

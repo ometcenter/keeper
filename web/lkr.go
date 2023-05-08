@@ -14,7 +14,7 @@ import (
 	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
-	redis "github.com/ometcenter/keeper/redis"
+	shareRedis "github.com/ometcenter/keeper/redis"
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
 	utilityShare "github.com/ometcenter/keeper/utility"
@@ -251,9 +251,9 @@ type AllInformationV1Answer struct {
 	AverageSalary            interface{} `json:"averageSalary"`
 }
 
-func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, workerID+yearFilterFrom+yearFilterTo, 4)
+	JSONString, err := RedisConnector.Get(workerID+yearFilterFrom+yearFilterTo, 4)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -280,19 +280,19 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	var AllInformationV1Answer AllInformationV1Answer
 
 	var HolidayStat interface{}
-	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
+	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
 	if err != nil {
 		HolidayStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
 	var BudgetStat interface{}
-	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisClient)
+	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisConnector)
 	if err != nil {
 		BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
 	var JobPlaces interface{}
-	JobPlaces, err = V3JobPlacesGeneral(workerID, RedisClient)
+	JobPlaces, err = V3JobPlacesGeneral(workerID, RedisConnector)
 	if err != nil {
 		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
@@ -341,9 +341,9 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	return AnswerWebV1, nil
 }
 
-func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilterFrom+yearFilterTo, 3)
+	JSONString, err := RedisConnector.Get(WorkerID+yearFilterFrom+yearFilterTo, 3)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -500,9 +500,9 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 
 }
 
-func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilter, 2)
+	JSONString, err := RedisConnector.Get(WorkerID+yearFilter, 2)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -805,9 +805,9 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 }
 
-func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V3JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID, 5)
+	JSONString, err := RedisConnector.Get(WorkerID, 5)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
