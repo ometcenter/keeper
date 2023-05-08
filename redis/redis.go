@@ -615,8 +615,8 @@ func (r *RedisConnector) GetLibraryGoRedis(Key string, RedisDB int) (string, err
 func (t *RedisConnector) Stop() {
 	t.ctxCancelFn()
 
-	//RabbitMQchannelConsumer.Close()
-	//RabbitMQchannelPublic.Close()
+	//shareRedis.RedisClientGoRedisLibrary.Close()
+	//shareRedis.PoolRedisRediGolibrary.Close()
 
 	// close(w.out)
 }

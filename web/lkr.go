@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	shareRedis "github.com/ometcenter/keeper/redis"
@@ -727,7 +726,7 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 
 }
 
-func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V2JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -932,7 +931,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 
 }
 
-func V1JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V1JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
