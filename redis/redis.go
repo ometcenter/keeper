@@ -451,7 +451,7 @@ func (r *RedisConnector) Flushdb(RedisDB int) error {
 		// 	return err
 		// }
 	} else if r.currentLibary == "LibraryGoRedis" {
-		err := r.SelectLibraryGoRedis(RedisDB)
+		err := r.FlushdbLibraryGoRedis(RedisDB)
 		if err != nil {
 			return err
 		}
