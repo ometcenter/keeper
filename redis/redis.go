@@ -10,6 +10,7 @@ import (
 	libraryGoRedis "github.com/go-redis/redis/v8"
 	libraryRediGo "github.com/gomodule/redigo/redis"
 	"github.com/ometcenter/keeper/config"
+	log "github.com/ometcenter/keeper/logging"
 )
 
 // var PoolRedisRediGolibrary *libraryRediGo.Pool
@@ -444,16 +445,16 @@ func (r *RedisConnector) Get(Key string, RedisDB int) (string, error) {
 func (r *RedisConnector) Flushdb(RedisDB int) error {
 
 	if r.currentLibary == "LibraryRediGo" {
-		err := r.FlushdbLibraryGoRedis(RedisDB)
-		if err != nil {
-			return err
-		}
-	} else if r.currentLibary == "LibraryGoRedis" {
 		// TODO: Implement this function
-		// err := r.SelectLibraryGoRedis(RedisDB)
+		// err := r.FlushdbLibraryGoRedis(RedisDB)
 		// if err != nil {
 		// 	return err
 		// }
+	} else if r.currentLibary == "LibraryGoRedis" {
+		err := r.SelectLibraryGoRedis(RedisDB)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -612,11 +613,37 @@ func (r *RedisConnector) GetLibraryGoRedis(Key string, RedisDB int) (string, err
 
 }
 
-func (t *RedisConnector) Stop() {
-	t.ctxCancelFn()
+func (r *RedisConnector) Stop() {
+	r.ctxCancelFn()
 
-	//shareRedis.RedisClientGoRedisLibrary.Close()
-	//shareRedis.PoolRedisRediGolibrary.Close()
+	for key, value := range r.connectPool {
+
+		if key == "LibraryRediGo" {
+
+			RedisClient, ok := value.(*libraryRediGo.Pool)
+			if !ok {
+				log.Impl.Error(fmt.Errorf("Internal error convert type failed"))
+			}
+
+			err := RedisClient.Close()
+			if err != nil {
+				log.Impl.Error(err)
+			}
+		}
+
+		if key == "LibraryGoRedis" {
+			RedisClient, ok := value.(*libraryGoRedis.Client)
+			if !ok {
+				log.Impl.Error(fmt.Errorf("Internal error convert type failed"))
+			}
+
+			err := RedisClient.Close()
+			if err != nil {
+				log.Impl.Error(err)
+			}
+		}
+
+	}
 
 	// close(w.out)
 }
