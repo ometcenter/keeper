@@ -191,7 +191,7 @@ type SettingsJobsAllV2 struct {
 	NameExternal                     string                   `json:"nameExternal"`                     // Внешнее имя задания
 	SelectionFields                  []string                 `json:"selectionFields"`                  //ПоляОтбора
 	ComparionFields                  []string                 `json:"comparionFields"`                  //ПоляСравнения
-	UseCleaningFieldsBeforeLoading   string                   `json:"useCleaningFieldsBeforeLoading"`   // Использовать фильтр очистки данных
+	UseCleaningFieldsBeforeLoading   bool                     `json:"useCleaningFieldsBeforeLoading"`   // Использовать фильтр очистки данных
 	CleaningFieldsBeforeLoading      string                   `json:"cleaningFieldsBeforeLoading"`      // Фильр очистки данных
 
 }
