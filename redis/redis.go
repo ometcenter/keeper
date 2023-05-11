@@ -614,7 +614,6 @@ func (r *RedisConnector) GetLibraryGoRedis(Key string, RedisDB int) (string, err
 }
 
 func (r *RedisConnector) Stop() {
-	r.ctxCancelFn()
 
 	for key, value := range r.connectPool {
 
@@ -644,6 +643,8 @@ func (r *RedisConnector) Stop() {
 		}
 
 	}
+
+	r.ctxCancelFn()
 
 	// close(w.out)
 }
