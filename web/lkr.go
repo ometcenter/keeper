@@ -135,27 +135,27 @@ func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
 
 type LkUsers struct {
 	gorm.Model
-	FullName     string
+	FullName     string `json:"fullName"`
 	UserID       string // Он же collaborator_id
 	Login        string `json:"login"`
-	Password     string `json:"Password"`
+	Password     string `json:"password"`
 	HashPassword string
 	SecretJWT    string //`gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
 	//JWTtoken        string
 	//JWTExp          int64
-	ExpSec                         int64
-	Role                           string
+	ExpSec                         int64  `json:"expireSeconds"`
+	Role                           string `json:"role"`
 	InsuranceNumber                string
-	Email                          string
+	Email                          string `json:"eMail"`
 	Status                         string //Уволен и т.д
 	DateDismissals                 time.Time
-	Blocked                        bool
+	Blocked                        bool `json:"blocked"`
 	Source                         string
 	PersonJSONByte                 datatypes.JSON
 	Person                         V1ActiveWorkers `gorm:"-"`
 	AdditionalSettingsUserJSONByte datatypes.JSON
-	AdditionalSettingsUser         AdditionalSettingsUser `gorm:"-"`
-	Notes                          string
+	AdditionalSettingsUser         AdditionalSettingsUser `json:"additionalSettingsUser" gorm:"-"`
+	Notes                          string                 `json:"notes"`
 }
 
 func (LkUsers *LkUsers) HashAndSalt() ([]byte, error) {
@@ -190,7 +190,8 @@ func (LkUsers *LkUsers) ComparePasswords(hashedPwd string, plainPwd string) bool
 }
 
 type AdditionalSettingsUser struct {
-	AccessToSystemTables bool `json:"accessToSystemTables"`
+	AccessToSystemTables bool     `json:"accessToSystemTables"`
+	AccessAreas          []string `json:"accessAreas"`
 }
 
 func (AdditionalSettingsUser *AdditionalSettingsUser) Scan(value interface{}) (err error) {
