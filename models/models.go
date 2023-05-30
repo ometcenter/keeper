@@ -34,20 +34,20 @@ type FieldsIndex struct {
 	TypeChange string `json:"ИзменитьВСУБД"`
 }
 
-type Fields struct {
-	Name       string `json:"Имя"`
-	Type       string `json:"Тип"`
-	NotNull    bool   `json:"NotNull"`
-	PrimaryKey bool   `json:"ПервичныйКлюч"`
-	TypeChange string `json:"ИзменитьВСУБД"`
-}
+// type Fields struct {
+// 	Name       string `json:"Имя"`
+// 	Type       string `json:"Тип"`
+// 	NotNull    bool   `json:"NotNull"`
+// 	PrimaryKey bool   `json:"ПервичныйКлюч"`
+// 	TypeChange string `json:"ИзменитьВСУБД"`
+// }
 
-type ColumnsStruct struct {
-	ColumnName string
-	DataType   string
-	IsNullable string
-	PrimaryKey bool
-}
+// type ColumnsStruct struct {
+// 	ColumnName string
+// 	DataType   string
+// 	IsNullable string
+// 	PrimaryKey bool
+// }
 
 type IndexesStruct struct {
 	INDEXNAME string
