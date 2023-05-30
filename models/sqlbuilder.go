@@ -20,3 +20,8 @@ type ColumnsStruct struct {
 	IsNullable string `json:"isNullable"`
 	PrimaryKey bool   `json:"primaryKey"`
 }
+
+type IndexesDescription struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
