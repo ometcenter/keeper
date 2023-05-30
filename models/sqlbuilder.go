@@ -13,3 +13,10 @@ type Fields struct {
 	PrimaryKey bool   `json:"primaryKey"`
 	TypeChange string `json:"typeChangeEvent"`
 }
+
+type ColumnsStruct struct {
+	ColumnName string `json:"columnName"`
+	DataType   string `json:"dataType"`
+	IsNullable string `json:"isNullable"`
+	PrimaryKey bool   `json:"primaryKey"`
+}
