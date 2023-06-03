@@ -23,9 +23,9 @@ func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.R
 	queryAllColumns := `select
 	collaborators_posle.collaborator_id
 from
-	collaborators_posle as collaborators_posle
-where 
-	status <> 'Увольнение'`
+	collaborators_posle as collaborators_posle`
+	// where
+	// 	status <> 'Увольнение'`
 	//where
 	//area = '6083'
 	//limit 100`
@@ -72,6 +72,9 @@ where
 	if err != nil {
 		return err
 	}
+
+	//TODO: It is assumed that there are problems with a quick cache reset
+	time.Sleep(time.Second * 60)
 
 	for _, item := range collaborator_idSlice {
 

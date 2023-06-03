@@ -23,16 +23,16 @@ type TableDescription struct {
 	Fields    []Fields `json:"СведенияКолонкиТаблицы"`
 }
 
-type IndexDescription struct {
-	TableName string        `json:"ИмяТаблицы"`
-	Fields    []FieldsIndex `json:"СведенияКолонкиТаблицы"`
-}
+// type IndexDescription struct {
+// 	TableName string        `json:"ИмяТаблицы"`
+// 	Fields    []FieldsIndex `json:"СведенияКолонкиТаблицы"`
+// }
 
-type FieldsIndex struct {
-	Name       string `json:"Имя"`
-	Definition string `json:"Определение"`
-	TypeChange string `json:"ИзменитьВСУБД"`
-}
+// type FieldsIndex struct {
+// 	Name       string `json:"Имя"`
+// 	Definition string `json:"Определение"`
+// 	TypeChange string `json:"ИзменитьВСУБД"`
+// }
 
 // type Fields struct {
 // 	Name       string `json:"Имя"`
