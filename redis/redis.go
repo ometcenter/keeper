@@ -460,6 +460,40 @@ func (r *RedisConnector) Flushdb(RedisDB int) error {
 	return nil
 }
 
+func (r *RedisConnector) Del(RedisDB int, keyForDel string) error {
+
+	if r.currentLibary == "LibraryRediGo" {
+		// TODO: Implement this function
+		// err := r.DelGoRedis(RedisDB)
+		// if err != nil {
+		// 	return err
+		// }
+	} else if r.currentLibary == "LibraryGoRedis" {
+		err := r.DelLibraryGoRedis(RedisDB, keyForDel)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *RedisConnector) DelLibraryGoRedis(RedisDB int, keyForDel string) error {
+
+	_, err := r.connectRedisClientGoRedisLibrary.Do(context.Background(), "select", RedisDB).Result()
+	if err != nil {
+		return err
+	}
+
+	_, err = r.connectRedisClientGoRedisLibrary.Del(context.Background(), keyForDel).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
 func (r *RedisConnector) SelectLibraryRediGo(RedisDB int) error {
 
 	conn := r.connectPoolRedisRediGolibrary.Get()

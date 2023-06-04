@@ -374,6 +374,12 @@ from
 
 		workerID := item
 
+		//TODO: We flushed chack above, but it not working, now for sure del key
+		err = RedisConnector.Del(5, workerID)
+		if err != nil {
+			return err
+		}
+
 		var V3JobPlaces interface{}
 		V3JobPlaces, err = V3JobPlacesGeneral(workerID, RedisConnector)
 		if err != nil {
