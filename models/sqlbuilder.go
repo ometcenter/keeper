@@ -3,6 +3,7 @@ package models
 type TableDescriptionDSN struct {
 	TableName string   `json:"tableName"`
 	DSN       string   `json:"dsn"`
+	QuerySQL  string   `json:"query"`
 	Fields    []Fields `json:"fields"`
 }
 
