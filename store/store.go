@@ -2,6 +2,8 @@ package store
 
 import (
 	"database/sql"
+	"os"
+	"strings"
 	"sync"
 
 	"github.com/ometcenter/keeper/config"
@@ -182,37 +184,45 @@ func AutoMigrategORM() error {
 	// // Returns current using database name
 	// fmt.Println(gormDB.Migrator().CurrentDatabase())
 
-	if config.Conf.GrabPasswordFromMail {
+	//if config.Conf.GrabPasswordFromMail {
 
-		DBMainAnalytics, err := GetDB(config.Conf.DatabaseURLMainAnalytics)
-		if err != nil {
-			return err
-		}
+	DBMainAnalytics, err := GetDB(config.Conf.DatabaseURLMainAnalytics)
+	if err != nil {
+		return err
+	}
 
-		gormDBMainAnalytics, err := gorm.Open(postgres.New(postgres.Config{
-			Conn: DBMainAnalytics,
-		}), &gorm.Config{})
+	gormDBMainAnalytics, err := gorm.Open(postgres.New(postgres.Config{
+		Conn: DBMainAnalytics,
+	}), &gorm.Config{})
 
+	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
 		err = gormDBMainAnalytics.AutoMigrate(&models.EkisAreas{})
 		if err != nil {
 			return err
 		}
+	}
+	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
 		//gormDBMainAnalytics.Table("dit_ekis_areas").AutoMigrate(&models.EkisAreas{})
 		err = gormDBMainAnalytics.AutoMigrate(&models.EkisOrganizationDesctiption{})
 		if err != nil {
 			return err
 		}
+	}
+	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
 		//gormDBMainAnalytics.Table("dit_ekis_organization_desctiptions").AutoMigrate(&modelsShare.EkisOrganizationDesctiption{})
 		err = gormDBMainAnalytics.AutoMigrate(&models.OrganizationRegistrationInformation{})
 		if err != nil {
 			return err
 		}
+	}
 
+	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
 		err = gormDBMainAnalytics.AutoMigrate(&models.EkisOrganizationAddresses{})
 		if err != nil {
 			return err
 		}
 	}
+	//}
 
 	err = gormDB.AutoMigrate(&models.AllAreasSourses{})
 	if err != nil {
@@ -245,10 +255,10 @@ func AutoMigrategORM() error {
 		return err
 	}
 
-	err = gormDB.AutoMigrate(&models.RemoteJobs{})
-	if err != nil {
-		return err
-	}
+	// err = gormDB.AutoMigrate(&models.RemoteJobs{})
+	// if err != nil {
+	// 	return err
+	// }
 
 	err = gormDB.AutoMigrate(&models.TelemetryClientInfo{})
 	if err != nil {
