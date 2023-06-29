@@ -478,18 +478,18 @@ func ValidateSessionHandlersV1(c *gin.Context) {
 		if -1 == DurationExpired {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key will not expire"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("The key will not expire")
+			log.Impl.Error("The key will not expire - %s", tokenHeader)
 			return
 		} else if -2 == DurationExpired {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key does not exist"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("The key does not exist")
+			log.Impl.Error("The key does not exist - %s", tokenHeader)
 			return
 		} else {
 
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Unexpected error"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("Unexpected error")
+			log.Impl.Error("Unexpected error - %s", tokenHeader)
 			//c.JSON(http.StatusOK, gin.H{"Unexpected error": DurationExpired.Seconds()})
 			return
 		}
