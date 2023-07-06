@@ -62,7 +62,7 @@ func (SentryLog MeshSpecificSentryLog) Error(args ...interface{}) {
 		Application: "keeper"}
 
 	jsonB, _ := json.Marshal(MeshSpecificLog)
-	fmt.Println(jsonB)
+	fmt.Println(string(jsonB))
 
 }
 
@@ -80,7 +80,7 @@ func (SentryLog MeshSpecificSentryLog) Errorf(format string, args ...interface{}
 		Application: "keeper"}
 
 	jsonB, _ := json.Marshal(MeshSpecificLog)
-	fmt.Println(jsonB)
+	fmt.Println(string(jsonB))
 
 }
 
@@ -98,7 +98,7 @@ func (SentryLog MeshSpecificSentryLog) Info(args ...interface{}) {
 		Application: "keeper"}
 
 	jsonB, _ := json.Marshal(MeshSpecificLog)
-	fmt.Println(jsonB)
+	fmt.Println(string(jsonB))
 }
 
 func (SentryLog MeshSpecificSentryLog) Infof(format string, args ...interface{}) {
@@ -114,7 +114,7 @@ func (SentryLog MeshSpecificSentryLog) Infof(format string, args ...interface{})
 		Application: "keeper"}
 
 	jsonB, _ := json.Marshal(MeshSpecificLog)
-	fmt.Println(jsonB)
+	fmt.Println(string(jsonB))
 }
 
 func (SentryLog MeshSpecificSentryLog) Debugf(format string, args ...interface{}) {
