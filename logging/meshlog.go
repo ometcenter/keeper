@@ -66,28 +66,55 @@ func (SentryLog MeshSpecificSentryLog) Error(args ...interface{}) {
 
 }
 
-func (SentryLog MeshSpecificSentryLog) Info(args ...interface{}) {
-
-	if ok := should(InfoLevel); ok {
-		s := fmt.Sprint(args...)
-		print(getPrefix("[INF]"), s)
-	}
-}
-
-func (SentryLog MeshSpecificSentryLog) Infof(format string, args ...interface{}) {
-	if ok := should(InfoLevel); ok {
-		s := fmt.Sprintf(format, args...)
-		print(getPrefix("[INF]"), s)
-	}
-}
-
 func (SentryLog MeshSpecificSentryLog) Errorf(format string, args ...interface{}) {
 
 	StringError := fmt.Sprintf(format, args...)
 	// TODO: Создавать ошибку из текста как-то много лишнего.
 	sentry.CaptureException(errors.New(StringError))
-	print(getPrefix("[ERR]"), StringError)
+	//print(getPrefix("[ERR]"), StringError)
+	MeshSpecificLog := MeshSpecificLog{Timestamp: time.Now().Format("2006-01-02 15:04:05"),
+		Level:       "ERR",
+		Thread:      "main",
+		Logger:      "fmt.Println",
+		Message:     StringError,
+		Application: "keeper"}
 
+	jsonB, _ := json.Marshal(MeshSpecificLog)
+	fmt.Println(jsonB)
+
+}
+
+func (SentryLog MeshSpecificSentryLog) Info(args ...interface{}) {
+
+	// if ok := should(InfoLevel); ok {
+	s := fmt.Sprint(args...)
+	// 	print(getPrefix("[INF]"), s)
+	// }
+	MeshSpecificLog := MeshSpecificLog{Timestamp: time.Now().Format("2006-01-02 15:04:05"),
+		Level:       "INF",
+		Thread:      "main",
+		Logger:      "fmt.Println",
+		Message:     s,
+		Application: "keeper"}
+
+	jsonB, _ := json.Marshal(MeshSpecificLog)
+	fmt.Println(jsonB)
+}
+
+func (SentryLog MeshSpecificSentryLog) Infof(format string, args ...interface{}) {
+	// if ok := should(InfoLevel); ok {
+	s := fmt.Sprintf(format, args...)
+	// 	print(getPrefix("[INF]"), s)
+	// }
+	MeshSpecificLog := MeshSpecificLog{Timestamp: time.Now().Format("2006-01-02 15:04:05"),
+		Level:       "INF",
+		Thread:      "main",
+		Logger:      "fmt.Println",
+		Message:     s,
+		Application: "keeper"}
+
+	jsonB, _ := json.Marshal(MeshSpecificLog)
+	fmt.Println(jsonB)
 }
 
 func (SentryLog MeshSpecificSentryLog) Debugf(format string, args ...interface{}) {
