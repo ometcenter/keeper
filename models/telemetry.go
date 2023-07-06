@@ -23,6 +23,10 @@ type TelemetryClientInfo struct {
 	ClientID              string    `json:"clientID"`            //`json:"ИдентификаторКлиента"`
 	VersionOS             string    `json:"versionOS"`           //`json:"ВерсияОС"`
 	NumberVersion1CScript string    `json:"numberVersionScript"` //`json:"НомерВерсииОбработки"`
+	TypeTelemetry         string    `json:"typeTelemetry"`
+	ExchangeJobID         string    `json:"exchangeJobID"`
+	AdditionalInformation string    `json:"additionalInformation"`
+	//AdditionalInformationJSONByte  datatypes.JSON
 }
 
 func (TelemetryClientInfo *TelemetryClientInfo) GetTelemetryFromHeaderBASE64(c *gin.Context, TelemetryClientInfoBodyString string) ([]byte, error) {
