@@ -185,6 +185,7 @@ type SettingsJobsAllV2 struct {
 	InternalProcessingExternalSource bool                     `json:"internalProcessingExternalSource"` //ВнутренняяОбработкаВнешнегоИсточника
 	TableName                        string                   `json:"tableName"`                        //ИмяТаблицы
 	ZipAnswer                        bool                     `json:"zipAnswer"`                        //СжиматьОтвет
+	ZipType                          string                   `json:"zipType"`                          //ТипСжатия
 	DSNconnection                    string                   `json:"dsnConnection"`                    // БазаСУБДDSN
 	HashAnswer                       bool                     `json:"hashAnswer"`                       //ХешироватьРезультат
 	CodeExternal                     string                   `json:"codeExternal"`                     // Внешний код задания
