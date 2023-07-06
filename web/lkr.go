@@ -848,7 +848,7 @@ func V3JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		collaborators_posle.inn as inn,
 		collaborators_posle.full_name as full_name,
 		collaborators_posle.position as position,
-		organizations_zkgu.name as organization_name,
+		coalesce(organizations_zkgu.name, '') as organization_name,
 		collaborators_posle.status as status,
 		coalesce(contact_inf_pochta_posle.email, '') as email,
 		coalesce(contact_inf_pochta_posle."emailEPS", '') as emailEPS,
