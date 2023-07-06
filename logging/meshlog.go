@@ -29,8 +29,8 @@ type MeshSpecificLog struct {
 
 type MeshSpecificSentryLog struct{}
 
-func NewMeshSpecificSentryLog(urlDNS string) (*SentryLog, error) {
-	StandartLogStruct := &SentryLog{}
+func NewMeshSpecificSentryLog(urlDNS string) (*MeshSpecificSentryLog, error) {
+	StandartLogStruct := &MeshSpecificSentryLog{}
 
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:     urlDNS,
