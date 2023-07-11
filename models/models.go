@@ -387,7 +387,7 @@ type QuantityMetric struct {
 	TableName      string    // Имя таблицы
 	DataBaseID     string    // Идентификатор базы данных
 	Value          int       // Значение метрики
-	Hash           int64     // Строка хеш суммы
+	Hash           string    // Строка хеш суммы
 	SizeBody       int       // Размер сообщения в байтах
 	SpeedUnzipping float64   // time.Duration Скорость распаковки в секундах
 	SaveSpeed      float64   // time.Duration Скорость сохранения пакета в базу в секундах
@@ -643,7 +643,7 @@ type DataToETL struct {
 	ExchangeJobID               string                        `json:"exchangeJobID"`
 	JobID                       string                        `json:"jobID"`
 	DataBase64                  string                        `json:"dataBase64"`
-	HashSum                     int64                         `json:"hashSum"`
+	HashSum                     string                        `json:"hashSum"`
 	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
 }
 
