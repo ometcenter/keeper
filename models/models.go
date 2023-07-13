@@ -714,7 +714,7 @@ func (d *DataToETL) ZipAnswerGzip() error {
 
 }
 
-func (d *DataToETL) HaheDataSha256() error {
+func (d *DataToETL) HashDataSha256() error {
 
 	byteValue, err := json.Marshal(d.Data)
 	if err != nil {
