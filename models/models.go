@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -723,7 +724,7 @@ func (d *DataToETL) HaseDataSha256() error {
 	h := sha256.New()
 	h.Write(byteValue)
 	// Calculate and print the hash
-	d.HashSum = string(h.Sum(nil))
+	d.HashSum = fmt.Sprintf("%x", h.Sum(nil))
 
 	return nil
 
