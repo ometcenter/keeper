@@ -3,6 +3,7 @@ package models
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
@@ -707,6 +708,22 @@ func (d *DataToETL) ZipAnswerGzip() error {
 	var NilMap []map[string]interface{}
 	d.Data = NilMap
 	d.DataBase64 = sDec
+
+	return nil
+
+}
+
+func (d *DataToETL) HaseDataSha256() error {
+
+	byteValue, err := json.Marshal(d.Data)
+	if err != nil {
+		return err
+	}
+
+	h := sha256.New()
+	h.Write(byteValue)
+	// Calculate and print the hash
+	d.HashSum = string(h.Sum(nil))
 
 	return nil
 
