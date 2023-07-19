@@ -200,6 +200,40 @@ func (E *ExchangeJobV2) SaveDirectSQL(DB *sql.DB) error {
 	return nil
 }
 
+func (E *ExchangeJobV2) SaveToHistory(DB *sql.DB) error {
+
+	area := string(E.Area)
+	if area == "" {
+		area = "0"
+	}
+
+	priodTime, err := time.ParseInLocation("2006-01-02T15:04:05", E.Priod, time.Local)
+	if err != nil {
+		log.Impl.Error(err.Error())
+	}
+
+	//  `INSERT INTO exchange_jobs (job_id, exchange_job_id, area, "event", priod)
+	//  VALUES('$1, $2, $3, $4, $5);`
+
+	var argsInsert []interface{}
+	argsInsert = append(argsInsert, E.JobID)
+	argsInsert = append(argsInsert, E.ExchangeJobID)
+	argsInsert = append(argsInsert, area)
+	argsInsert = append(argsInsert, E.Event)
+	argsInsert = append(argsInsert, E.Priod)
+	argsInsert = append(argsInsert, E.Notes)
+	argsInsert = append(argsInsert, priodTime)
+
+	_, err = DB.Exec(`INSERT INTO exchange_jobs_history (job_id, exchange_job_id, area, event, priod, notes, period)
+		VALUES($1, $2, $3, $4, $5, $6, $7);`, argsInsert...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // func (E *models.ExchangeJobV2) SaveToRabbitMQ(ConnectRabbitMQ *amqp.Connection) error {
 // 	var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
 // 	MessageQueueGeneralInterface.Type = "ChangeStatusForExchangeJobV2"
@@ -294,6 +328,50 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 
 	return nil
 
+}
+
+func (J *JobV2) SaveToHistory(DB *sql.DB) error {
+
+	priodTime, err := time.ParseInLocation("2006-01-02T15:04:05", J.Priod, time.Local)
+	if err != nil {
+		log.Impl.Error(err.Error())
+	}
+
+	var argsInsert []interface{}
+	argsInsert = append(argsInsert, J.JobID)
+	argsInsert = append(argsInsert, J.Status)
+	argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+	argsInsert = append(argsInsert, priodTime)
+
+	_, err = DB.Exec(`INSERT INTO jobs_history (job_id, status, priod, period)
+			VALUES($1, $2, $3, $4);`, argsInsert...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+type ExchangeJobHistory struct {
+	gorm.Model
+	JobID         string `json:"jobID"`
+	ExchangeJobID string `json:"exchangeJobID"`
+	Area          string `json:"area"`
+	Event         string `json:"status"`
+	Priod         string `json:"period"`
+	Notes         string `json:"notes"`
+	Period        time.Time
+}
+
+type JobHistory struct {
+	gorm.Model
+	JobID  string `json:"jobID"`
+	Status string `json:"status"`
+	Priod  string `json:"period"`
+	Notes  string `json:"notes"`
+	Period time.Time
 }
 
 type ExchangeJobAllInform struct {
