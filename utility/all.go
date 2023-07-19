@@ -703,21 +703,29 @@ func CloseStatusJob(DB *sql.DB) error {
 
 		if len(value) == 1 && value[0] == "Выполнено" {
 
-			// var argsUpdate []interface{}
-			// argsUpdate = append(argsUpdate, JobID)
-			// argsUpdate = append(argsUpdate, "Выполнено")
-			// argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
-
-			// _, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
-			// WHERE job_id = $1;`, argsUpdate...)
-
+			// err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
 			// if err != nil {
-			// 	return err
+			// 	//return nil
+			// 	continue
 			// }
 
-			err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
+			var JobV2 models.JobV2
+			JobV2.JobID = JobID
+			JobV2.Status = "Выполнено"
+			var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
+			MessageQueueGeneralInterface.Type = "ChangeStatusForJobV2"
+			MessageQueueGeneralInterface.Body = JobV2
+			JsonMessageBody, err := json.Marshal(&MessageQueueGeneralInterface)
 			if err != nil {
-				//return nil
+				log.Impl.Errorf("ошибка маршалинга: %s", err)
+				//return err
+				continue
+			}
+
+			headers := map[string]interface{}{}
+			err = queue.RabbitMQConnectorVb.SendInRabbitMQUniversalV2newChannel(JsonMessageBody, "go-keeper-status", headers)
+			if err != nil {
+				//return err
 				continue
 			}
 
