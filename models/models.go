@@ -224,7 +224,7 @@ func (E *ExchangeJobV2) SaveToHistory(DB *sql.DB) error {
 	argsInsert = append(argsInsert, E.Notes)
 	argsInsert = append(argsInsert, priodTime)
 
-	_, err = DB.Exec(`INSERT INTO exchange_jobs_history (job_id, exchange_job_id, area, event, priod, notes, period)
+	_, err = DB.Exec(`INSERT INTO exchange_job_histories (job_id, exchange_job_id, area, event, priod, notes, period)
 		VALUES($1, $2, $3, $4, $5, $6, $7);`, argsInsert...)
 
 	if err != nil {
@@ -343,7 +343,7 @@ func (J *JobV2) SaveToHistory(DB *sql.DB) error {
 	argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
 	argsInsert = append(argsInsert, priodTime)
 
-	_, err = DB.Exec(`INSERT INTO jobs_history (job_id, status, priod, period)
+	_, err = DB.Exec(`INSERT INTO job_histories (job_id, status, priod, period)
 			VALUES($1, $2, $3, $4);`, argsInsert...)
 
 	if err != nil {
