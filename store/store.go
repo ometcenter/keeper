@@ -250,6 +250,16 @@ func AutoMigrategORM() error {
 		return err
 	}
 
+	err = gormDB.AutoMigrate(&models.JobHistory{})
+	if err != nil {
+		return err
+	}
+
+	err = gormDB.AutoMigrate(&models.ExchangeJobHistory{})
+	if err != nil {
+		return err
+	}
+
 	err = gormDB.AutoMigrate(&models.QuantityMetric{})
 	if err != nil {
 		return err
