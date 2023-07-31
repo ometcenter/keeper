@@ -96,6 +96,19 @@ type V1ActiveWorkers struct {
 	DateDismissals    time.Time `json:"dateDismissals"`
 }
 
+type V3ActiveWorkers struct {
+	PersonId        string    `json:"personId"`
+	CollaboratorId  string    `json:"collaboratorId"`
+	InsuranceNumber string    `json:"insuranceNumber"`
+	Position        string    `json:"position"`
+	Status          string    `json:"status"`
+	Email           string    `json:"email"`
+	EmailEPS        string    `json:"emailEPS"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+	CreatedAt       time.Time `json:"createdAt"`
+	DateDismissals  time.Time `json:"dateDismissals"`
+}
+
 func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
 	switch value.(type) {
 	case string:
