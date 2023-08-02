@@ -72,6 +72,52 @@ type GetPersonalInfoResponds struct {
 	Status           string
 }
 
+type V4JobPlaces struct {
+	PersonId                string    `json:"personId"`
+	CollaboratorId          string    `json:"collaboratorId"`
+	InsuranceNumber         string    `json:"insuranceNumber"`
+	Inn                     string    `json:"inn"`
+	FullName                string    `json:"fullName"`
+	Position                string    `json:"position"`
+	OrganizationName        string    `json:"organizationName"`
+	Status                  string    `json:"status"`
+	Email                   string    `json:"email"`
+	EmailEPS                string    `json:"emailEPS"`
+	MobilePhone             string    `json:"mobilePhone"`
+	WorkPhone               string    `json:"workPhone"`
+	EmailArray              string    `json:"emailArray"`
+	DateBirth               string    `json:"dateBirth"`
+	BranchID                string    `json:"branchID"`
+	BranchName              string    `json:"branchName"`
+	LargeGroupOfPosts       string    `json:"largeGroupOfPosts"`
+	Position_tag            string    `json:"positionTag"`
+	UpdatedAt               time.Time `json:"updatedAt"`
+	CreatedAt               time.Time `json:"createdAt"`
+	DateDismissals          time.Time `json:"dateDismissals"`
+	Kategory                string    `json:"kategory"`
+	VidPersonala            string    `json:"vidPersonala"`
+	DataKadrSobitiya        string    `json:"dataKadrSobitiya"`
+	PredPosition            string    `json:"predPosition"`
+	NapravlenieDeyatelnosti string    `json:"napravlenieDeyatelnosti"`
+	IdGis                   string    `json:"idGis"`
+	NomerNpa                string    `json:"nomerNpa"`
+	IskluchenaS             string    `json:"iskluchenaS"`
+	EtalonPosition          string    `json:"etalonPosition"`
+}
+
+type V3ActiveWorkers struct {
+	PersonId        string    `json:"personId"`
+	CollaboratorId  string    `json:"collaboratorId"`
+	InsuranceNumber string    `json:"insuranceNumber"`
+	Position        string    `json:"position"`
+	Status          string    `json:"status"`
+	Email           string    `json:"email"`
+	EmailEPS        string    `json:"emailEPS"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+	CreatedAt       time.Time `json:"createdAt"`
+	DateDismissals  time.Time `json:"dateDismissals"`
+}
+
 type V1ActiveWorkers struct {
 	PersonId          string    `json:"personId"`
 	CollaboratorId    string    `json:"collaboratorId"`
@@ -94,19 +140,6 @@ type V1ActiveWorkers struct {
 	UpdatedAt         time.Time `json:"updatedAt"`
 	CreatedAt         time.Time `json:"createdAt"`
 	DateDismissals    time.Time `json:"dateDismissals"`
-}
-
-type V3ActiveWorkers struct {
-	PersonId        string    `json:"personId"`
-	CollaboratorId  string    `json:"collaboratorId"`
-	InsuranceNumber string    `json:"insuranceNumber"`
-	Position        string    `json:"position"`
-	Status          string    `json:"status"`
-	Email           string    `json:"email"`
-	EmailEPS        string    `json:"emailEPS"`
-	UpdatedAt       time.Time `json:"updatedAt"`
-	CreatedAt       time.Time `json:"createdAt"`
-	DateDismissals  time.Time `json:"dateDismissals"`
 }
 
 func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
@@ -914,6 +947,146 @@ func V3JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		var r V1ActiveWorkers
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
 			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.Position_tag, &r.CreatedAt, &r.UpdatedAt, &r.DateDismissals)
+		if err != nil {
+			return nil, err
+		}
+
+		//JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		//if err != nil {
+		//	return err, nil
+		//}
+
+		//r.EmailArray = JSONString
+		//r.EmailEPS = ""
+
+		//ColumnsStructSlice = append(ColumnsStructSlice, r)
+
+		ColumnsStruct = r
+	}
+
+	var AnswerWebV1 AnswerWebV1
+	AnswerWebV1.Status = true
+	if ColumnsStruct.CollaboratorId == "" {
+		//AnswerWebV1.Data = nil
+	} else {
+		AnswerWebV1.Data = ColumnsStruct
+	}
+	AnswerWebV1.Error = nil
+	//c.JSON(http.StatusOK, AnswerWebV1)
+
+	return AnswerWebV1, nil
+
+}
+
+func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
+
+	JSONString, err := RedisConnector.Get(WorkerID, 5)
+	//if err != nil {
+	if JSONString == "" {
+		//log.Impl.Error(err.Error())
+		// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
+		// if err != nil {
+		// 	log.Impl.Error(err)
+		// }
+
+		// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	} else {
+		// c.Data(http.StatusOK, "application/json", []byte(JSONString))
+		// //c.JSON(http.StatusOK, JSONString)
+		// return
+		var AnswerWebV1 AnswerWebV1
+		if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+			return nil, err
+		}
+
+		return AnswerWebV1, nil
+	}
+
+	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
+	if err != nil {
+		return nil, err
+	}
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, WorkerID)
+
+	//coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
+	//coalesce(collaborators_posle.created_at, DATE '1900-01-01') as created_at,
+
+	queryText := `select
+		collaborators_posle.person_id as person_id,
+		collaborators_posle.collaborator_id as collaborator_id,
+		collaborators_posle.insurance_number as insurance_number,
+		collaborators_posle.inn as inn,
+		collaborators_posle.full_name as full_name,
+		collaborators_posle.position as position,
+		coalesce(organizations_zkgu.name, '') as organization_name,
+		collaborators_posle.status as status,
+		coalesce(contact_inf_pochta_posle.email, '') as email,
+		coalesce(contact_inf_pochta_posle."emailEPS", '') as emailEPS,
+		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
+		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
+		collaborators_posle.date_birth as date_birth,
+		collaborators_posle.podrazdelenie as podrazdelenie,
+		coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenie_id,
+		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
+		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
+		case 
+   			when (collaborators_posle.created_at >contact_inf_pochta_posle.created_at  
+   			and collaborators_posle.created_at >contact_inf_telephone_posle.created_at) then coalesce(collaborators_posle.created_at, DATE '1900-01-01') 
+   			when (contact_inf_pochta_posle.created_at>collaborators_posle.created_at 
+   			and contact_inf_pochta_posle.created_at>contact_inf_telephone_posle.created_at) then coalesce(contact_inf_pochta_posle.created_at, DATE '1900-01-01') 
+   			else coalesce(contact_inf_telephone_posle.created_at, DATE '1900-01-01') 
+   		end as created_at,
+		case 
+			when (coalesce(collaborators_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')  
+			and coalesce(collaborators_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.updated_at,DATE '1900-01-01')) then coalesce(collaborators_posle.updated_at, DATE '1900-01-01') 
+			when (coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')>coalesce(collaborators_posle.updated_at,DATE '1900-01-01') 
+			and coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.updated_at,DATE '1900-01-01')) then coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') 
+			else coalesce(contact_inf_telephone_posle.updated_at, DATE '1900-01-01') 
+		end as updated_at,
+		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date,
+		cco_gis_exd.kategory_name                                      as kategoryName,
+        cco_gis_exd.vid_personala                                      as vidPersonala,
+        collaborators_posle.data_poslednee_sobitie                     as dataPosledneeSobitie,
+        collaborators_posle.pred_position                              as predPosition,
+        collaborators_posle.napravlenie_deyatelnosti                   as napravlenieDeyatelnosti,
+        collaborators_posle.id_gis                                     as idGis,
+        cco_gis_exd.nomer_npa                                          as nomerNpa,
+        cco_gis_exd.iskluchena_s                                       as iskluchenaS,
+        collaborators_posle.etalon_position                            as etalonPosition
+	from
+		collaborators_posle as collaborators_posle
+	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
+		collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
+	left join organizations_zkgu as organizations_zkgu on
+		collaborators_posle.organization_id = organizations_zkgu.organization_id
+		and collaborators_posle.area = organizations_zkgu.area
+	left join contact_inf_pochta_posle as contact_inf_pochta_posle on
+		collaborators_posle.person_id = contact_inf_pochta_posle.person_id
+	left join contact_inf_telephone_posle as contact_inf_telephone_posle on
+		collaborators_posle.person_id = contact_inf_telephone_posle.person_id
+	left join cco_gis_exd as cco_gis_exd on
+        collaborators_posle.id_gis = cco_gis_exd.id_gis  and collaborators_posle.area = cco_gis_exd.area
+	where
+		collaborator_id = $1`
+
+	rows, err := DB.Query(queryText, argsquery...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	//ColumnsStructSlice := []V1ActiveWorkers{}
+	ColumnsStruct := V4JobPlaces{}
+	for rows.Next() {
+		var r V4JobPlaces
+		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
+			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
+			&r.Position_tag, &r.CreatedAt, &r.UpdatedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
+			&r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS, &r.EtalonPosition)
 		if err != nil {
 			return nil, err
 		}
