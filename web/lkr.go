@@ -1047,15 +1047,15 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 			else coalesce(contact_inf_telephone_posle.updated_at, DATE '1900-01-01') 
 		end as updated_at,
 		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date,
-		cco_gis_exd.kategory_name                                      as kategoryName,
-        cco_gis_exd.vid_personala                                      as vidPersonala,
-        collaborators_posle.data_poslednee_sobitie                     as dataPosledneeSobitie,
-        collaborators_posle.pred_position                              as predPosition,
-        collaborators_posle.napravlenie_deyatelnosti                   as napravlenieDeyatelnosti,
-        collaborators_posle.id_gis                                     as idGis,
-        cco_gis_exd.nomer_npa                                          as nomerNpa,
-        cco_gis_exd.iskluchena_s                                       as iskluchenaS,
-        collaborators_posle.etalon_position                            as etalonPosition
+		coalesce(cco_gis_exd.kategory_name, '')                                      as kategoryName,
+		coalesce(cco_gis_exd.vid_personala, '')                                      as vidPersonala,
+		coalesce(collaborators_posle.data_poslednee_sobitie, '')                     as dataPosledneeSobitie,
+		coalesce(collaborators_posle.pred_position, '')                              as predPosition,
+		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti,
+		coalesce(collaborators_posle.id_gis, '')                                     as idGis,
+		coalesce(cco_gis_exd.nomer_npa, '')                                          as nomerNpa,
+		coalesce(cco_gis_exd.iskluchena_s, '')                                       as iskluchenaS,
+		coalesce(collaborators_posle.etalon_position, '')                            as etalonPosition
 	from
 		collaborators_posle as collaborators_posle
 	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
