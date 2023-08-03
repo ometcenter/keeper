@@ -73,30 +73,35 @@ type GetPersonalInfoResponds struct {
 }
 
 type V4JobPlaces struct {
-	PersonId                string    `json:"personId"`
-	CollaboratorId          string    `json:"collaboratorId"`
-	InsuranceNumber         string    `json:"insuranceNumber"`
-	Inn                     string    `json:"inn"`
-	FullName                string    `json:"fullName"`
-	Position                string    `json:"position"`
-	OrganizationName        string    `json:"organizationName"`
-	Status                  string    `json:"status"`
-	Email                   string    `json:"email"`
-	EmailEPS                string    `json:"emailEPS"`
-	MobilePhone             string    `json:"mobilePhone"`
-	WorkPhone               string    `json:"workPhone"`
-	EmailArray              string    `json:"emailArray"`
-	DateBirth               string    `json:"dateBirth"`
-	BranchID                string    `json:"branchID"`
-	BranchName              string    `json:"branchName"`
-	LargeGroupOfPosts       string    `json:"largeGroupOfPosts"`
-	Position_tag            string    `json:"positionTag"`
-	UpdatedAt               time.Time `json:"updatedAt"`
-	CreatedAt               time.Time `json:"createdAt"`
-	DateDismissals          time.Time `json:"dateDismissals"`
-	Kategory                string    `json:"kategory"`
-	VidPersonala            string    `json:"vidPersonala"`
-	DataKadrSobitiya        string    `json:"dataKadrSobitiya"`
+	PersonId         string `json:"personId"`
+	CollaboratorId   string `json:"collaboratorId"`
+	InsuranceNumber  string `json:"insuranceNumber"`
+	Inn              string `json:"inn"`
+	FullName         string `json:"fullName"`
+	Position         string `json:"position"`
+	OrganizationName string `json:"organizationName"`
+	Status           string `json:"status"`
+	Email            string `json:"email"`
+	EmailEPS         string `json:"emailEPS"`
+	MobilePhone      string `json:"mobilePhone"`
+	WorkPhone        string `json:"workPhone"`
+	EmailArray       string `json:"emailArray"`
+	//DateBirth               string    `json:"dateBirth"`
+	DateBirth         time.Time `json:"dateBirth"`
+	DateStartWork     time.Time `json:"dateStartWork"`
+	BranchID          string    `json:"branchID"`
+	BranchName        string    `json:"branchName"`
+	LargeGroupOfPosts string    `json:"largeGroupOfPosts"`
+	PositionTag       string    `json:"positionTag"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	CreatedAt         time.Time `json:"createdAt"`
+	DeletedAt         time.Time `json:"deletedAt"`
+	DateDismissals    time.Time `json:"dateDismissals"`
+	Kategory          string    `json:"kategory"`
+	VidPersonala      string    `json:"vidPersonala"`
+	//DataKadrSobitiya  string    `json:"dataKadrSobitiya"`
+	DataKadrSobitiya        time.Time `json:"dataKadrSobitiya"`
+	DataPredSobitie         time.Time `json:"dataPredSobitie"`
 	PredPosition            string    `json:"predPosition"`
 	NapravlenieDeyatelnosti string    `json:"napravlenieDeyatelnosti"`
 	IdGis                   string    `json:"idGis"`
@@ -1027,7 +1032,8 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		coalesce(contact_inf_pochta_posle."emailEPS", '') as emailEPS,
 		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
 		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
-		collaborators_posle.date_birth as date_birth,
+		TO_CHAR (to_date(collaborators_posle.date_birth,'DD-MM-YYYY'),'DD-MM-YYYY') as date_birth,
+		coalesce(TO_CHAR (to_date(collaborators_posle.date_start_work,'DD-MM-YYYY'),'DD-MM-YYYY'))   as dateStartWork,
 		collaborators_posle.podrazdelenie as podrazdelenie,
 		coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenie_id,
 		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
@@ -1046,10 +1052,18 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 			and coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.updated_at,DATE '1900-01-01')) then coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') 
 			else coalesce(contact_inf_telephone_posle.updated_at, DATE '1900-01-01') 
 		end as updated_at,
-		coalesce(collaborators_posle.date_dismissals_as_date, DATE '0001-01-01') as date_dismissals_as_date,
+		case 
+			when (coalesce(collaborators_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')  
+			and coalesce(collaborators_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.deleted_at,DATE '1900-01-01')) then coalesce(collaborators_posle.updated_at, DATE '1900-01-01') 
+			when (coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')>coalesce(collaborators_posle.deleted_at,DATE '1900-01-01') 
+			and coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.deleted_at,DATE '1900-01-01')) then coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') 
+			else coalesce(contact_inf_telephone_posle.deleted_at, DATE '1900-01-01') 
+		end as deleted_at,
+		TO_CHAR (coalesce(collaborators_posle.date_dismissals_as_date, DATE '1900-01-01'),'DD-MM-YYYY') as date_dismissals_as_date,
 		coalesce(cco_gis_exd.kategory_name, '')                                      as kategoryName,
 		coalesce(cco_gis_exd.vid_personala, '')                                      as vidPersonala,
-		coalesce(collaborators_posle.data_poslednee_sobitie, '')                     as dataPosledneeSobitie,
+		coalesce(TO_CHAR (to_date(collaborators_posle.data_poslednee_sobitie,'DD-MM-YYYY'),'DD-MM-YYYY')) as dataPosledneeSobitie,
+		coalesce(TO_CHAR (to_date(collaborators_posle.pred_period,'DD-MM-YYYY'),'DD-MM-YYYY'))             as dataPredSobitie,
 		coalesce(collaborators_posle.pred_position, '')                              as predPosition,
 		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti,
 		coalesce(collaborators_posle.id_gis, '')                                     as idGis,
@@ -1084,9 +1098,9 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 	for rows.Next() {
 		var r V4JobPlaces
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
-			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
-			&r.Position_tag, &r.CreatedAt, &r.UpdatedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
-			&r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS, &r.EtalonPosition)
+			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.DateStartWork, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
+			&r.PositionTag, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
+			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS, &r.EtalonPosition)
 		if err != nil {
 			return nil, err
 		}
