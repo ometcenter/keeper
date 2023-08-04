@@ -1066,7 +1066,7 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		case
 			when collaborators_posle.pred_period = '' then DATE '1900-01-01'
 			else coalesce(to_date(collaborators_posle.pred_period, 'DD-MM-YYYY'), DATE '1900-01-01')
-		end as dataPredSobitie
+		end as dataPredSobitie,
 		coalesce(collaborators_posle.pred_position, '')                              as predPosition,
 		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti,
 		coalesce(collaborators_posle.id_gis, '')                                     as idGis,
