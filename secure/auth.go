@@ -515,3 +515,70 @@ func ValidateSessionHandlersV1(c *gin.Context) {
 
 	//c.JSON(http.StatusOK, DataAnswer)
 }
+
+func ValidateSessionHandlersV2(c *gin.Context) {
+
+	tokenHeader := c.GetHeader("TokenBearer")
+	if tokenHeader == "" {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Отсутствует токен авторизации"}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error("Отсутствует токен авторизации")
+		return
+	}
+
+	DurationExpired, err := ValidateSession(tokenHeader)
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, err.Error()}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	if DurationExpired < 0 {
+		if -1 == DurationExpired {
+			// The command returns -1 if the key exists but has no associated expire.
+			var AnswerWebV1 web.AnswerWebV1
+			AnswerWebV1.Status = true
+			AnswerWebV1.Data = nil
+			AnswerWebV1.Error = &web.ErrorWebV1{http.StatusUnauthorized, "The key will not expire"}
+			c.JSON(http.StatusOK, AnswerWebV1)
+			log.Impl.Error("The key will not expire - %s", tokenHeader)
+			return
+		} else if -2 == DurationExpired {
+			// The command returns -2 if the key does not exist.
+			var AnswerWebV1 web.AnswerWebV1
+			AnswerWebV1.Status = true
+			AnswerWebV1.Data = nil
+			AnswerWebV1.Error = &web.ErrorWebV1{http.StatusUnauthorized, "The key does not exist"}
+			c.JSON(http.StatusOK, AnswerWebV1)
+			log.Impl.Error("The key does not exist - %s", tokenHeader)
+			return
+		} else {
+			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Unexpected error"}}
+			c.JSON(http.StatusUnauthorized, AnswerWebV1)
+			log.Impl.Error("Unexpected error - %s", tokenHeader)
+			//c.JSON(http.StatusOK, gin.H{"Unexpected error": DurationExpired.Seconds()})
+			return
+		}
+	}
+
+	DataAnswer := struct {
+		//Status    bool    `json:"status"`
+		ExpiresIn float64 `json:"expiresIn"`
+		ExpiresAt int64
+	}{
+		//Status:    true,
+		ExpiresIn: DurationExpired.Seconds(),
+		ExpiresAt: time.Now().Add(DurationExpired).Unix(),
+	}
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = DataAnswer
+	AnswerWebV1.Error = nil
+
+	//c.Data(http.StatusOK, "application/json", byteData)
+	c.JSON(http.StatusOK, AnswerWebV1)
+
+	//c.JSON(http.StatusOK, DataAnswer)
+}
