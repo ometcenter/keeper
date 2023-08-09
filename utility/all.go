@@ -358,7 +358,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 
 	} else if PaginatioRegim {
 
-		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at ASC")
+		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC")
 
 	} else if len(QueryURL) != 0 {
 		//var conditionSlice []sq.Eq
