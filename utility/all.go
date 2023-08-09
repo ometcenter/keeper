@@ -314,7 +314,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast}).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(
 				sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}}).Limit(
-				uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+				uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at ASC")
 		} else {
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}})
