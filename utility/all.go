@@ -360,6 +360,32 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 
 		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC")
 
+		if len(QueryURL) > 2 {
+			//var conditionSlice []sq.Eq
+			//conditionMap := make(map[string]interface{})
+			//var conditionSlice sq.Eq
+
+			sqEq := make(sq.Eq)
+
+			for key, value := range QueryURL {
+
+				if key == "total" || key == "page" || key == "per_page" {
+					continue
+				}
+				//conditionSlice = append(conditionSlice, sq.Eq{key: value})
+				//conditionMap[key] = value
+				if len(value) == 0 {
+					param = append(param, "")
+				} else {
+					param = append(param, value[0])
+				}
+
+				sqEq[key] = ""
+
+			}
+			queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
+		}
+
 	} else if len(QueryURL) != 0 {
 		//var conditionSlice []sq.Eq
 		//conditionMap := make(map[string]interface{})
