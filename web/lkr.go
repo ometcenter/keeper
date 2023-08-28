@@ -107,7 +107,7 @@ type V4JobPlaces struct {
 	IdGis                   string    `json:"idGis"`
 	NomerNpa                string    `json:"nomerNpa"`
 	IskluchenaS             string    `json:"iskluchenaS"`
-	EtalonPosition          string    `json:"etalonPosition"`
+	//EtalonPosition          string    `json:"etalonPosition"`
 }
 
 type V3ActiveWorkers struct {
@@ -1071,8 +1071,7 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti,
 		coalesce(collaborators_posle.id_gis, '')                                     as idGis,
 		coalesce(cco_gis_exd.nomer_npa, '')                                          as nomerNpa,
-		coalesce(cco_gis_exd.iskluchena_s, '')                                       as iskluchenaS,
-		coalesce(collaborators_posle.etalon_position, '')                            as etalonPosition
+		coalesce(cco_gis_exd.iskluchena_s, '')                                       as iskluchenaS
 	from
 		collaborators_posle as collaborators_posle
 	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
@@ -1103,7 +1102,7 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
 			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.DateStartWork, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
 			&r.PositionTag, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
-			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS, &r.EtalonPosition)
+			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS)
 		if err != nil {
 			return nil, err
 		}
