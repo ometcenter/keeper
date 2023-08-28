@@ -1068,10 +1068,7 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 			else coalesce(to_date(collaborators_posle.pred_period, 'DD-MM-YYYY'), DATE '1900-01-01')
 		end as dataPredSobitie,
 		coalesce(collaborators_posle.pred_position, '')                              as predPosition,
-		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti,
-		coalesce(collaborators_posle.id_gis, '')                                     as idGis,
-		coalesce(cco_gis_exd.nomer_npa, '')                                          as nomerNpa,
-		coalesce(cco_gis_exd.iskluchena_s, '')                                       as iskluchenaS
+		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti
 	from
 		collaborators_posle as collaborators_posle
 	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
