@@ -97,16 +97,16 @@ type V4JobPlaces struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	DeletedAt         time.Time `json:"deletedAt"`
 	DateDismissals    time.Time `json:"dateDismissals"`
-	Kategory          string    `json:"kategory"`
-	VidPersonala      string    `json:"vidPersonala"`
+	Kategory          string    `json:"categoryName"`
+	VidPersonala      string    `json:"personnelClass"`
 	//DataKadrSobitiya  string    `json:"dataKadrSobitiya"`
-	DataKadrSobitiya        time.Time `json:"dataKadrSobitiya"`
-	DataPredSobitie         time.Time `json:"dataPredSobitie"`
-	PredPosition            string    `json:"predPosition"`
-	NapravlenieDeyatelnosti string    `json:"napravlenieDeyatelnosti"`
-	IdGis                   string    `json:"idGis"`
-	NomerNpa                string    `json:"nomerNpa"`
-	IskluchenaS             string    `json:"iskluchenaS"`
+	DataKadrSobitiya        time.Time `json:"dateLastEvent"`
+	DataPredSobitie         time.Time `json:"datePrevEvent"`
+	PredPosition            string    `json:"prevPosition"`
+	NapravlenieDeyatelnosti string    `json:"directingWorking"`
+	// IdGis                   string    `json:"idGis"`
+	// NomerNpa                string    `json:"nomerNpa"`
+	// IskluchenaS             string    `json:"iskluchenaS"`
 	//EtalonPosition          string    `json:"etalonPosition"`
 }
 
@@ -1102,7 +1102,7 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
 			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.DateStartWork, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
 			&r.PositionTag, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
-			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti, &r.IdGis, &r.NomerNpa, &r.IskluchenaS)
+			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
 		if err != nil {
 			return nil, err
 		}
