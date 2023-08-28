@@ -383,7 +383,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 				sqEq[key] = ""
 
 			}
-			queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
+			queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC").Where(sqEq)
 		}
 
 	} else if len(QueryURL) != 0 {
