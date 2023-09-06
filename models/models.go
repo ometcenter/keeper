@@ -253,6 +253,7 @@ type Job struct {
 	JobID  string `json:"ИдентификаторЗадания"`
 	Status string `json:"Состояние"`
 	Priod  string `json:"Дата"`
+	Notes  string `json:"Заметки"`
 }
 
 func (J *Job) GetJobStatus(DB *sql.DB) error {

@@ -240,12 +240,12 @@ func AutoMigrategORM() error {
 	// 	return err
 	// }
 
-	err = gormDB.AutoMigrate(&models.JobV2{})
+	err = gormDB.AutoMigrate(&models.Job{})
 	if err != nil {
 		return err
 	}
 
-	err = gormDB.AutoMigrate(&models.ExchangeJobV2{})
+	err = gormDB.AutoMigrate(&models.ExchangeJob{})
 	if err != nil {
 		return err
 	}
