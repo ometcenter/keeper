@@ -17,13 +17,13 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	"github.com/ometcenter/keeper/models"
 	queue "github.com/ometcenter/keeper/queue"
 	tracing "github.com/ometcenter/keeper/tracing/jaeger"
 	tracingRabbitMQ "github.com/ometcenter/keeper/tracing/jaeger/rabbitmq"
-	"github.com/ometcenter/keeper/version"
 	"github.com/streadway/amqp"
 )
 
@@ -757,11 +757,6 @@ func CloseStatusJob(DB *sql.DB) error {
 
 			ResultSettings := ResultSettingsMap[JobID]
 
-			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C, ResultSettings.TableName, version.Commit))
-			if err != nil {
-				log.Impl.Error(err)
-			}
-
 			// var QueryToBI models.QueryToBI
 			// err = QueryToBI.LoadSettingsFirstRowFromPgByJobID(DB, JobID)
 			var SettingsJobsAllV2 models.SettingsJobsAllV2
@@ -770,6 +765,31 @@ func CloseStatusJob(DB *sql.DB) error {
 				err = fmt.Errorf("НастройкиМодели not filled in QueryResult для JobId %s", JobID)
 				log.Impl.Error(err)
 				continue
+			}
+
+			configDSN, err := pq.ParseURL(SettingsJobsAllV2.DSNconnection)
+			if err != nil {
+				log.Impl.Error(err)
+				continue
+			}
+
+			s := strings.Split(configDSN, " ")
+			sSummary := ""
+			for _, subS := range s {
+				if strings.Contains(subS, "dbname=") {
+					sSummary = sSummary + subS + " " //strings.ReplaceAll(subS, "dbname=", "")
+				}
+				if strings.Contains(subS, "host=") {
+					sSummary = sSummary + subS + " " //strings.ReplaceAll(subS, "host=", "")
+				}
+			}
+
+			// err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C,
+			// 	ResultSettings.TableName, version.Commit))
+			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в админке: %s\nИмя таблицы: %s\nServer: %s", ResultSettings.Name1C, ResultSettings.Code1C,
+				ResultSettings.TableName, sSummary))
+			if err != nil {
+				log.Impl.Error(err)
 			}
 
 			if SettingsJobsAllV2.UseHandleAfterLoadAlgorithms {

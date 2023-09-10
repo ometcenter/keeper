@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/consul/api v1.9.1
 	github.com/heptiolabs/healthcheck v0.0.0-20211123025425-613501dd5deb
 	github.com/jinzhu/copier v0.3.5
+	github.com/lib/pq v1.10.2
 	github.com/minio/minio-go/v7 v7.0.52
 	github.com/opentracing/opentracing-go v1.2.0
 	github.com/prometheus/common v0.39.0 // indirect
