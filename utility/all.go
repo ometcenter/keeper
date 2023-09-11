@@ -786,7 +786,7 @@ func CloseStatusJob(DB *sql.DB) error {
 
 			// err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C,
 			// 	ResultSettings.TableName, version.Commit))
-			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в админке: %s\nИмя таблицы: %s\nServer: %s", ResultSettings.Name1C, ResultSettings.Code1C,
+			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nJobID: %s\nИмя таблицы: %s\nServer: %s", ResultSettings.Name1C, SettingsJobsAllV2.JobID,
 				ResultSettings.TableName, sSummary))
 			if err != nil {
 				log.Impl.Error(err)
