@@ -358,6 +358,33 @@ func (J *JobV2) SaveToHistory(DB *sql.DB) error {
 
 }
 
+func (J *JobV2) GetJobStatus(DB *sql.DB) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, J.JobID)
+
+	// var NullTimeCreatedAt sql.NullTime
+	// var NullTimeUpdatedAt sql.NullTime
+
+	var Job JobV2
+	err := DB.QueryRow("SELECT job_id, status, priod, notes FROM jobs WHERE job_id = $1", argsquery...).Scan(&Job.JobID, &Job.Status, &Job.Priod, &Job.Notes)
+	if err != nil {
+		return err
+	}
+
+	// if NullTimeCreatedAt.Valid {
+	// 	Job.CreatedAt = NullTimeCreatedAt.Time
+	// }
+
+	// if NullTimeUpdatedAt.Valid {
+	// 	Job.UpdatedAt = NullTimeUpdatedAt.Time
+	// }
+
+	*J = Job
+
+	return nil
+}
+
 type ExchangeJobHistory struct {
 	gorm.Model
 	JobID         string `json:"jobID"`
