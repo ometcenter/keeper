@@ -297,8 +297,9 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 	argsUpdate = append(argsUpdate, J.JobID)
 	argsUpdate = append(argsUpdate, J.Status)
 	argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
+	argsUpdate = append(argsUpdate, J.Notes)
 
-	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
+	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3, notes=$4
 		WHERE job_id = $1;`, argsUpdate...)
 	if err != nil {
 		return err
@@ -317,9 +318,10 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 		argsInsert = append(argsInsert, J.JobID)
 		argsInsert = append(argsInsert, J.Status)
 		argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+		argsInsert = append(argsInsert, J.Notes)
 
-		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod)
-			VALUES($1, $2, $3);`, argsInsert...)
+		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod, notes)
+			VALUES($1, $2, $3, $4);`, argsInsert...)
 
 		if err != nil {
 			return err
@@ -343,9 +345,10 @@ func (J *JobV2) SaveToHistory(DB *sql.DB) error {
 	argsInsert = append(argsInsert, J.Status)
 	argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
 	argsInsert = append(argsInsert, priodTime)
+	argsInsert = append(argsInsert, J.Notes)
 
-	_, err = DB.Exec(`INSERT INTO job_histories (job_id, status, priod, period)
-			VALUES($1, $2, $3, $4);`, argsInsert...)
+	_, err = DB.Exec(`INSERT INTO job_histories (job_id, status, priod, period, notes)
+			VALUES($1, $2, $3, $4, $5);`, argsInsert...)
 
 	if err != nil {
 		return err
