@@ -367,7 +367,8 @@ func (J *JobV2) GetJobStatus(DB *sql.DB) error {
 	// var NullTimeUpdatedAt sql.NullTime
 
 	var Job JobV2
-	err := DB.QueryRow("SELECT job_id, status, priod, notes FROM jobs WHERE job_id = $1", argsquery...).Scan(&Job.JobID, &Job.Status, &Job.Priod, &Job.Notes)
+	err := DB.QueryRow("SELECT job_id, coalesce(status, ''), coalesce(priod, ''), coalesce(notes, '') FROM jobs WHERE job_id = $1", argsquery...).Scan(&Job.JobID,
+		&Job.Status, &Job.Priod, &Job.Notes)
 	if err != nil {
 		return err
 	}
