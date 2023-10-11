@@ -593,7 +593,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 			}
 		}
 
-		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение больше чем %-8v",
+		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение запесей больше(старше) чем %-8v",
 			TableName, counter, DurationTimeRemaindRows)
 
 	}

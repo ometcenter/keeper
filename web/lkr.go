@@ -1812,6 +1812,18 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		lkr_nachisleniy_zp2022
 	where
 		collaborator_id = $1
+	union all
+	select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		hours_worked,
+		replace(summa, ' ', '')
+	from
+		lkr_nachisleniy_zp2023
+	where
+		collaborator_id = $1
 	order by
 		1`
 
