@@ -1722,7 +1722,7 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 	currentTime := time.Now()
 	//fmt.Println("Today:", currentTime)
 
-	subtractYear := currentTime.AddDate(-1, 0, 0)
+	subtractYear := currentTime.AddDate(-1, -1, 0)
 	//	fmt.Println("Subtract 1 Year:", subtractYear)
 
 	// JSONString, err := GetDataRedisByInsuranceNumber(InsuranceNumber+yearFilter, 2)
