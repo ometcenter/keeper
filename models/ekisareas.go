@@ -8,6 +8,7 @@ type EkisAreas struct {
 	ShortName        string
 	FullName         string
 	Mrsd             string
+	MrsdPredsedatel  string
 	AreaBgu          string
 	AreaZkgu         string
 	AddressBgu       string
