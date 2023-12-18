@@ -969,3 +969,8 @@ type HistoryReceivedMessages struct {
 	MessageResult datatypes.JSON
 	Settings      datatypes.JSON
 }
+
+type KafkaChangeOffsetDescription struct {
+	Topic  string `json:"topic"`
+	Offset int64  `json:"offset"`
+}
