@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	//libraryGoRedis "github.com/go-redis/redis/v8"
 	libraryGoRedis "github.com/go-redis/redis/v8"
 	libraryRediGo "github.com/gomodule/redigo/redis"
 	"github.com/ometcenter/keeper/config"
