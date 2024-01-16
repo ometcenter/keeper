@@ -632,6 +632,18 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 		lkr_nachisleniy_zp2023
 	where
 		collaborator_id = $1
+	union all
+	select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+	from
+		lkr_nachisleniy_zp2024
+	where
+		collaborator_id = $1
 	order by
 		1`
 
