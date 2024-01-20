@@ -394,6 +394,12 @@ func (r *RedisConnector) IntiClientLibraryGoRedis(AddressPort string) error {
 			if err != nil {
 				return err
 			}
+
+			_, err = rdb.Do(context.Background(), "select", AreaValue).Result()
+			if err != nil {
+				return err
+			}
+
 			r.connectPoolRedisClientGoRedisLibrary[AreaValue] = rdb
 
 		}
