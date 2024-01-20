@@ -231,8 +231,8 @@ type RedisConnector struct {
 	connectRedisClientGoRedisLibrary     *libraryGoRedis.Client
 	currentLibary                        string
 	connectPool                          map[string]interface{}
-	connectPoolRedisClientGoRedisLibrary map[string]*libraryGoRedis.Client
-	activeAreas                          []string
+	connectPoolRedisClientGoRedisLibrary map[int]*libraryGoRedis.Client
+	activeAreas                          []int
 	activeTokensMu                       sync.RWMutex
 	redislibraries                       map[string]string
 	ctx                                  context.Context
@@ -242,7 +242,7 @@ type RedisConnector struct {
 
 var RedisConnectorVb *RedisConnector
 
-func NewRedisConnector(redislibraries map[string]string, currentLibary string, activeAreas []string) *RedisConnector {
+func NewRedisConnector(redislibraries map[string]string, currentLibary string, activeAreas []int) *RedisConnector {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// redislibraries := make(map[string]string)
@@ -259,7 +259,7 @@ func NewRedisConnector(redislibraries map[string]string, currentLibary string, a
 		commandChannel: make(chan string),
 		// out:            make(chan interface{}, 10),
 		connectPool:                          make(map[string]interface{}),
-		connectPoolRedisClientGoRedisLibrary: make(map[string]*libraryGoRedis.Client),
+		connectPoolRedisClientGoRedisLibrary: make(map[int]*libraryGoRedis.Client),
 		activeAreas:                          activeAreas,
 		currentLibary:                        currentLibary,
 		redislibraries:                       redislibraries,
@@ -447,7 +447,7 @@ func (r *RedisConnector) GetCurrentConnection() interface{} {
 	return nil
 }
 
-func (r *RedisConnector) GetCurrentConnectionByArea(Area string) (*libraryGoRedis.Client, error) {
+func (r *RedisConnector) GetCurrentConnectionByArea(Area int) (*libraryGoRedis.Client, error) {
 
 	if r.currentLibary == "LibraryRediGo" {
 		// not implemented
