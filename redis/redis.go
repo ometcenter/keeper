@@ -258,13 +258,14 @@ func NewRedisConnector(redislibraries map[string]string, currentLibary string, a
 	return &RedisConnector{
 		commandChannel: make(chan string),
 		// out:            make(chan interface{}, 10),
-		connectPool:              make(map[string]interface{}),
-		activeAreas:              activeAreas,
-		currentLibary:            currentLibary,
-		redislibraries:           redislibraries,
-		ctx:                      ctx,
-		ctxCancelFn:              cancel,
-		saveMapToExternalStorage: sayHelloWorld,
+		connectPool:                          make(map[string]interface{}),
+		connectPoolRedisClientGoRedisLibrary: make(map[string]*libraryGoRedis.Client),
+		activeAreas:                          activeAreas,
+		currentLibary:                        currentLibary,
+		redislibraries:                       redislibraries,
+		ctx:                                  ctx,
+		ctxCancelFn:                          cancel,
+		saveMapToExternalStorage:             sayHelloWorld,
 	}
 }
 
