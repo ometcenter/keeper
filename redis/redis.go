@@ -226,21 +226,23 @@ import (
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 type RedisConnector struct {
-	commandChannel                   chan string
-	connectPoolRedisRediGolibrary    *libraryRediGo.Pool
-	connectRedisClientGoRedisLibrary *libraryGoRedis.Client
-	currentLibary                    string
-	connectPool                      map[string]interface{}
-	activeTokensMu                   sync.RWMutex
-	redislibraries                   map[string]string
-	ctx                              context.Context
-	ctxCancelFn                      func()
-	saveMapToExternalStorage         func()
+	commandChannel                       chan string
+	connectPoolRedisRediGolibrary        *libraryRediGo.Pool
+	connectRedisClientGoRedisLibrary     *libraryGoRedis.Client
+	currentLibary                        string
+	connectPool                          map[string]interface{}
+	connectPoolRedisClientGoRedisLibrary map[string]*libraryGoRedis.Client
+	activeAreas                          []string
+	activeTokensMu                       sync.RWMutex
+	redislibraries                       map[string]string
+	ctx                                  context.Context
+	ctxCancelFn                          func()
+	saveMapToExternalStorage             func()
 }
 
 var RedisConnectorVb *RedisConnector
 
-func NewRedisConnector(redislibraries map[string]string, currentLibary string) *RedisConnector {
+func NewRedisConnector(redislibraries map[string]string, currentLibary string, activeAreas []string) *RedisConnector {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// redislibraries := make(map[string]string)
@@ -257,6 +259,7 @@ func NewRedisConnector(redislibraries map[string]string, currentLibary string) *
 		commandChannel: make(chan string),
 		// out:            make(chan interface{}, 10),
 		connectPool:              make(map[string]interface{}),
+		activeAreas:              activeAreas,
 		currentLibary:            currentLibary,
 		redislibraries:           redislibraries,
 		ctx:                      ctx,
@@ -375,6 +378,26 @@ func (r *RedisConnector) IntiClientLibraryGoRedis(AddressPort string) error {
 	r.connectRedisClientGoRedisLibrary = rdb
 	r.connectPool["LibraryGoRedis"] = rdb
 
+	if len(r.activeAreas) > 0 {
+		for _, value := range r.activeAreas {
+			AreaValue := value
+
+			rdb := libraryGoRedis.NewClient(&libraryGoRedis.Options{
+				Addr:     AddressPort,
+				Password: "", // no password set
+				DB:       0,  // use default DB
+			})
+
+			//_, err := rdb.Ping(ctxRedis).Result()
+			_, err := rdb.Ping(context.Background()).Result()
+			if err != nil {
+				return err
+			}
+			r.connectPoolRedisClientGoRedisLibrary[AreaValue] = rdb
+
+		}
+	}
+
 	return err
 }
 
@@ -421,6 +444,23 @@ func (r *RedisConnector) GetCurrentConnection() interface{} {
 	}
 
 	return nil
+}
+
+func (r *RedisConnector) GetCurrentConnectionByArea(Area string) (*libraryGoRedis.Client, error) {
+
+	if r.currentLibary == "LibraryRediGo" {
+		// not implemented
+		return nil, fmt.Errorf("not implemented for LibraryRediGo")
+	} else if r.currentLibary == "LibraryGoRedis" {
+
+		value, ok := r.connectPoolRedisClientGoRedisLibrary[Area]
+		if !ok {
+			return nil, fmt.Errorf("connection not found for %s", value)
+		}
+		return value, nil
+	}
+
+	return nil, fmt.Errorf("not implemented for _____")
 }
 
 func (r *RedisConnector) Get(Key string, RedisDB int) (string, error) {
