@@ -60,7 +60,7 @@ func (t *GlobalVariablesConnector) Run() error {
 		return err
 	}
 
-	tkExpiring := time.NewTicker(time.Second * 30)
+	tkExpiring := time.NewTicker(t.durationTicker)
 	defer tkExpiring.Stop()
 
 	for {
