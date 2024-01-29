@@ -18,13 +18,14 @@ type GlobalVariablesConnector struct {
 	globalVariablesMap               map[string]interface{}
 	connectRedisClientGoRedisLibrary *libraryGoRedis.Client
 	ctx                              context.Context
+	durationTicker                   time.Duration
 	ctxCancelFn                      func()
 	saveMapToExternalStorage         func()
 }
 
 var GlobalVariablesConnectorVb *GlobalVariablesConnector
 
-func NewGlobalVariablesConnector() *GlobalVariablesConnector {
+func NewGlobalVariablesConnector(durationTicker time.Duration) *GlobalVariablesConnector {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	// redislibraries := make(map[string]string)
@@ -37,6 +38,10 @@ func NewGlobalVariablesConnector() *GlobalVariablesConnector {
 		//fmt.Println("Hello World !")
 	}
 
+	if durationTicker == 0 {
+		durationTicker = time.Second * 30
+	}
+
 	return &GlobalVariablesConnector{
 		commandChannel: make(chan string),
 		// out:            make(chan interface{}, 10),
@@ -44,6 +49,7 @@ func NewGlobalVariablesConnector() *GlobalVariablesConnector {
 		ctx:                      ctx,
 		ctxCancelFn:              cancel,
 		saveMapToExternalStorage: sayHelloWorld,
+		durationTicker:           durationTicker,
 	}
 }
 
@@ -78,9 +84,9 @@ func (t *GlobalVariablesConnector) Run() error {
 			//default:
 			t.RefreshAllGlobalVariables()
 
-			fmt.Printf("Global variables: %v\n", t.globalVariablesMap)
+			//fmt.Printf("Global variables: %v\n", t.globalVariablesMap)
 
-			t.SetValueForGlobalVariable("currentTime", time.Now())
+			//t.SetValueForGlobalVariable("currentTime", time.Now())
 		}
 		//time.Sleep(time.Second * 10)
 
