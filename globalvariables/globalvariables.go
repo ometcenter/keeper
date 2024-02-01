@@ -172,6 +172,33 @@ func (r *GlobalVariablesConnector) RefreshAllGlobalVariables() error {
 
 }
 
+func (r *GlobalVariablesConnector) GetValueOfGlobalVariable(Key string) (interface{}, error) {
+
+	r.globalVariablesMapMu.Lock()
+	defer r.globalVariablesMapMu.Unlock()
+	val, exist := r.globalVariablesMap[Key]
+	if exist {
+		return val, nil
+	}
+
+	RedisClient := r.connectRedisClientGoRedisLibrary
+	ok, err := RedisClient.Exists(context.Background(), Key).Result()
+	if err != nil {
+		return nil, fmt.Errorf("error performing redis.Exists: %w", err)
+	}
+
+	if ok == 0 {
+		return nil, nil
+	} else {
+		err = r.RefreshAllGlobalVariables() // тут выдадим по Redis и перезапишем в мапу
+		if err != nil {
+			return nil, fmt.Errorf("error refreshing global variables: %w", err)
+		}
+	}
+
+	return nil, nil
+}
+
 func (r *GlobalVariablesConnector) SetValueForGlobalVariable(Key string, Value interface{}) error {
 
 	RedisClient := r.connectRedisClientGoRedisLibrary
