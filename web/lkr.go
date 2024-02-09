@@ -104,6 +104,7 @@ type V4JobPlaces struct {
 	DataPredSobitie         time.Time `json:"datePrevEvent"`
 	PredPosition            string    `json:"prevPosition"`
 	NapravlenieDeyatelnosti string    `json:"directingWorking"`
+	UasRoleTypeID           int       `json:"uasRoleTypeID"`
 	// IdGis                   string    `json:"idGis"`
 	// NomerNpa                string    `json:"nomerNpa"`
 	// IskluchenaS             string    `json:"iskluchenaS"`
@@ -1031,71 +1032,64 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 	//coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
 	//coalesce(collaborators_posle.created_at, DATE '1900-01-01') as created_at,
 
-	queryText := `select
-		collaborators_posle.person_id as person_id,
-		collaborators_posle.collaborator_id as collaborator_id,
-		collaborators_posle.insurance_number as insurance_number,
-		collaborators_posle.inn as inn,
-		collaborators_posle.full_name as full_name,
-		collaborators_posle.position as position,
-		coalesce(organizations_zkgu.name, '') as organization_name,
-		collaborators_posle.status as status,
-		coalesce(contact_inf_pochta_posle.email, '') as email,
-		coalesce(contact_inf_pochta_posle.email_eps, '') as emailEPS,
-		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
-		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
-		coalesce(to_date(collaborators_posle.date_birth,'DD-MM-YYYY')) as date_birth,
+	queryText := `select   
+		collaborators_posle.collaborator_id                            as collaboratorId,
+		collaborators_posle.person_id                                  as personId,
+		collaborators_posle.insurance_number                           as insuranceNumber,
+		case  
+				when coalesce(collaborators_posle.created_at >contact_inf_pochta_posle.created_at)   then coalesce(collaborators_posle.created_at, DATE '1900-01-01')  
+				else coalesce(contact_inf_pochta_posle.created_at, DATE '1900-01-01')  
+				end as createdAt, 
+		case  
+				when coalesce(collaborators_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')  then coalesce(collaborators_posle.updated_at, DATE '1900-01-01') 
+				else coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01')              
+				end as updatedAt, 
+		case  
+				when coalesce(collaborators_posle.deleted_at >contact_inf_pochta_posle.deleted_at)   then coalesce(collaborators_posle.deleted_at, DATE '1900-01-01')  
+				else coalesce(contact_inf_pochta_posle.deleted_at, DATE '1900-01-01')  
+				end as deletedAt, 
+		coalesce(collaborators_posle.date_dismissals_as_date::date)    as dateDismissals,   
+		collaborators_posle.position                                   as position,      
+		collaborators_posle.status                                     as status,
+		coalesce(contact_inf_pochta_posle.email, '')                   as email,
+		coalesce(contact_inf_pochta_posle."email_eps", '')              as emaileps,
+		collaborators_posle.full_name                                  as fullName,
+		coalesce(organizations_zkgu.name, '')                          as organizationName,
+		collaborators_posle.inn                                        as inn,                               
+		coalesce(to_date(collaborators_posle.date_birth,'DD-MM-YYYY'))        as dateBirth,
+		coalesce(contact_inf_telephone_posle.mobile, '')               as mobilePhone,
+		coalesce(contact_inf_telephone_posle."work", '')               as workPhone,                            
 		coalesce(to_date(collaborators_posle.date_start_work,'DD-MM-YYYY'))   as dateStartWork,
-		collaborators_posle.podrazdelenie as podrazdelenie,
-		coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenie_id,
-		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as large_group_of_posts,
-		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as position_tag,
-		case 
-   			when (collaborators_posle.created_at >contact_inf_pochta_posle.created_at  
-   			and collaborators_posle.created_at >contact_inf_telephone_posle.created_at) then coalesce(collaborators_posle.created_at, DATE '1900-01-01') 
-   			when (contact_inf_pochta_posle.created_at>collaborators_posle.created_at 
-   			and contact_inf_pochta_posle.created_at>contact_inf_telephone_posle.created_at) then coalesce(contact_inf_pochta_posle.created_at, DATE '1900-01-01') 
-   			else coalesce(contact_inf_telephone_posle.created_at, DATE '1900-01-01') 
-   		end as created_at,
-		case 
-			when (coalesce(collaborators_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')  
-			and coalesce(collaborators_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.updated_at,DATE '1900-01-01')) then coalesce(collaborators_posle.updated_at, DATE '1900-01-01') 
-			when (coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')>coalesce(collaborators_posle.updated_at,DATE '1900-01-01') 
-			and coalesce(contact_inf_pochta_posle.updated_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.updated_at,DATE '1900-01-01')) then coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') 
-			else coalesce(contact_inf_telephone_posle.updated_at, DATE '1900-01-01') 
-		end as updated_at,
-		case 
-			when (coalesce(collaborators_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')  
-			and coalesce(collaborators_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.deleted_at,DATE '1900-01-01')) then coalesce(collaborators_posle.updated_at, DATE '1900-01-01') 
-			when (coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')>coalesce(collaborators_posle.deleted_at,DATE '1900-01-01') 
-			and coalesce(contact_inf_pochta_posle.deleted_at,DATE '1900-01-01')>coalesce(contact_inf_telephone_posle.deleted_at,DATE '1900-01-01')) then coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') 
-			else coalesce(contact_inf_telephone_posle.deleted_at, DATE '1900-01-01') 
-		end as deleted_at,
-		coalesce(collaborators_posle.date_dismissals_as_date, DATE '1900-01-01') as date_dismissals_as_date,
-		coalesce(cco_gis_exd.kategory_name, '')                                      as kategoryName,
-		coalesce(cco_gis_exd.vid_personala, '')                                      as vidPersonala,
-		coalesce(to_date(collaborators_posle.data_poslednee_sobitie,'DD-MM-YYYY')) as dataPosledneeSobitie,
-		case
-			when collaborators_posle.pred_period = '' then DATE '1900-01-01'
-			else coalesce(to_date(collaborators_posle.pred_period, 'DD-MM-YYYY'), DATE '1900-01-01')
-		end as dataPredSobitie,
-		coalesce(collaborators_posle.pred_position, '')                              as predPosition,
-		coalesce(collaborators_posle.napravlenie_deyatelnosti, '')                   as napravlenieDeyatelnosti
-	from
-		collaborators_posle as collaborators_posle
-	left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
+		collaborators_posle.podrazdelenie                              as podrazdelenie,
+		coalesce(collaborators_posle.podrazdelenie_id, '')             as podrazdelenieId,
+		coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as largeGroupOfPosts,
+		coalesce(dit_gruppirovka_dolzhnostey.position_tag, '')         as positionTag,
+		cco_gis_exd.kategory_name                                      as categoryName,
+		cco_gis_exd.vid_personala                                      as personnelClass,
+		coalesce(to_date(collaborators_posle.data_poslednee_sobitie,'DD-MM-YYYY'))  as dateLastEvent,
+		coalesce(to_date(collaborators_posle.pred_period,'DD-MM-YYYY'))             as datePrevEvent,
+		collaborators_posle.pred_position                              as prevPosition,
+		collaborators_posle.napravlenie_deyatelnosti                   as directingWorking,
+		role_type_map.uas_role_type_id                                 as uas_role_type_id    
+		from     
+		collaborators_posle                                            as collaborators_posle
+		left join dit_gruppirovka_dolzhnostey                              as dit_gruppirovka_dolzhnostey on
 		collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
-	left join organizations_zkgu as organizations_zkgu on
+		left join organizations_zkgu                                       as organizations_zkgu on
 		collaborators_posle.organization_id = organizations_zkgu.organization_id
-		and collaborators_posle.area = organizations_zkgu.area
-	left join contact_inf_pochta_posle as contact_inf_pochta_posle on
+		and 
+		collaborators_posle.area = organizations_zkgu.area
+		left join contact_inf_pochta_posle                                 as contact_inf_pochta_posle on
 		collaborators_posle.person_id = contact_inf_pochta_posle.person_id
-	left join contact_inf_telephone_posle as contact_inf_telephone_posle on
+		left join contact_inf_telephone_posle                              as contact_inf_telephone_posle on
 		collaborators_posle.person_id = contact_inf_telephone_posle.person_id
-	left join cco_gis_exd as cco_gis_exd on
-        collaborators_posle.id_gis = cco_gis_exd.id_gis  and collaborators_posle.area = cco_gis_exd.area
-	where
-		collaborator_id = $1`
+		left join  cco_gis_exd                                            as cco_gis_exd on
+		collaborators_posle.id_gis = cco_gis_exd.id_gis  and collaborators_posle.area = cco_gis_exd.area         
+		left join role_type_map                                           as role_type_map on
+		collaborators_posle.area = role_type_map.area
+		and collaborators_posle.id_gis = role_type_map.id_gis        
+		where
+		collaborators_posle.collaborator_id = $1`
 
 	rows, err := DB.Query(queryText, argsquery...)
 	if err != nil {
@@ -1108,10 +1102,12 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 	ColumnsStruct := V4JobPlaces{}
 	for rows.Next() {
 		var r V4JobPlaces
-		err = rows.Scan(&r.PersonId, &r.CollaboratorId, &r.InsuranceNumber, &r.Inn, &r.FullName, &r.Position, &r.OrganizationName, &r.Status,
-			&r.Email, &r.EmailEPS, &r.MobilePhone, &r.WorkPhone, &r.DateBirth, &r.DateStartWork, &r.BranchName, &r.BranchID, &r.LargeGroupOfPosts,
-			&r.PositionTag, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt, &r.DateDismissals, &r.Kategory, &r.VidPersonala, &r.DataKadrSobitiya,
-			&r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
+		err = rows.Scan(&r.CollaboratorId, &r.PersonId, &r.InsuranceNumber, &r.CreatedAt, &r.UpdatedAt,
+			&r.DeletedAt, &r.DateDismissals, &r.Position, &r.Status, &r.Email, &r.EmailEPS, &r.FullName,
+			&r.OrganizationName, &r.Inn, &r.DateBirth, &r.MobilePhone, &r.WorkPhone, &r.DateStartWork,
+			&r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.PositionTag, &r.Kategory, &r.VidPersonala,
+			&r.DataKadrSobitiya, &r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti,
+			&r.UasRoleTypeID) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
 		if err != nil {
 			return nil, err
 		}
