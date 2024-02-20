@@ -240,9 +240,19 @@ func (LkUsers *LkUsers) ComparePasswords(hashedPwd string, plainPwd string) bool
 	return true
 }
 
+type LimitsURL struct {
+	Url         string `json:"url"`
+	TimeSeconds int    `json:"timeSeconds"`
+	Limit       int    `json:"limit"`
+}
+
 type AdditionalSettingsUser struct {
-	AccessToSystemTables bool     `json:"accessToSystemTables"`
-	AccessAreas          []string `json:"accessAreas"`
+	AccessToSystemTables bool        `json:"accessToSystemTables"`
+	AccessAreas          []string    `json:"accessAreas"`
+	Role                 string      `json:"role"`
+	AccessURLs           []string    `json:"accessURLs"`
+	AccessJobID          []string    `json:"accessJobID"`
+	LimitsURL            []LimitsURL `json:"limitsURL"`
 }
 
 func (AdditionalSettingsUser *AdditionalSettingsUser) Scan(value interface{}) (err error) {
