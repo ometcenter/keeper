@@ -380,14 +380,14 @@ from
 			return err
 		}
 
-		var V3JobPlaces interface{}
-		V3JobPlaces, err = V3JobPlacesGeneral(workerID, RedisConnector)
+		var V4JobPlaces interface{}
+		V4JobPlaces, err = V4JobPlacesGeneral(workerID, RedisConnector)
 		if err != nil {
-			V3JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+			V4JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
 
 		//panic occurred in main: redis: can't marshal store.GetPersonalInfoResponds (implement encoding.BinaryMarshaler)
-		byteResult, err := json.Marshal(V3JobPlaces)
+		byteResult, err := json.Marshal(V4JobPlaces)
 		if err != nil {
 			return err
 		}
