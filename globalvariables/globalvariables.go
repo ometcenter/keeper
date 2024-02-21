@@ -172,6 +172,18 @@ func (r *GlobalVariablesConnector) RefreshAllGlobalVariables() error {
 
 }
 
+func (r *GlobalVariablesConnector) GetValueOfGlobalVariable(Key string) (interface{}, error) {
+
+	r.globalVariablesMapMu.Lock()
+	defer r.globalVariablesMapMu.Unlock()
+	val, exist := r.globalVariablesMap[Key]
+	if exist {
+		return val, nil
+	} else {
+		return nil, errors.New("key not found")
+	}
+}
+
 func (r *GlobalVariablesConnector) SetValueForGlobalVariable(Key string, Value interface{}) error {
 
 	RedisClient := r.connectRedisClientGoRedisLibrary
