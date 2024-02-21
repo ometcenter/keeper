@@ -312,7 +312,7 @@ type AllInformationV1Answer struct {
 	AverageSalary            interface{} `json:"averageSalary"`
 }
 
-func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
+func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	JSONString, err := RedisConnector.Get(workerID+yearFilterFrom+yearFilterTo, 4)
 	//if err != nil {
@@ -347,7 +347,7 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	}
 
 	var BudgetStat interface{}
-	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisConnector)
+	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, UseAdvance, RedisConnector)
 	if err != nil {
 		BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
@@ -561,7 +561,7 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 
 }
 
-func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
+func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	JSONString, err := RedisConnector.Get(WorkerID+yearFilter, 2)
 	//if err != nil {
@@ -594,68 +594,145 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 	var argsquery []interface{}
 	argsquery = append(argsquery, WorkerID)
 	//queryAllColumns := "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = $1;"
+	var queryAllColumns string
 
-	queryAllColumns := `select
+	if !UseAdvance {
+		queryAllColumns = `select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', '') as hours_worked,
 		replace(replace(summa, ' ', ''), ' ', '') as summa
-	from
+		from
 		lkr_nachisleniy_zp2020
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2021
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2022
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2023
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2024
-	where
+		where
 		collaborator_id = $1
-	order by
+		order by
 		1`
+	} else {
+		queryAllColumns = `select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', '') as hours_worked,
+		replace(replace(summa, ' ', ''), ' ', '') as summa
+		from
+		lkr_nachisleniy_zp2020
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2021
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2022
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2023
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2024
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_avans
+		where
+		collaborator_id = $1
+		order by
+		1`
+	}
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {

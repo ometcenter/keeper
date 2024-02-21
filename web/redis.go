@@ -15,7 +15,7 @@ import (
 //////////////////// Заполнение кэша Redis //////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
+func FillDataToRedisSalary(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -81,7 +81,7 @@ from
 		workerID := item
 
 		var BudgetStat interface{}
-		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisConnector)
+		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, UseAdvance, RedisConnector)
 		if err != nil {
 			BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -222,7 +222,7 @@ from
 
 }
 
-func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
+func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -292,7 +292,7 @@ where
 		//?from=2020&to=2023
 
 		var AllInformationV1 interface{}
-		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
+		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, UseAdvance, RedisConnector)
 		if err != nil {
 			AllInformationV1 = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
