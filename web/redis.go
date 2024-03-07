@@ -21,9 +21,15 @@ func FillDataToRedisSalary(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnec
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id
+	collaborators_posle.collaborator_id,
+	collaborators_posle.employment_type
 from
-	collaborators_posle as collaborators_posle`
+	collaborators_posle as collaborators_posle
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
 	// where
 	// 	status <> 'Увольнение'`
 	//where
@@ -128,9 +134,15 @@ func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id
+	collaborators_posle.collaborator_id,
+	collaborators_posle.employment_type
 from
-	collaborators_posle as collaborators_posle`
+	collaborators_posle as collaborators_posle
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
 	// where
 	// 	status <> 'Увольнение'`
 	//where
@@ -332,9 +344,15 @@ func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisConnector *shareRedis
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id
+	collaborators_posle.collaborator_id,
+	collaborators_posle.employment_type
 from
-	collaborators_posle as collaborators_posle`
+	collaborators_posle as collaborators_posle
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
 	//where
 	//status <> 'Увольнение'`
 	//where
