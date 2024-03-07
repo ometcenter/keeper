@@ -21,8 +21,7 @@ func FillDataToRedisSalary(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnec
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id,
-	collaborators_posle.employment_type
+	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
 where
@@ -134,8 +133,7 @@ func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id,
-	collaborators_posle.employment_type
+	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
 where
@@ -344,8 +342,7 @@ func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisConnector *shareRedis
 
 	var argsquery1 []interface{}
 	queryAllColumns := `select
-	collaborators_posle.collaborator_id,
-	collaborators_posle.employment_type
+	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
 where
