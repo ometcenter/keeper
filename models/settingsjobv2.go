@@ -105,12 +105,13 @@ func (S SettingsJobsAllV2) SaveSettingsToPg(DB *sql.DB) error {
 		argsUpdate = append(argsUpdate, S.TypeDataGetting)
 		argsUpdate = append(argsUpdate, S.DataUploadMethod)
 		argsUpdate = append(argsUpdate, settingByte)
+		argsUpdate = append(argsUpdate, S.Archived)
 
 		// _, err := store.DB.Exec(`UPDATE settings_jobs SET job_id = $1, json_string = $2, code_external = $3,
 		// name_external = $4, table_name = $5, use_remote_collection = $6, config_name = $7 WHERE job_id = $1;`, argsUpdate...)
 		_, err := DB.Exec(`UPDATE settings_jobs_v2 SET job_id = $1, code_external = $2, 
 		 name_external = $3, table_name = $4, type_data_getting = $5, data_upload_method = $6,
-		  settings_jobs_json_byte = $7 WHERE job_id = $1;`, argsUpdate...)
+		  settings_jobs_json_byte = $7, archived = $8 WHERE job_id = $1;`, argsUpdate...)
 
 		if err != nil {
 			return err
@@ -132,12 +133,13 @@ func (S SettingsJobsAllV2) SaveSettingsToPg(DB *sql.DB) error {
 		argsInsert = append(argsInsert, S.TypeDataGetting)
 		argsInsert = append(argsInsert, S.DataUploadMethod)
 		argsInsert = append(argsInsert, settingByte)
+		argsInsert = append(argsInsert, S.Archived)
 
 		// _, err := store.DB.Exec(`INSERT INTO settings_jobs (job_id, json_string, code_external, name_external, table_name, use_remote_collection, config_name)
 		// VALUES($1, $2, $3, $4, $5, $6, $7);`, argsInsert...)
 
-		_, err := DB.Exec(`INSERT INTO settings_jobs_v2 (job_id, code_external, name_external, table_name, type_data_getting, data_upload_method, settings_jobs_json_byte)
-		VALUES($1, $2, $3, $4, $5, $6, $7);`, argsInsert...)
+		_, err := DB.Exec(`INSERT INTO settings_jobs_v2 (job_id, code_external, name_external, table_name, type_data_getting, data_upload_method, settings_jobs_json_byte, archived)
+		VALUES($1, $2, $3, $4, $5, $6, $7, $8);`, argsInsert...)
 
 		if err != nil {
 			return err
