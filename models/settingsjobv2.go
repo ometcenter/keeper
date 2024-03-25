@@ -22,6 +22,7 @@ type SettingsJobsV2 struct {
 	//ConfigName             string `json:"ИмяКонфигурации"`    //ИмяКонфигурации
 	TypeDataGetting  string `json:"typeDataGetting"`  //ВидПолученияДанных
 	DataUploadMethod string `json:"dataUploadMethod"` // CпособЗагрузкиДанных
+	Archived         bool   `json:"archived"`         // Архиварованное задание
 
 	//SettingsJobsJSONString string `json:"JSONСтрокаНастроек"`
 	SettingsJobsJSONByte datatypes.JSON
@@ -194,7 +195,7 @@ type SettingsJobsAllV2 struct {
 	ComparionFields                  []string                 `json:"comparionFields"`                  //ПоляСравнения
 	UseCleaningFieldsBeforeLoading   bool                     `json:"useCleaningFieldsBeforeLoading"`   // Использовать фильтр очистки данных
 	CleaningFieldsBeforeLoading      string                   `json:"cleaningFieldsBeforeLoading"`      // Фильр очистки данных
-
+	Archived                         bool                     `json:"archived"`                         // Архиварованное задание
 }
 
 func (S *SettingsJobsAllV2) Scan(value interface{}) (err error) {
