@@ -37,6 +37,7 @@ type EkisTokenSession struct {
 type EkisOrganizationDesctiption struct {
 	gorm.Model
 	EoId                         int    `json:"eo_id"`
+	UniqueAddressID              string `json:"unique_address_id"`
 	FullName                     string `json:"full_name"`
 	ShortName                    string `json:"short_name"`
 	Number                       int    `json:"number"`
@@ -92,7 +93,8 @@ type EkisOrganizationDesctiptionRespons struct {
 
 type EkisOrganizationAddresses struct {
 	gorm.Model                    `json:"-"`
-	EoId                          int    `json:"eo_id"`            // Номер организации ЕКИС
+	EoId                          int    `json:"eo_id"` // Номер организации ЕКИС
+	UniqueAddressID               string `json:"unique_address_id"`
 	Unom                          int    `json:"unom"`             // Уникальный номер статкарты БТИ
 	Unad                          int    `json:"unad"`             // UNAD
 	District                      string `json:"district"`         // Муниципальный округ (Район)
