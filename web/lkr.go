@@ -105,6 +105,7 @@ type V4JobPlaces struct {
 	PredPosition            string    `json:"prevPosition"`
 	NapravlenieDeyatelnosti string    `json:"directingWorking"`
 	UasRoleTypeID           int       `json:"uasRoleTypeID"`
+	EmploymentType          int       `json:"employmentType"`
 	// IdGis                   string    `json:"idGis"`
 	// NomerNpa                string    `json:"nomerNpa"`
 	// IskluchenaS             string    `json:"iskluchenaS"`
@@ -1133,62 +1134,91 @@ func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnect
 	//coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
 	//coalesce(collaborators_posle.created_at, DATE '1900-01-01') as created_at,
 
-	queryText := `select
+	queryText := `select   
 	collaborators_posle.collaborator_id as collaboratorId,
 	collaborators_posle.person_id as personId,
 	collaborators_posle.insurance_number as insuranceNumber,
-	case
-		when coalesce(collaborators_posle.created_at >contact_inf_pochta_posle.created_at) then coalesce(collaborators_posle.created_at, DATE '1900-01-01')
-		else coalesce(contact_inf_pochta_posle.created_at, DATE '1900-01-01')
-	end as createdAt,
-	case
-		when coalesce(collaborators_posle.updated_at, DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01') then coalesce(collaborators_posle.updated_at, DATE '1900-01-01')
-		else coalesce(contact_inf_pochta_posle.updated_at, DATE '1900-01-01')
-	end as updatedAt,
-	case
-		when coalesce(collaborators_posle.deleted_at >contact_inf_pochta_posle.deleted_at) then coalesce(collaborators_posle.deleted_at, DATE '1900-01-01')
-		else coalesce(contact_inf_pochta_posle.deleted_at, DATE '1900-01-01')
-	end as deletedAt,
-	coalesce(collaborators_posle.date_dismissals_as_date::date) as dateDismissals,
-	collaborators_posle.position as position,
+	case  
+			when coalesce(collaborators_posle.created_at >contact_inf_pochta_posle.created_at) then coalesce(collaborators_posle.created_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.created_at,
+	DATE '1900-01-01')
+end as createdAt, 
+	case  
+			when coalesce(collaborators_posle.updated_at,
+	DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at,
+	DATE '1900-01-01') then coalesce(collaborators_posle.updated_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.updated_at,
+	DATE '1900-01-01')
+end as updatedAt, 
+	case  
+			when coalesce(collaborators_posle.deleted_at >contact_inf_pochta_posle.deleted_at) then coalesce(collaborators_posle.deleted_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.deleted_at,
+	DATE '1900-01-01')
+end as deletedAt, 
+	coalesce(collaborators_posle.date_dismissals_as_date::date) as dateDismissals,   
+	collaborators_posle.position as position,      
 	collaborators_posle.status as status,
-	coalesce(contact_inf_pochta_posle.email, '') as email,
-	coalesce(contact_inf_pochta_posle."email_eps", '') as emaileps,
+	coalesce(contact_inf_pochta_posle.email,
+'') as email,
+	coalesce(contact_inf_pochta_posle."email_eps",
+'') as emaileps,
 	collaborators_posle.full_name as fullName,
-	coalesce(organizations_zkgu.name, '') as organizationName,
-	collaborators_posle.inn as inn,
-	coalesce(to_date(collaborators_posle.date_birth, 'DD-MM-YYYY')) as dateBirth,
-	coalesce(contact_inf_telephone_posle.mobile, '') as mobilePhone,
-	coalesce(contact_inf_telephone_posle."work", '') as workPhone,
-	coalesce(to_date(collaborators_posle.date_start_work, 'DD-MM-YYYY')) as dateStartWork,
+	coalesce(organizations_zkgu.name,
+'') as organizationName,
+	collaborators_posle.inn as inn,                               
+	coalesce(to_date(collaborators_posle.date_birth,
+'DD-MM-YYYY')) as dateBirth,
+	coalesce(contact_inf_telephone_posle.mobile,
+'') as mobilePhone,
+	coalesce(contact_inf_telephone_posle."work",
+'') as workPhone,                            
+	coalesce(to_date(collaborators_posle.date_start_work,
+'DD-MM-YYYY')) as dateStartWork,
 	collaborators_posle.podrazdelenie as podrazdelenie,
-	coalesce(collaborators_posle.podrazdelenie_id, '') as podrazdelenieId,
-	coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts, '') as largeGroupOfPosts,
-	coalesce(dit_gruppirovka_dolzhnostey.position_tag, '') as positionTag,
-	coalesce(cco_gis_exd.kategory_name, '') as categoryName,
-	coalesce(cco_gis_exd.vid_personala, '') as personnelClass,
-	coalesce(to_date(collaborators_posle.data_poslednee_sobitie, 'DD-MM-YYYY')) as dateLastEvent,
-	coalesce(to_date(collaborators_posle.pred_period, 'DD-MM-YYYY')) as datePrevEvent,
+	coalesce(collaborators_posle.podrazdelenie_id,
+'') as podrazdelenieId,
+	coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts,
+'') as largeGroupOfPosts,
+	coalesce(dit_gruppirovka_dolzhnostey.position_tag,
+'') as positionTag,
+	coalesce(cco_gis_exd.kategory_name,'') as categoryName,
+	coalesce(cco_gis_exd.vid_personala,'') as personnelClass,
+	coalesce(to_date(collaborators_posle.data_poslednee_sobitie,
+'DD-MM-YYYY')) as dateLastEvent,
+	coalesce(to_date(collaborators_posle.pred_period,
+'DD-MM-YYYY')) as datePrevEvent,
 	collaborators_posle.pred_position as prevPosition,
 	collaborators_posle.napravlenie_deyatelnosti as directingWorking,
-	role_type_map.uas_role_type_id as uas_role_type_id
-from
+	coalesce(role_type_map.uas_role_type_id,
+7) as uas_role_type_id,
+	case
+	when collaborators_posle.employment_type = 'Основное место работы' then 1
+	when collaborators_posle.employment_type = 'Внешнее совместительство' then 2
+	when collaborators_posle.employment_type = 'Внутреннее совместительство' then 3
+	when collaborators_posle.employment_type = 'Подработка' then 4
+	else 5
+	end as employment_type
+from     
 	collaborators_posle as collaborators_posle
 left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
 	collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
 left join organizations_zkgu as organizations_zkgu on
 	collaborators_posle.organization_id = organizations_zkgu.organization_id
-	and collaborators_posle.area = organizations_zkgu.area
+and 
+	collaborators_posle.area = organizations_zkgu.area
 left join contact_inf_pochta_posle as contact_inf_pochta_posle on
 	collaborators_posle.person_id = contact_inf_pochta_posle.person_id
 left join contact_inf_telephone_posle as contact_inf_telephone_posle on
 	collaborators_posle.person_id = contact_inf_telephone_posle.person_id
 left join cco_gis_exd as cco_gis_exd on
 	collaborators_posle.id_gis = cco_gis_exd.id_gis
-	and collaborators_posle.area = cco_gis_exd.area
+and collaborators_posle.area = cco_gis_exd.area
 left join role_type_map as role_type_map on
 	collaborators_posle.area = role_type_map.area
-	and collaborators_posle.id_gis = role_type_map.id_gis
+and collaborators_posle.id_gis = role_type_map.id_gis
 where
 	collaborators_posle.collaborator_id = $1`
 
@@ -1208,7 +1238,7 @@ where
 			&r.OrganizationName, &r.Inn, &r.DateBirth, &r.MobilePhone, &r.WorkPhone, &r.DateStartWork,
 			&r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.PositionTag, &r.Kategory, &r.VidPersonala,
 			&r.DataKadrSobitiya, &r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti,
-			&r.UasRoleTypeID) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
+			&r.UasRoleTypeID, &r.EmploymentType) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
 		if err != nil {
 			return nil, err
 		}
