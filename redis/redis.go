@@ -12,6 +12,7 @@ import (
 	libraryRediGo "github.com/gomodule/redigo/redis"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
+	"github.com/ometcenter/keeper/models"
 )
 
 // var PoolRedisRediGolibrary *libraryRediGo.Pool
@@ -621,6 +622,28 @@ func (r *RedisConnector) SetLibraryRediGo(key string, value interface{}, RedisDB
 			fmt.Println("Auth err --- _, err := conn.Do(EXPIRE, key, TTL) ----", err)
 			return err
 		}
+	}
+
+	return nil
+}
+
+func (r *RedisConnector) PipeSet(RedisDB int, arr []models.PipeArr) error {
+	_, err := r.connectRedisClientGoRedisLibrary.Do(context.Background(), "select", RedisDB).Result()
+	if err != nil {
+		return err
+	}
+
+	pipe := r.connectRedisClientGoRedisLibrary.Pipeline()
+	ctx := context.Background()
+	for i := 0; i < len(arr); i++ {
+		cmd := pipe.Set(ctx, arr[i].Key, arr[i].Value, 0)
+		if cmd.Err() != nil {
+			return cmd.Err()
+		}
+	}
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return err
 	}
 
 	return nil

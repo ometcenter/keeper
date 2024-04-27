@@ -974,3 +974,8 @@ type KafkaChangeOffsetDescription struct {
 	Topic  string `json:"topic"`
 	Offset int64  `json:"offset"`
 }
+
+type PipeArr struct {
+	Key   string
+	Value []byte
+}
