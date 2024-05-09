@@ -92,6 +92,9 @@ func InitLog(ServiceConfig *config.ServiceConfig) {
 	case "Lorgus":
 		Logger := NewLorgus()
 		SetLogger(Logger)
+	case "Slog":
+		Logger := NewSlog()
+		SetLogger(Logger)
 	case "MeshSpecificSentry":
 		Logger, err := NewMeshSpecificSentryLog(ServiceConfig.SentryUrlDSN)
 		if err != nil {
