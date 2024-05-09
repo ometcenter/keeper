@@ -7,6 +7,7 @@ import (
 	"time"
 
 	log "github.com/ometcenter/keeper/logging"
+	"github.com/ometcenter/keeper/models"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	utilityShare "github.com/ometcenter/keeper/utility"
 )
@@ -195,6 +196,8 @@ where
 		return err
 	}
 
+	arrPipe := make([]models.PipeArr, 0, 5000)
+
 	//TODO: It is assumed that there are problems with a quick cache reset
 	time.Sleep(time.Second * 60)
 
@@ -215,11 +218,31 @@ where
 			return err
 		}
 
-		err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		// old code:
+		// err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		// if err != nil {
+		// 	return err
+		// }
+
+		arrPipe = append(arrPipe, models.PipeArr{Key: workerID, Value: byteResult})
+
+		if len(arrPipe) == 5000 {
+			err = RedisConnector.PipeSet(RedisDB, arrPipe)
+			if err != nil {
+				return err
+			}
+			arrPipe = nil
+			arrPipe = make([]models.PipeArr, 0, 5000)
+		}
+
+	}
+
+	//if some data left
+	if len(arrPipe) > 0 {
+		err = RedisConnector.PipeSet(RedisDB, arrPipe)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	endTime := time.Now()
