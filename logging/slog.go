@@ -1,6 +1,7 @@
 package logging
 
 import (
+	"fmt"
 	"log/slog"
 	"os"
 )
@@ -39,7 +40,8 @@ func NewSlog() *SlogLog {
 }
 
 func (s SlogLog) Error(args ...interface{}) {
-	s.logger.Error("", args...)
+	s.logger.Error(fmt.Sprint(args...))
+	//s.logger.Error("", args...)
 }
 
 func (s SlogLog) Errorf(msg string, args ...interface{}) {
@@ -55,7 +57,8 @@ func (s SlogLog) Warningf(msg string, args ...interface{}) {
 }
 
 func (s SlogLog) Info(args ...interface{}) {
-	s.logger.Info("", args...)
+	s.logger.Info(fmt.Sprint(args...))
+	//s.logger.Error("", args...)
 }
 
 func (s SlogLog) Infof(msg string, args ...interface{}) {
