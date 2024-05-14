@@ -13,7 +13,8 @@ type SlogLog struct {
 
 func NewSlog() *SlogLog {
 
-	logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	//logHandler := slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	logHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level:     slog.LevelDebug,
 		AddSource: true,
 	})
