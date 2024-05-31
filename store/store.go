@@ -157,7 +157,8 @@ func AutoMigrategORM() error {
 	}
 
 	gormDB, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: DBMain,
+		Conn:                 DBMain,
+		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 
 	// TODO: Извлекать из Gorm существующее подключение необязательно, потому что мы сейчас используем
@@ -197,7 +198,8 @@ func AutoMigrategORM() error {
 	}
 
 	gormDBMainAnalytics, err := gorm.Open(postgres.New(postgres.Config{
-		Conn: DBMainAnalytics,
+		Conn:                 DBMainAnalytics,
+		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 
 	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
