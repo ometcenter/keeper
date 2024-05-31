@@ -6,6 +6,7 @@ import (
 	"strings"
 	"sync"
 
+	//pgx "github.com/jackc/pgx"
 	"github.com/ometcenter/keeper/config"
 	"github.com/ometcenter/keeper/models"
 	"gorm.io/driver/postgres"
@@ -202,6 +203,13 @@ func AutoMigrategORM() error {
 		PreferSimpleProtocol: true,
 	}), &gorm.Config{})
 
+	///////////////////////////////////////// AutoMigrate ///////////////////////////////////////////////////////
+
+	err = gormDB.AutoMigrate(&models.RequestHistoryAPI{})
+	if err != nil {
+		return err
+	}
+
 	if strings.EqualFold(os.Getenv("CCO_ORGANISATION"), "true") {
 		err = gormDBMainAnalytics.AutoMigrate(&models.EkisAreas{})
 		if err != nil {
@@ -293,11 +301,6 @@ func AutoMigrategORM() error {
 	}
 
 	err = gormDB.AutoMigrate(&models.LkUsers{})
-	if err != nil {
-		return err
-	}
-
-	err = gormDB.AutoMigrate(&models.RequestHistoryAPI{})
 	if err != nil {
 		return err
 	}
