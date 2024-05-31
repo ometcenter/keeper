@@ -191,6 +191,11 @@ func AutoMigrategORM() error {
 		return err
 	}
 
+	err = DBMainAnalytics.Ping()
+	if err != nil {
+		return err
+	}
+
 	gormDBMainAnalytics, err := gorm.Open(postgres.New(postgres.Config{
 		Conn: DBMainAnalytics,
 	}), &gorm.Config{})
