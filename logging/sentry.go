@@ -15,9 +15,10 @@ func NewSentryLog(urlDNS string) (*SentryLog, error) {
 	StandartLogStruct := &SentryLog{}
 
 	err := sentry.Init(sentry.ClientOptions{
-		Dsn:     urlDNS,
-		Release: version.Commit + " - " + version.BuildTime,
-		Debug:   true,
+		Dsn:           urlDNS,
+		Release:       version.Commit + " - " + version.BuildTime,
+		Debug:         true,
+		EnableTracing: true, //why?
 	})
 
 	fmt.Println(urlDNS)
