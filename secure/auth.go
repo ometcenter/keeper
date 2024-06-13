@@ -432,15 +432,15 @@ func LoginBasicHandlersV1(c *gin.Context) {
 func RemoveSessionHandlersV1(c *gin.Context) {
 
 	tokenHeader := c.GetHeader("TokenBearer")
-	err := fmt.Errorf("Отправлен пустой токен")
 	if tokenHeader == "" {
+		err := fmt.Errorf("empty token")
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
 		log.Impl.Error(err.Error())
 		return
 	}
 
-	err = RemoveSession(tokenHeader)
+	err := RemoveSession(tokenHeader)
 	if err != nil {
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
@@ -450,7 +450,7 @@ func RemoveSessionHandlersV1(c *gin.Context) {
 
 	var AnswerWebV1 web.AnswerWebV1
 	AnswerWebV1.Status = true
-	AnswerWebV1.Data = "Идентификатор вашей сессии удален"
+	AnswerWebV1.Data = "token deleted"
 	AnswerWebV1.Error = nil
 
 	c.JSON(http.StatusOK, AnswerWebV1)
