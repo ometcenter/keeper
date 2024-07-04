@@ -380,7 +380,8 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 					param = append(param, value[0])
 				}
 
-				sqEq[key] = ""
+				//sqEq[key] = ""
+				sqEq[`"`+key+`"`] = ""
 
 			}
 			queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC").Where(sqEq)
@@ -406,7 +407,8 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 				param = append(param, value[0])
 			}
 
-			sqEq[key] = ""
+			//sqEq[key] = ""
+			sqEq[`"`+key+`"`] = ""
 
 		}
 		queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
