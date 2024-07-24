@@ -46,23 +46,23 @@ func InitConfig() {
 	Conf.LoadSettingsFromDockerSecrets()
 }
 
-// Pusher ...
-type Pusher struct {
-	Address string
-	Token   string
-}
+// // Pusher ...
+// type Pusher struct {
+// 	Address string
+// 	Token   string
+// }
 
-// PubSubConfig ...
-type PubSubConfig struct {
-	Topic         string
-	Channel       string
-	NsqLookupdPub string
-	NsqLookupdSub string
-	MaxRequeue    int
-	Concurrent    int
-	MaxInFlight   int
-	UseDailyTopic bool
-}
+// // PubSubConfig ...
+// type PubSubConfig struct {
+// 	Topic         string
+// 	Channel       string
+// 	NsqLookupdPub string
+// 	NsqLookupdSub string
+// 	MaxRequeue    int
+// 	Concurrent    int
+// 	MaxInFlight   int
+// 	UseDailyTopic bool
+// }
 
 type LoadSettings struct {
 	LoadSettingsFromConsul       bool
@@ -93,8 +93,8 @@ type ServiceConfig struct {
 	AddressPortCRONService string
 	AddressPostJaeger      string
 	UseTracing             bool
-	PubSubConfig
-	Pusher
+	//PubSubConfig
+	//Pusher
 	LoggerConfig
 	LoadSettings
 	DatabaseURLKeeper        string
@@ -125,9 +125,16 @@ type ServiceConfig struct {
 
 	AddressPortUrlRedirect string
 
-	AddressPortRemoteCollector        string
+	//AddressPortRemoteCollector        string
 	SaveMultipleSourcesForBackService bool
 	LocalPathForStaticsFileScripts    string
+
+	CcoOrganization         bool
+	AddressServiceAPIGate   string
+	TelegramChatId          string
+	TelegramTokenBot        string
+	AddressPortServiceFront string
+	AddressPortServiceMail  string
 }
 
 // LoggerConfig содержит настройки для логгера
@@ -152,78 +159,70 @@ func New() *ServiceConfig {
 	// }
 
 	ServiceConfig := &ServiceConfig{
-		Port:                   env.GetEnv("PORT", "8080"),
-		PortgRPC:               env.GetEnv("PORT_gRPC", defaultGRPCPort),
-		AddressPortgRPC:        env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
-		MessagePath:            env.GetEnv("MESSAGE_PATH", "/"),
-		MaxWorker:              env.GetEnvAsInt("MAX_WORKERS", 1),
-		MaxQueue:               env.GetEnvAsInt("MAX_JOBS_IN_QUEUE", 100),
-		MaxLength:              env.GetEnvAsInt("MAX_LENGTH", 1048576),
-		DatabaseURL:            env.GetEnv("DB_CONNECTION", ""),
-		Release:                env.GetEnv("RELEASE", "Nope"),
-		QueueType:              env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
-		AddressRabbitMQ:        env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
-		SecretKeyJWT:           env.GetEnv("SECRET_KEY_JWT", ""),
-		SentryUrlDSN:           env.GetEnv("SENTRY_URL_DSN", ""),
-		UseRedis:               env.GetEnvAsBool("USE_REDIS", false),
-		RedisAddressPort:       env.GetEnv("REDIS_ADDRESS_PORT", "localhost:6379"),
-		AddressPortCRONService: env.GetEnv("ADDRESS_PORT_CRON_SERVICE", "localhost:8087"),
-		AddressPostJaeger:      env.GetEnv("ADDRESS_PORT_JAEGER", "localhost:6831"),
-		UseTracing:             env.GetEnvAsBool("USE_TRACING", false),
-		TokenBearer:            env.GetEnv("TOKEN_BEARER", ""),
-
-		DatabaseURLKeeper:        env.GetEnv("DB_CONNECTION_KEEPER", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
-		DatabaseURLMainAnalytics: env.GetEnv("DB_CONNECTION_MAIN_ANALYTICS", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
-		LoggerDefault:            env.GetEnv("LOGGER_DEFAULT", "Sentry"),
-		CheckMailAddres:          env.GetEnv("CHECK_MAIL_ADDRESS", ""),
-		CheckMailPassword:        env.GetEnv("CHECK_MAIL_PASSWORD", "GetDockerSecrets(CHECK_MAIL_PASSWORD)"),
-		CheckMailServerPort:      env.GetEnv("CHECK_MAIL_SERVER_PORT", "pochta.mos.ru:993"),
-		CronParam:                env.GetEnv("CRON_PARAM", "@every 0h31m"),
-		SendMailAddres:           env.GetEnv("SEND_MAIL_ADDRESS", ""),
-		SendMailPassword:         env.GetEnv("SEND_MAIL_PASSWORD", ""),
-		SendMailServer:           env.GetEnv("SEND_MAIL_SERVER", "smtp.yandex.ru"),
-		SendMailPort:             env.GetEnv("SEND_MAIL_PORT", "25"),
-		GrabPasswordFromMail:     env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
-		SelectDepthOfMessages:    env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
-		MailFolder:               env.GetEnv("MAILFOLDER", "balance/pwd"),
-		EKISLogin:                env.GetEnv("EKIS_LOGIN", ""),
-		EKISPassword:             env.GetEnv("EKIS_PASSWORD", ""),
-
+		Port:                        env.GetEnv("PORT", "8080"),
+		PortgRPC:                    env.GetEnv("PORT_gRPC", defaultGRPCPort),
+		AddressPortgRPC:             env.GetEnv("ADDRESS_PORT_gRPC", fmt.Sprintf("%s:%s", defaultGRPCAddress, defaultGRPCPort)),
+		DatabaseURL:                 env.GetEnv("DB_CONNECTION", ""),
+		DatabaseURLKeeper:           env.GetEnv("DB_CONNECTION_KEEPER", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
+		DatabaseURLMainAnalytics:    env.GetEnv("DB_CONNECTION_MAIN_ANALYTICS", "postgres://postgres:@localhost/go-keeper?sslmode=disable"),
+		Release:                     env.GetEnv("RELEASE", "Nope"),
+		QueueType:                   env.GetEnv("QUEUE_TYPE", "RabbitMQ"), //NSQ
+		AddressRabbitMQ:             env.GetEnv("ADDRESS_RABBIT_MQ", "amqp://localhost:5672"),
+		SecretKeyJWT:                env.GetEnv("SECRET_KEY_JWT", ""),
+		SentryUrlDSN:                env.GetEnv("SENTRY_URL_DSN", ""),
+		UseRedis:                    env.GetEnvAsBool("USE_REDIS", false),
+		RedisAddressPort:            env.GetEnv("REDIS_ADDRESS_PORT", "localhost:6379"),
+		AddressPortCRONService:      env.GetEnv("ADDRESS_PORT_CRON_SERVICE", "localhost:8087"),
+		AddressPostJaeger:           env.GetEnv("ADDRESS_PORT_JAEGER", "localhost:6831"),
+		UseTracing:                  env.GetEnvAsBool("USE_TRACING", false),
+		TokenBearer:                 env.GetEnv("TOKEN_BEARER", ""),
+		LoggerDefault:               env.GetEnv("LOGGER_DEFAULT", "Sentry"),
+		CheckMailAddres:             env.GetEnv("CHECK_MAIL_ADDRESS", ""),
+		CheckMailPassword:           env.GetEnv("CHECK_MAIL_PASSWORD", "GetDockerSecrets(CHECK_MAIL_PASSWORD)"),
+		CheckMailServerPort:         env.GetEnv("CHECK_MAIL_SERVER_PORT", "pochta.mos.ru:993"),
+		CronParam:                   env.GetEnv("CRON_PARAM", "@every 0h31m"),
+		SendMailAddres:              env.GetEnv("SEND_MAIL_ADDRESS", ""),
+		SendMailPassword:            env.GetEnv("SEND_MAIL_PASSWORD", ""),
+		SendMailServer:              env.GetEnv("SEND_MAIL_SERVER", "smtp.yandex.ru"),
+		SendMailPort:                env.GetEnv("SEND_MAIL_PORT", "25"),
+		GrabPasswordFromMail:        env.GetEnvAsBool("GRAB_PASSWORD_FROM_MAIL", true),
+		SelectDepthOfMessages:       env.GetEnvAsInt("SELECT_DEPTH_OF_MESSAGE", 70),
+		MailFolder:                  env.GetEnv("MAILFOLDER", "balance/pwd"),
+		EKISLogin:                   env.GetEnv("EKIS_LOGIN", ""),
+		EKISPassword:                env.GetEnv("EKIS_PASSWORD", ""),
 		AdressServiceRemoutPassword: env.GetEnv("ADRESS_SERVICE_REMOUT_PASSWORD", "http://localhost:8087/api_v1/list"),
 		UseServiceRemoutPassword:    env.GetEnvAsBool("USE_SERVICE_REMOUT_PASSWORD", true),
-
-		UseDownLoadOrganization:             env.GetEnvAsBool("USE_DOWNLOAD_ORGANIZATION", false),
-		DownLoadOrganizationRabbitMQAddress: env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_ADDRESS", "amqp://localhost:5672"),
-		DownLoadOrganizationRabbitMQTheme:   env.GetEnv("DOWNLOAD_ORGANIZATION_RABBIT_MQ_THEME", "Theme"),
-
-		AddressPortRemoteCollector: env.GetEnv("ADDRESS_PORT_REMOTE_COLLECTOR", "http://localhost:8087"),
-
+		//AddressPortRemoteCollector:        env.GetEnv("ADDRESS_PORT_REMOTE_COLLECTOR", "http://localhost:8087"),
 		SaveMultipleSourcesForBackService: env.GetEnvAsBool("SAVE_MULTIPLE_SOURCES_FOR_BACK_SERVICE", false),
+		LocalPathForStaticsFileScripts:    env.GetEnv("LOCAL_PATH_FOR_STATICS_FILE_SCRIPTS", "staticFile/monitoring_sot/"),
+		AddressPortUrlRedirect:            env.GetEnv("ADDRESS_PORT_URL_REDIRECT", "localhost:6831"),
+		CcoOrganization:                   env.GetEnvAsBool("CCO_ORGANISATION", true),
+		AddressServiceAPIGate:             env.GetEnv("ADRESS_SERVICE_API_GATE", "http://lk-front:8080"),
+		TelegramChatId:                    env.GetEnv("TELEGRAM_CHAT_ID", "-1000000000000"),
+		TelegramTokenBot:                  env.GetEnv("TELEGRAM_TOKEN_BOT", "533333333:AAAATecNwcAxxjuraP0SCqdLG_mmRBpl1qI"),
+		AddressPortServiceFront:           env.GetEnv("ADDRESS_PORT_SERVICE_FRONT", "http://go-keeper-front:8080"),
+		AddressPortServiceMail:            env.GetEnv("ADDRESS_PORT_SERVICE_MAIL", "http://mail-service:8080"),
 
-		LocalPathForStaticsFileScripts: env.GetEnv("LOCAL_PATH_FOR_STATICS_FILE_SCRIPTS", "staticFile/monitoring_sot/"),
-
-		AddressPortUrlRedirect: env.GetEnv("ADDRESS_PORT_URL_REDIRECT", "localhost:6831"),
-
-		PubSubConfig: PubSubConfig{
-			Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
-			Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
-			NsqLookupdPub: env.GetEnv("NSQ_LOOKUPD_PUB", "localhost:4150"),
-			NsqLookupdSub: env.GetEnv("NSQ_LOOKUPD_SUB", "localhost:4161"),
-			MaxRequeue:    env.GetEnvAsInt("NSQ_MAX_REQUEUE", 10),
-			Concurrent:    env.GetEnvAsInt("NSQ_CONCURRENT", 1),
-			MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
-			UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
-		},
+		// PubSubConfig: PubSubConfig{
+		// 	Topic:         env.GetEnv("NSQ_TOPIC", "go-keeper-messages"),
+		// 	Channel:       env.GetEnv("NSQ_CHANNEL", "keeper-agent"),
+		// 	NsqLookupdPub: env.GetEnv("NSQ_LOOKUPD_PUB", "localhost:4150"),
+		// 	NsqLookupdSub: env.GetEnv("NSQ_LOOKUPD_SUB", "localhost:4161"),
+		// 	MaxRequeue:    env.GetEnvAsInt("NSQ_MAX_REQUEUE", 10),
+		// 	Concurrent:    env.GetEnvAsInt("NSQ_CONCURRENT", 1),
+		// 	MaxInFlight:   env.GetEnvAsInt("NSQ_MAX_IN_FLIGHT", 3),
+		// 	UseDailyTopic: env.GetEnvAsBool("NSQ_USE_DAILY_TOPIC", false),
+		// },
 		LoadSettings: LoadSettings{
 			LoadSettingsFromConsul:       env.GetEnvAsBool("LOAD_SETTINGS_FROM_CONSUL", false),
 			ConsulServerAddres:           env.GetEnv("CONSUL_SERVER_ADDRESS", ""),
 			LoadSettingsFromDockerSecret: env.GetEnvAsBool("LOAD_SETTINGS_FROM_DOCKER_SECRET", false),
 			ArrayDockerSecretKey:         env.GetEnv("ARRAY_DOCKER_SECRET_KEY", ""),
 		},
-		Pusher: Pusher{
-			Address: env.GetEnv("PUSHER_ADDRESS", "http://localhost"),
-			Token:   env.GetEnv("PUSHER_TOKEN", ""),
-		},
+		// Pusher: Pusher{
+		// 	Address: env.GetEnv("PUSHER_ADDRESS", "http://localhost"),
+		// 	Token:   env.GetEnv("PUSHER_TOKEN", ""),
+		// },
 		LoggerConfig: LoggerConfig{
 			Name:  env.GetEnv("LOGGER_DEFAULT", "Sentry"), //Lorgus
 			Level: env.GetEnvAsInt("LOG_LEVEL", 0),

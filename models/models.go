@@ -3,10 +3,12 @@ package models
 import (
 	"bytes"
 	"compress/gzip"
+	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -23,31 +25,31 @@ type TableDescription struct {
 	Fields    []Fields `json:"СведенияКолонкиТаблицы"`
 }
 
-type IndexDescription struct {
-	TableName string        `json:"ИмяТаблицы"`
-	Fields    []FieldsIndex `json:"СведенияКолонкиТаблицы"`
-}
+// type IndexDescription struct {
+// 	TableName string        `json:"ИмяТаблицы"`
+// 	Fields    []FieldsIndex `json:"СведенияКолонкиТаблицы"`
+// }
 
-type FieldsIndex struct {
-	Name       string `json:"Имя"`
-	Definition string `json:"Определение"`
-	TypeChange string `json:"ИзменитьВСУБД"`
-}
+// type FieldsIndex struct {
+// 	Name       string `json:"Имя"`
+// 	Definition string `json:"Определение"`
+// 	TypeChange string `json:"ИзменитьВСУБД"`
+// }
 
-type Fields struct {
-	Name       string `json:"Имя"`
-	Type       string `json:"Тип"`
-	NotNull    bool   `json:"NotNull"`
-	PrimaryKey bool   `json:"ПервичныйКлюч"`
-	TypeChange string `json:"ИзменитьВСУБД"`
-}
+// type Fields struct {
+// 	Name       string `json:"Имя"`
+// 	Type       string `json:"Тип"`
+// 	NotNull    bool   `json:"NotNull"`
+// 	PrimaryKey bool   `json:"ПервичныйКлюч"`
+// 	TypeChange string `json:"ИзменитьВСУБД"`
+// }
 
-type ColumnsStruct struct {
-	ColumnName string
-	DataType   string
-	IsNullable string
-	PrimaryKey bool
-}
+// type ColumnsStruct struct {
+// 	ColumnName string
+// 	DataType   string
+// 	IsNullable string
+// 	PrimaryKey bool
+// }
 
 type IndexesStruct struct {
 	INDEXNAME string
@@ -198,6 +200,40 @@ func (E *ExchangeJobV2) SaveDirectSQL(DB *sql.DB) error {
 	return nil
 }
 
+func (E *ExchangeJobV2) SaveToHistory(DB *sql.DB) error {
+
+	area := string(E.Area)
+	if area == "" {
+		area = "0"
+	}
+
+	priodTime, err := time.ParseInLocation("2006-01-02T15:04:05", E.Priod, time.Local)
+	if err != nil {
+		log.Impl.Error(err.Error())
+	}
+
+	//  `INSERT INTO exchange_jobs (job_id, exchange_job_id, area, "event", priod)
+	//  VALUES('$1, $2, $3, $4, $5);`
+
+	var argsInsert []interface{}
+	argsInsert = append(argsInsert, E.JobID)
+	argsInsert = append(argsInsert, E.ExchangeJobID)
+	argsInsert = append(argsInsert, area)
+	argsInsert = append(argsInsert, E.Event)
+	argsInsert = append(argsInsert, E.Priod)
+	argsInsert = append(argsInsert, E.Notes)
+	argsInsert = append(argsInsert, priodTime)
+
+	_, err = DB.Exec(`INSERT INTO exchange_job_histories (job_id, exchange_job_id, area, event, priod, notes, period)
+		VALUES($1, $2, $3, $4, $5, $6, $7);`, argsInsert...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // func (E *models.ExchangeJobV2) SaveToRabbitMQ(ConnectRabbitMQ *amqp.Connection) error {
 // 	var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
 // 	MessageQueueGeneralInterface.Type = "ChangeStatusForExchangeJobV2"
@@ -217,6 +253,7 @@ type Job struct {
 	JobID  string `json:"ИдентификаторЗадания"`
 	Status string `json:"Состояние"`
 	Priod  string `json:"Дата"`
+	Notes  string `json:"Заметки"`
 }
 
 func (J *Job) GetJobStatus(DB *sql.DB) error {
@@ -260,8 +297,9 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 	argsUpdate = append(argsUpdate, J.JobID)
 	argsUpdate = append(argsUpdate, J.Status)
 	argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
+	argsUpdate = append(argsUpdate, J.Notes)
 
-	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
+	result, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3, notes=$4
 		WHERE job_id = $1;`, argsUpdate...)
 	if err != nil {
 		return err
@@ -280,9 +318,10 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 		argsInsert = append(argsInsert, J.JobID)
 		argsInsert = append(argsInsert, J.Status)
 		argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+		argsInsert = append(argsInsert, J.Notes)
 
-		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod)
-			VALUES($1, $2, $3);`, argsInsert...)
+		_, err := DB.Exec(`INSERT INTO jobs (job_id, status, priod, notes)
+			VALUES($1, $2, $3, $4);`, argsInsert...)
 
 		if err != nil {
 			return err
@@ -292,6 +331,79 @@ func (J *JobV2) SaveDirectSQL(DB *sql.DB) error {
 
 	return nil
 
+}
+
+func (J *JobV2) SaveToHistory(DB *sql.DB) error {
+
+	priodTime, err := time.ParseInLocation("2006-01-02T15:04:05", J.Priod, time.Local)
+	if err != nil {
+		log.Impl.Error(err.Error())
+	}
+
+	var argsInsert []interface{}
+	argsInsert = append(argsInsert, J.JobID)
+	argsInsert = append(argsInsert, J.Status)
+	argsInsert = append(argsInsert, time.Now().Format("2006-01-02T15:04:05"))
+	argsInsert = append(argsInsert, priodTime)
+	argsInsert = append(argsInsert, J.Notes)
+
+	_, err = DB.Exec(`INSERT INTO job_histories (job_id, status, priod, period, notes)
+			VALUES($1, $2, $3, $4, $5);`, argsInsert...)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (J *JobV2) GetJobStatus(DB *sql.DB) error {
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, J.JobID)
+
+	// var NullTimeCreatedAt sql.NullTime
+	// var NullTimeUpdatedAt sql.NullTime
+
+	var Job JobV2
+	err := DB.QueryRow("SELECT job_id, coalesce(status, ''), coalesce(priod, ''), coalesce(notes, '') FROM jobs WHERE job_id = $1", argsquery...).Scan(&Job.JobID,
+		&Job.Status, &Job.Priod, &Job.Notes)
+	if err != nil {
+		return err
+	}
+
+	// if NullTimeCreatedAt.Valid {
+	// 	Job.CreatedAt = NullTimeCreatedAt.Time
+	// }
+
+	// if NullTimeUpdatedAt.Valid {
+	// 	Job.UpdatedAt = NullTimeUpdatedAt.Time
+	// }
+
+	*J = Job
+
+	return nil
+}
+
+type ExchangeJobHistory struct {
+	gorm.Model
+	JobID         string `json:"jobID"`
+	ExchangeJobID string `json:"exchangeJobID"`
+	Area          string `json:"area"`
+	Event         string `json:"status"`
+	Priod         string `json:"period"`
+	Notes         string `json:"notes"`
+	Period        time.Time
+}
+
+type JobHistory struct {
+	gorm.Model
+	JobID  string `json:"jobID"`
+	Status string `json:"status"`
+	Priod  string `json:"period"`
+	Notes  string `json:"notes"`
+	Period time.Time
 }
 
 type ExchangeJobAllInform struct {
@@ -387,7 +499,7 @@ type QuantityMetric struct {
 	TableName      string    // Имя таблицы
 	DataBaseID     string    // Идентификатор базы данных
 	Value          int       // Значение метрики
-	Hash           int64     // Строка хеш суммы
+	Hash           string    // Строка хеш суммы
 	SizeBody       int       // Размер сообщения в байтах
 	SpeedUnzipping float64   // time.Duration Скорость распаковки в секундах
 	SaveSpeed      float64   // time.Duration Скорость сохранения пакета в базу в секундах
@@ -410,6 +522,32 @@ type ErrorOrEmptyQuery struct {
 	Area             string `json:"area"`
 	EmptyQuery       bool   `json:"emptyQuery"`
 	ErrorDescription string `json:"errorDescription"`
+}
+
+func (E *ErrorOrEmptyQuery) SendResultThroughREST(TokenBearer, UrlToCall string) error {
+
+	byteResult, err := json.Marshal(*E)
+	if err != nil {
+		return err
+	}
+
+	var RESTRequestUniversal2 RESTRequestUniversal
+	Headers := make(map[string]string)
+	Headers["TokenBearer"] = TokenBearer
+	RESTRequestUniversal2.Headers = Headers
+	RESTRequestUniversal2.Method = "POST"
+	RESTRequestUniversal2.Body = byteResult
+	RESTRequestUniversal2.UrlToCall = UrlToCall
+
+	//for i := 0; i < 1000; i++ {
+
+	_, err = RESTRequestUniversal2.Send()
+	if err != nil {
+		return err
+	}
+	//}
+
+	return nil
 }
 
 type ErrorOnBI struct {
@@ -617,7 +755,7 @@ type DataToETL struct {
 	ExchangeJobID               string                        `json:"exchangeJobID"`
 	JobID                       string                        `json:"jobID"`
 	DataBase64                  string                        `json:"dataBase64"`
-	HashSum                     int64                         `json:"hashSum"`
+	HashSum                     string                        `json:"hashSum"`
 	CleaningFieldsBeforeLoading []CleaningFieldsBeforeLoading `json:"cleaningFieldsBeforeLoading"`
 }
 
@@ -681,6 +819,22 @@ func (d *DataToETL) ZipAnswerGzip() error {
 	var NilMap []map[string]interface{}
 	d.Data = NilMap
 	d.DataBase64 = sDec
+
+	return nil
+
+}
+
+func (d *DataToETL) HashDataSha256() error {
+
+	byteValue, err := json.Marshal(d.Data)
+	if err != nil {
+		return err
+	}
+
+	h := sha256.New()
+	h.Write(byteValue)
+	// Calculate and print the hash
+	d.HashSum = fmt.Sprintf("%x", h.Sum(nil))
 
 	return nil
 
@@ -814,4 +968,14 @@ type HistoryReceivedMessages struct {
 	DateRecord    time.Time
 	MessageResult datatypes.JSON
 	Settings      datatypes.JSON
+}
+
+type KafkaChangeOffsetDescription struct {
+	Topic  string `json:"topic"`
+	Offset int64  `json:"offset"`
+}
+
+type PipeArr struct {
+	Key   string
+	Value []byte
 }

@@ -15,7 +15,7 @@ func StartHealthCheck() {
 	health := healthcheck.NewHandler()
 
 	// Our app is not happy if we've got more than 100 goroutines running.
-	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(1000))
+	health.AddLivenessCheck("goroutine-threshold", healthcheck.GoroutineCountCheck(100000))
 
 	// Our app is not ready if we can't resolve our upstream dependency in DNS.
 	health.AddReadinessCheck(

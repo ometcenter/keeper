@@ -11,10 +11,9 @@ import (
 	"strings"
 	"time"
 
-	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
-	redis "github.com/ometcenter/keeper/redis"
+	shareRedis "github.com/ometcenter/keeper/redis"
 	store "github.com/ometcenter/keeper/store"
 	tree "github.com/ometcenter/keeper/tree"
 	utilityShare "github.com/ometcenter/keeper/utility"
@@ -71,6 +70,59 @@ type GetPersonalInfoResponds struct {
 	Position         string
 	OrganizationName string
 	Status           string
+}
+
+type V4JobPlaces struct {
+	PersonId         string `json:"personId"`
+	CollaboratorId   string `json:"collaboratorId"`
+	InsuranceNumber  string `json:"insuranceNumber"`
+	Inn              string `json:"inn"`
+	FullName         string `json:"fullName"`
+	Position         string `json:"position"`
+	OrganizationName string `json:"organizationName"`
+	Status           string `json:"status"`
+	Email            string `json:"email"`
+	EmailEPS         string `json:"emailEPS"`
+	MobilePhone      string `json:"mobilePhone"`
+	WorkPhone        string `json:"workPhone"`
+	EmailArray       string `json:"emailArray"`
+	//DateBirth               string    `json:"dateBirth"`
+	DateBirth         time.Time `json:"dateBirth"`
+	DateStartWork     time.Time `json:"dateStartWork"`
+	BranchID          string    `json:"branchID"`
+	BranchName        string    `json:"branchName"`
+	LargeGroupOfPosts string    `json:"largeGroupOfPosts"`
+	PositionTag       string    `json:"positionTag"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+	CreatedAt         time.Time `json:"createdAt"`
+	DeletedAt         time.Time `json:"deletedAt"`
+	DateDismissals    time.Time `json:"dateDismissals"`
+	Kategory          string    `json:"categoryName"`
+	VidPersonala      string    `json:"personnelClass"`
+	//DataKadrSobitiya  string    `json:"dataKadrSobitiya"`
+	DataKadrSobitiya        time.Time `json:"dateLastEvent"`
+	DataPredSobitie         time.Time `json:"datePrevEvent"`
+	PredPosition            string    `json:"prevPosition"`
+	NapravlenieDeyatelnosti string    `json:"directingWorking"`
+	UasRoleTypeID           int       `json:"uasRoleTypeID"`
+	EmploymentType          int       `json:"employmentType"`
+	// IdGis                   string    `json:"idGis"`
+	// NomerNpa                string    `json:"nomerNpa"`
+	// IskluchenaS             string    `json:"iskluchenaS"`
+	//EtalonPosition          string    `json:"etalonPosition"`
+}
+
+type V3ActiveWorkers struct {
+	PersonId        string    `json:"personId"`
+	CollaboratorId  string    `json:"collaboratorId"`
+	InsuranceNumber string    `json:"insuranceNumber"`
+	Position        string    `json:"position"`
+	Status          string    `json:"status"`
+	Email           string    `json:"email"`
+	EmailEPS        string    `json:"emailEPS"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+	CreatedAt       time.Time `json:"createdAt"`
+	DateDismissals  time.Time `json:"dateDismissals"`
 }
 
 type V1ActiveWorkers struct {
@@ -136,27 +188,27 @@ func (V1ActiveWorkers *V1ActiveWorkers) Scan(value interface{}) (err error) {
 
 type LkUsers struct {
 	gorm.Model
-	FullName     string
+	FullName     string `json:"fullName"`
 	UserID       string // Он же collaborator_id
 	Login        string `json:"login"`
-	Password     string `json:"Password"`
+	Password     string `json:"password"`
 	HashPassword string
 	SecretJWT    string //`gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
 	//JWTtoken        string
 	//JWTExp          int64
-	ExpSec                         int64
-	Role                           string
+	ExpSec                         int64  `json:"expireSeconds"`
+	Role                           string `json:"role"`
 	InsuranceNumber                string
-	Email                          string
+	Email                          string `json:"eMail"`
 	Status                         string //Уволен и т.д
 	DateDismissals                 time.Time
-	Blocked                        bool
+	Blocked                        bool `json:"blocked"`
 	Source                         string
 	PersonJSONByte                 datatypes.JSON
 	Person                         V1ActiveWorkers `gorm:"-"`
 	AdditionalSettingsUserJSONByte datatypes.JSON
-	AdditionalSettingsUser         AdditionalSettingsUser `gorm:"-"`
-	Notes                          string
+	AdditionalSettingsUser         AdditionalSettingsUser `json:"additionalSettingsUser" gorm:"-"`
+	Notes                          string                 `json:"notes"`
 }
 
 func (LkUsers *LkUsers) HashAndSalt() ([]byte, error) {
@@ -190,8 +242,19 @@ func (LkUsers *LkUsers) ComparePasswords(hashedPwd string, plainPwd string) bool
 	return true
 }
 
+type LimitsURL struct {
+	Url         string `json:"url"`
+	TimeSeconds int    `json:"timeSeconds"`
+	Limit       int    `json:"limit"`
+}
+
 type AdditionalSettingsUser struct {
-	AccessToSystemTables bool `json:"accessToSystemTables"`
+	AccessToSystemTables bool        `json:"accessToSystemTables"`
+	AccessAreas          []string    `json:"accessAreas"`
+	Role                 string      `json:"role"`
+	AccessURLs           []string    `json:"accessURLs"`
+	AccessJobID          []string    `json:"accessJobID"`
+	LimitsURL            []LimitsURL `json:"limitsURL"`
 }
 
 func (AdditionalSettingsUser *AdditionalSettingsUser) Scan(value interface{}) (err error) {
@@ -251,9 +314,9 @@ type AllInformationV1Answer struct {
 	AverageSalary            interface{} `json:"averageSalary"`
 }
 
-func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, yearFilterFrom, yearFilterTo string, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, workerID+yearFilterFrom+yearFilterTo, 4)
+	JSONString, err := RedisConnector.Get(workerID+yearFilterFrom+yearFilterTo, 4)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -280,19 +343,19 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	var AllInformationV1Answer AllInformationV1Answer
 
 	var HolidayStat interface{}
-	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
+	HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
 	if err != nil {
 		HolidayStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
 	var BudgetStat interface{}
-	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisClient)
+	BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, UseAdvance, RedisConnector)
 	if err != nil {
 		BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
 
 	var JobPlaces interface{}
-	JobPlaces, err = V3JobPlacesGeneral(workerID, RedisClient)
+	JobPlaces, err = V3JobPlacesGeneral(workerID, RedisConnector)
 	if err != nil {
 		JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 	}
@@ -341,9 +404,9 @@ func AllInformationV1General(workerID string, UseYearFilter bool, yearFilter, ye
 	return AnswerWebV1, nil
 }
 
-func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, yearFilterTo string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilterFrom+yearFilterTo, 3)
+	JSONString, err := RedisConnector.Get(WorkerID+yearFilterFrom+yearFilterTo, 3)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -500,9 +563,9 @@ func V1HolidayStatGeneral(WorkerID string, UseYearFilter bool, yearFilterFrom, y
 
 }
 
-func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID+yearFilter, 2)
+	JSONString, err := RedisConnector.Get(WorkerID+yearFilter, 2)
 	//if err != nil {
 	if JSONString == "" {
 		//log.Impl.Error(err.Error())
@@ -533,56 +596,145 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 	var argsquery []interface{}
 	argsquery = append(argsquery, WorkerID)
 	//queryAllColumns := "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = $1;"
+	var queryAllColumns string
 
-	queryAllColumns := `select
+	if !UseAdvance {
+		queryAllColumns = `select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', '') as hours_worked,
 		replace(replace(summa, ' ', ''), ' ', '') as summa
-	from
+		from
 		lkr_nachisleniy_zp2020
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2021
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2022
-	where
+		where
 		collaborator_id = $1
-	union all
-	select
+		union all
+		select
 		date_registration,
 		settlement_group,
 		calculation_type,
 		days_worked,
 		replace(hours_worked, ' ', ''),
 		replace(replace(summa, ' ', ''), ' ', '')
-	from
+		from
 		lkr_nachisleniy_zp2023
-	where
+		where
 		collaborator_id = $1
-	order by
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2024
+		where
+		collaborator_id = $1
+		order by
 		1`
+	} else {
+		queryAllColumns = `select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', '') as hours_worked,
+		replace(replace(summa, ' ', ''), ' ', '') as summa
+		from
+		lkr_nachisleniy_zp2020
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2021
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2022
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2023
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_zp2024
+		where
+		collaborator_id = $1
+		union all
+		select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		replace(hours_worked, ' ', ''),
+		replace(replace(summa, ' ', ''), ' ', '')
+		from
+		lkr_nachisleniy_avans
+		where
+		collaborator_id = $1
+		order by
+		1`
+	}
 
 	rows, err := DB.Query(queryAllColumns, argsquery...)
 	if err != nil {
@@ -727,7 +879,7 @@ func V1BudgetStatGeneral(WorkerID string, UseYearFilter bool, yearFilter string,
 
 }
 
-func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V2JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -805,30 +957,30 @@ func V2JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 }
 
-func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V3JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
-	JSONString, err := redis.GetLibraryGoRedis(RedisClient, WorkerID, 5)
-	//if err != nil {
-	if JSONString == "" {
-		//log.Impl.Error(err.Error())
-		// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
-		// if err != nil {
-		// 	log.Impl.Error(err)
-		// }
+	// JSONString, err := RedisConnector.Get(WorkerID, 5)
+	// //if err != nil {
+	// if JSONString == "" {
+	// 	//log.Impl.Error(err.Error())
+	// 	// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
+	// 	// if err != nil {
+	// 	// 	log.Impl.Error(err)
+	// 	// }
 
-		// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
-		// c.JSON(http.StatusBadRequest, AnswerWebV1)
-	} else {
-		// c.Data(http.StatusOK, "application/json", []byte(JSONString))
-		// //c.JSON(http.StatusOK, JSONString)
-		// return
-		var AnswerWebV1 AnswerWebV1
-		if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
-			return nil, err
-		}
+	// 	// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	// 	// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	// } else {
+	// 	// c.Data(http.StatusOK, "application/json", []byte(JSONString))
+	// 	// //c.JSON(http.StatusOK, JSONString)
+	// 	// return
+	// 	var AnswerWebV1 AnswerWebV1
+	// 	if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+	// 		return nil, err
+	// 	}
 
-		return AnswerWebV1, nil
-	}
+	// 	return AnswerWebV1, nil
+	// }
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -848,10 +1000,10 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 		collaborators_posle.inn as inn,
 		collaborators_posle.full_name as full_name,
 		collaborators_posle.position as position,
-		organizations_zkgu.name as organization_name,
+		coalesce(organizations_zkgu.name, '') as organization_name,
 		collaborators_posle.status as status,
 		coalesce(contact_inf_pochta_posle.email, '') as email,
-		coalesce(contact_inf_pochta_posle."emailEPS", '') as emailEPS,
+		coalesce(contact_inf_pochta_posle.email_eps, '') as emailEPS,
 		coalesce(contact_inf_telephone_posle.mobile, '') as mobile_phone,
 		coalesce(contact_inf_telephone_posle."work", '') as work_phone,
 		collaborators_posle.date_birth as date_birth,
@@ -932,7 +1084,193 @@ func V3JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (in
 
 }
 
-func V1JobPlacesGeneral(WorkerID string, RedisClient *libraryGoRedis.Client) (interface{}, error) {
+func V4JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
+
+	JSONString, err := RedisConnector.Get(WorkerID, 5)
+	//if err != nil {
+	if JSONString == "" {
+		//log.Impl.Error(err.Error())
+		// JSONString, err = store.GetSettingsByIdJobPg(JobIdParam)
+		// if err != nil {
+		//   log.Impl.Error(err)
+		// }
+
+		// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+		// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	} else {
+		// c.Data(http.StatusOK, "application/json", []byte(JSONString))
+		// //c.JSON(http.StatusOK, JSONString)
+		// return
+		var AnswerWebV1 AnswerWebV1
+		if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+			return nil, err
+		}
+
+		return AnswerWebV1, nil
+	}
+
+	// 	// AnswerWebV1 := AnswerWebV1{false, store.DataAuthorizatioAnswer{}, ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+	// 	// c.JSON(http.StatusBadRequest, AnswerWebV1)
+	// } else {
+	// 	// c.Data(http.StatusOK, "application/json", []byte(JSONString))
+	// 	// //c.JSON(http.StatusOK, JSONString)
+	// 	// return
+	// 	var AnswerWebV1 AnswerWebV1
+	// 	if err := json.Unmarshal([]byte(JSONString), &AnswerWebV1); err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	return AnswerWebV1, nil
+	// }
+
+	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
+	if err != nil {
+		return nil, err
+	}
+
+	var argsquery []interface{}
+	argsquery = append(argsquery, WorkerID)
+
+	//coalesce(collaborators_posle.updated_at, DATE '1900-01-01') as updated_at,
+	//coalesce(collaborators_posle.created_at, DATE '1900-01-01') as created_at,
+
+	queryText := `select   
+	collaborators_posle.collaborator_id as collaboratorId,
+	collaborators_posle.person_id as personId,
+	collaborators_posle.insurance_number as insuranceNumber,
+	case  
+			when coalesce(collaborators_posle.created_at >contact_inf_pochta_posle.created_at) then coalesce(collaborators_posle.created_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.created_at,
+	DATE '1900-01-01')
+end as createdAt, 
+	case  
+			when coalesce(collaborators_posle.updated_at,
+	DATE '1900-01-01')>coalesce(contact_inf_pochta_posle.updated_at,
+	DATE '1900-01-01') then coalesce(collaborators_posle.updated_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.updated_at,
+	DATE '1900-01-01')
+end as updatedAt, 
+	case  
+			when coalesce(collaborators_posle.deleted_at >contact_inf_pochta_posle.deleted_at) then coalesce(collaborators_posle.deleted_at,
+	DATE '1900-01-01')
+	else coalesce(contact_inf_pochta_posle.deleted_at,
+	DATE '1900-01-01')
+end as deletedAt, 
+	coalesce(collaborators_posle.date_dismissals_as_date::date) as dateDismissals,   
+	collaborators_posle.position as position,      
+	collaborators_posle.status as status,
+	coalesce(contact_inf_pochta_posle.email,
+'') as email,
+	coalesce(contact_inf_pochta_posle."email_eps",
+'') as emaileps,
+	collaborators_posle.full_name as fullName,
+	coalesce(organizations_zkgu.name,
+'') as organizationName,
+	collaborators_posle.inn as inn,                               
+	coalesce(to_date(collaborators_posle.date_birth,
+'DD-MM-YYYY')) as dateBirth,
+	coalesce(contact_inf_telephone_posle.mobile,
+'') as mobilePhone,
+	coalesce(contact_inf_telephone_posle."work",
+'') as workPhone,                            
+	coalesce(to_date(collaborators_posle.date_start_work,
+'DD-MM-YYYY')) as dateStartWork,
+	collaborators_posle.podrazdelenie as podrazdelenie,
+	coalesce(collaborators_posle.podrazdelenie_id,
+'') as podrazdelenieId,
+	coalesce(dit_gruppirovka_dolzhnostey.large_group_of_posts,
+'') as largeGroupOfPosts,
+	coalesce(dit_gruppirovka_dolzhnostey.position_tag,
+'') as positionTag,
+	coalesce(cco_gis_exd.kategory_name,'') as categoryName,
+	coalesce(cco_gis_exd.vid_personala,'') as personnelClass,
+	coalesce(to_date(collaborators_posle.data_poslednee_sobitie,
+'DD-MM-YYYY')) as dateLastEvent,
+	coalesce(to_date(collaborators_posle.pred_period,
+'DD-MM-YYYY')) as datePrevEvent,
+	collaborators_posle.pred_position as prevPosition,
+	collaborators_posle.napravlenie_deyatelnosti as directingWorking,
+	coalesce(role_type_map.uas_role_type_id,
+7) as uas_role_type_id,
+	case
+	when collaborators_posle.employment_type = 'Основное место работы' then 1
+	when collaborators_posle.employment_type = 'Внешнее совместительство' then 2
+	when collaborators_posle.employment_type = 'Внутреннее совместительство' then 3
+	when collaborators_posle.employment_type = 'Подработка' then 4
+	else 5
+	end as employment_type
+from     
+	collaborators_posle as collaborators_posle
+left join dit_gruppirovka_dolzhnostey as dit_gruppirovka_dolzhnostey on
+	collaborators_posle.position = dit_gruppirovka_dolzhnostey.position
+left join organizations_zkgu as organizations_zkgu on
+	collaborators_posle.organization_id = organizations_zkgu.organization_id
+and 
+	collaborators_posle.area = organizations_zkgu.area
+left join contact_inf_pochta_posle as contact_inf_pochta_posle on
+	collaborators_posle.person_id = contact_inf_pochta_posle.person_id
+left join contact_inf_telephone_posle as contact_inf_telephone_posle on
+	collaborators_posle.person_id = contact_inf_telephone_posle.person_id
+left join cco_gis_exd as cco_gis_exd on
+	collaborators_posle.id_gis = cco_gis_exd.id_gis
+and collaborators_posle.area = cco_gis_exd.area
+left join role_type_map as role_type_map on
+	collaborators_posle.area = role_type_map.area
+and collaborators_posle.id_gis = role_type_map.id_gis
+where
+	collaborators_posle.collaborator_id = $1`
+
+	rows, err := DB.Query(queryText, argsquery...)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	//ColumnsStructSlice := []V1ActiveWorkers{}
+	ColumnsStruct := V4JobPlaces{}
+	for rows.Next() {
+		var r V4JobPlaces
+		err = rows.Scan(&r.CollaboratorId, &r.PersonId, &r.InsuranceNumber, &r.CreatedAt, &r.UpdatedAt,
+			&r.DeletedAt, &r.DateDismissals, &r.Position, &r.Status, &r.Email, &r.EmailEPS, &r.FullName,
+			&r.OrganizationName, &r.Inn, &r.DateBirth, &r.MobilePhone, &r.WorkPhone, &r.DateStartWork,
+			&r.BranchName, &r.BranchID, &r.LargeGroupOfPosts, &r.PositionTag, &r.Kategory, &r.VidPersonala,
+			&r.DataKadrSobitiya, &r.DataPredSobitie, &r.PredPosition, &r.NapravlenieDeyatelnosti,
+			&r.UasRoleTypeID, &r.EmploymentType) //&r.IdGis, &r.NomerNpa, &r.IskluchenaS)
+		if err != nil {
+			return nil, err
+		}
+
+		//JSONString, err := redis.GetLibraryGoRedis(RedisClient, r.InsuranceNumber, 1)
+		//if err != nil {
+		//	return err, nil
+		//}
+
+		//r.EmailArray = JSONString
+		//r.EmailEPS = ""
+
+		//ColumnsStructSlice = append(ColumnsStructSlice, r)
+
+		ColumnsStruct = r
+	}
+
+	var AnswerWebV1 AnswerWebV1
+	AnswerWebV1.Status = true
+	if ColumnsStruct.CollaboratorId == "" {
+		//AnswerWebV1.Data = nil
+	} else {
+		AnswerWebV1.Data = ColumnsStruct
+	}
+	AnswerWebV1.Error = nil
+	//c.JSON(http.StatusOK, AnswerWebV1)
+
+	return AnswerWebV1, nil
+
+}
+
+func V1JobPlacesGeneral(WorkerID string, RedisConnector *shareRedis.RedisConnector) (interface{}, error) {
 
 	DB, err := store.GetDB(config.Conf.DatabaseURLMainAnalytics)
 	if err != nil {
@@ -1523,7 +1861,7 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 	currentTime := time.Now()
 	//fmt.Println("Today:", currentTime)
 
-	subtractYear := currentTime.AddDate(-1, 0, 0)
+	subtractYear := currentTime.AddDate(-1, -1, 0)
 	//	fmt.Println("Subtract 1 Year:", subtractYear)
 
 	// JSONString, err := GetDataRedisByInsuranceNumber(InsuranceNumber+yearFilter, 2)
@@ -1611,6 +1949,30 @@ func V1AverageSalaryGeneral(WorkerID string, UseYearFilter bool, yearFilter stri
 		replace(summa, ' ', '')
 	from
 		lkr_nachisleniy_zp2022
+	where
+		collaborator_id = $1
+	union all
+	select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		hours_worked,
+		replace(summa, ' ', '')
+	from
+		lkr_nachisleniy_zp2023
+	where
+		collaborator_id = $1
+	union all
+	select
+		date_registration,
+		settlement_group,
+		calculation_type,
+		days_worked,
+		hours_worked,
+		replace(summa, ' ', '')
+	from
+		lkr_nachisleniy_zp2024
 	where
 		collaborator_id = $1
 	order by

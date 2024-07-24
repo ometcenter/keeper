@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	libraryGoRedis "github.com/go-redis/redis/v8"
 	"github.com/google/uuid"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
@@ -96,7 +97,7 @@ func MiddleWareCheckAuth() gin.HandlerFunc {
 		tokenHeader := c.GetHeader("TokenBearer")
 
 		// При большем обращении нужны разные клиенты для получения токена.
-		dataRedis, err := shareRedis.GetLibraryRediGo(shareRedis.PoolRedisRediGolibrary, tokenHeader, 12)
+		dataRedis, err := shareRedis.RedisConnectorVb.Get(tokenHeader, 12)
 
 		if dataRedis == "" {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Токен просрочен"}}
@@ -267,7 +268,7 @@ where
 	tokenString, _ := token.SignedString([]byte(config.Conf.SecretKeyJWT))
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12)
+	err = shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		//fmt.Println("Auth err --- err = shareRedis.SelectLibraryRediGo(shareRedis.PoolRedisRediGolibrary, 12) ----", err)
 		return LoginAnswer{}, err
@@ -288,7 +289,7 @@ where
 	// 	return LoginAnswer{}, err
 	// }
 
-	err = shareRedis.SetLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, tokenString, byteData, 12, DurationSec)
+	err = shareRedis.RedisConnectorVb.Set(tokenString, byteData, 12, DurationSec)
 	if err != nil {
 		return LoginAnswer{}, err
 	}
@@ -299,12 +300,19 @@ where
 func ValidateSession(tokenHeader string) (time.Duration, error) {
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err := shareRedis.SelectLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, 12)
+	err := shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		return 0, err
 	}
 
-	ttl, err := shareRedis.RedisClientGoRedisLibrary.TTL(context.Background(), tokenHeader).Result()
+	RedisClientInterface := shareRedis.RedisConnectorVb.GetCurrentConnection()
+
+	RedisClient, ok := RedisClientInterface.(*libraryGoRedis.Client)
+	if !ok {
+		return 0, fmt.Errorf("Internal error convert type failed")
+	}
+
+	ttl, err := RedisClient.TTL(context.Background(), tokenHeader).Result()
 	if err != nil {
 		return 0, err
 	}
@@ -325,12 +333,19 @@ func ValidateSession(tokenHeader string) (time.Duration, error) {
 func RemoveSession(tokenHeader string) error {
 
 	// При большем обращении нужны разные клиенты для получения токена.
-	err := shareRedis.SelectLibraryGoRedis(shareRedis.RedisClientGoRedisLibrary, 12)
+	err := shareRedis.RedisConnectorVb.Select(12)
 	if err != nil {
 		return err
 	}
 
-	_, err = shareRedis.RedisClientGoRedisLibrary.Del(context.Background(), tokenHeader).Result()
+	RedisClientInterface := shareRedis.RedisConnectorVb.GetCurrentConnection()
+
+	RedisClient, ok := RedisClientInterface.(*libraryGoRedis.Client)
+	if !ok {
+		return fmt.Errorf("Internal error convert type failed")
+	}
+
+	_, err = RedisClient.Del(context.Background(), tokenHeader).Result()
 	if err != nil {
 		return err
 	}
@@ -417,15 +432,15 @@ func LoginBasicHandlersV1(c *gin.Context) {
 func RemoveSessionHandlersV1(c *gin.Context) {
 
 	tokenHeader := c.GetHeader("TokenBearer")
-	err := fmt.Errorf("Отправлен пустой токен")
 	if tokenHeader == "" {
+		err := fmt.Errorf("empty token")
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
 		log.Impl.Error(err.Error())
 		return
 	}
 
-	err = RemoveSession(tokenHeader)
+	err := RemoveSession(tokenHeader)
 	if err != nil {
 		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		c.JSON(http.StatusBadRequest, AnswerWebV1)
@@ -435,7 +450,7 @@ func RemoveSessionHandlersV1(c *gin.Context) {
 
 	var AnswerWebV1 web.AnswerWebV1
 	AnswerWebV1.Status = true
-	AnswerWebV1.Data = "Идентификатор вашей сессии удален"
+	AnswerWebV1.Data = "token deleted"
 	AnswerWebV1.Error = nil
 
 	c.JSON(http.StatusOK, AnswerWebV1)
@@ -463,18 +478,85 @@ func ValidateSessionHandlersV1(c *gin.Context) {
 		if -1 == DurationExpired {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key will not expire"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("The key will not expire")
+			log.Impl.Error("The key will not expire - %s", tokenHeader)
 			return
 		} else if -2 == DurationExpired {
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "The key does not exist"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("The key does not exist")
+			log.Impl.Error("The key does not exist - %s", tokenHeader)
 			return
 		} else {
 
 			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Unexpected error"}}
 			c.JSON(http.StatusUnauthorized, AnswerWebV1)
-			log.Impl.Error("Unexpected error")
+			log.Impl.Error("Unexpected error - %s", tokenHeader)
+			//c.JSON(http.StatusOK, gin.H{"Unexpected error": DurationExpired.Seconds()})
+			return
+		}
+	}
+
+	DataAnswer := struct {
+		//Status    bool    `json:"status"`
+		ExpiresIn float64 `json:"expiresIn"`
+		ExpiresAt int64
+	}{
+		//Status:    true,
+		ExpiresIn: DurationExpired.Seconds(),
+		ExpiresAt: time.Now().Add(DurationExpired).Unix(),
+	}
+
+	var AnswerWebV1 web.AnswerWebV1
+	AnswerWebV1.Status = true
+	AnswerWebV1.Data = DataAnswer
+	AnswerWebV1.Error = nil
+
+	//c.Data(http.StatusOK, "application/json", byteData)
+	c.JSON(http.StatusOK, AnswerWebV1)
+
+	//c.JSON(http.StatusOK, DataAnswer)
+}
+
+func ValidateSessionHandlersV2(c *gin.Context) {
+
+	tokenHeader := c.GetHeader("TokenBearer")
+	if tokenHeader == "" {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Отсутствует токен авторизации"}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error("Отсутствует токен авторизации")
+		return
+	}
+
+	DurationExpired, err := ValidateSession(tokenHeader)
+	if err != nil {
+		AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, err.Error()}}
+		c.JSON(http.StatusUnauthorized, AnswerWebV1)
+		log.Impl.Error(err.Error())
+		return
+	}
+
+	if DurationExpired < 0 {
+		if -1 == DurationExpired {
+			// The command returns -1 if the key exists but has no associated expire.
+			var AnswerWebV1 web.AnswerWebV1
+			AnswerWebV1.Status = true
+			AnswerWebV1.Data = nil
+			AnswerWebV1.Error = &web.ErrorWebV1{http.StatusUnauthorized, "The key will not expire"}
+			c.JSON(http.StatusOK, AnswerWebV1)
+			log.Impl.Error("The key will not expire - %s", tokenHeader)
+			return
+		} else if -2 == DurationExpired {
+			// The command returns -2 if the key does not exist.
+			var AnswerWebV1 web.AnswerWebV1
+			AnswerWebV1.Status = true
+			AnswerWebV1.Data = nil
+			AnswerWebV1.Error = &web.ErrorWebV1{http.StatusUnauthorized, "The key does not exist"}
+			c.JSON(http.StatusOK, AnswerWebV1)
+			log.Impl.Error("The key does not exist - %s", tokenHeader)
+			return
+		} else {
+			AnswerWebV1 := web.AnswerWebV1{false, nil, &web.ErrorWebV1{http.StatusUnauthorized, "Unexpected error"}}
+			c.JSON(http.StatusUnauthorized, AnswerWebV1)
+			log.Impl.Error("Unexpected error - %s", tokenHeader)
 			//c.JSON(http.StatusOK, gin.H{"Unexpected error": DurationExpired.Seconds()})
 			return
 		}

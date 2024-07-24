@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	libraryGoRedis "github.com/go-redis/redis/v8"
 	log "github.com/ometcenter/keeper/logging"
+	"github.com/ometcenter/keeper/models"
 	shareRedis "github.com/ometcenter/keeper/redis"
 	utilityShare "github.com/ometcenter/keeper/utility"
 )
@@ -16,7 +16,7 @@ import (
 //////////////////// Заполнение кэша Redis //////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 
-func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisSalary(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -25,8 +25,13 @@ func FillDataToRedisSalary(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.
 	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
-where 
-	status <> 'Увольнение'`
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
+	// where
+	// 	status <> 'Увольнение'`
 	//where
 	//area = '6083'
 	//limit 100`
@@ -69,17 +74,20 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
+
+	//TODO: It is assumed that there are problems with a quick cache reset
+	time.Sleep(time.Second * 60)
 
 	for _, item := range collaborator_idSlice {
 
 		workerID := item
 
 		var BudgetStat interface{}
-		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, RedisClient)
+		BudgetStat, err = V1BudgetStatGeneral(workerID, UseYearFilter, yearFilter, UseAdvance, RedisConnector)
 		if err != nil {
 			BudgetStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -91,7 +99,7 @@ where
 		}
 
 		//err = RedisClient.Set(ctxRedis, r.InsuranceNumber, r, 0).Err()
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilter, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item+yearFilter, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}
@@ -120,7 +128,7 @@ where
 
 }
 
-func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -129,8 +137,13 @@ func FillDataToRedisVacation(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedi
 	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
-where 
-	status <> 'Увольнение'`
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
+	// where
+	// 	status <> 'Увольнение'`
 	//where
 	//area = '6083'
 	//limit 100`
@@ -178,10 +191,15 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
+
+	arrPipe := make([]models.PipeArr, 0, 5000)
+
+	//TODO: It is assumed that there are problems with a quick cache reset
+	time.Sleep(time.Second * 60)
 
 	for _, item := range collaborator_idSlice {
 
@@ -189,7 +207,7 @@ where
 		//?from=2020&to=2023
 
 		var HolidayStat interface{}
-		HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisClient)
+		HolidayStat, err = V1HolidayStatGeneral(workerID, UseYearFilter, yearFilterFrom, yearFilterTo, RedisConnector)
 		if err != nil {
 			HolidayStat = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -200,11 +218,31 @@ where
 			return err
 		}
 
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		// old code:
+		// err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		// if err != nil {
+		// 	return err
+		// }
+
+		arrPipe = append(arrPipe, models.PipeArr{Key: workerID, Value: byteResult})
+
+		if len(arrPipe) == 5000 {
+			err = RedisConnector.PipeSet(RedisDB, arrPipe)
+			if err != nil {
+				return err
+			}
+			arrPipe = nil
+			arrPipe = make([]models.PipeArr, 0, 5000)
+		}
+
+	}
+
+	//if some data left
+	if len(arrPipe) > 0 {
+		err = RedisConnector.PipeSet(RedisDB, arrPipe)
 		if err != nil {
 			return err
 		}
-
 	}
 
 	endTime := time.Now()
@@ -217,7 +255,7 @@ where
 
 }
 
-func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisAllInformation(RedisDB int, DB *sql.DB, UseAdvance bool, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -276,7 +314,7 @@ where
 	// 	return err
 	// }
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
@@ -287,7 +325,7 @@ where
 		//?from=2020&to=2023
 
 		var AllInformationV1 interface{}
-		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, shareRedis.RedisClientGoRedisLibrary)
+		AllInformationV1, err = AllInformationV1General(workerID, UseYearFilter, yearFilter, yearFilterFrom, yearFilterTo, UseAdvance, RedisConnector)
 		if err != nil {
 			AllInformationV1 = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
@@ -299,12 +337,12 @@ where
 		}
 
 		// TODO: Внтури сборки частных частей кеша происходит изменения на другую область, поэтому тут меняем.
-		err = shareRedis.SelectLibraryGoRedis(RedisClient, RedisDB)
+		err = RedisConnector.Select(RedisDB)
 		if err != nil {
 			return err
 		}
 
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item+yearFilterFrom+yearFilterTo, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}
@@ -321,7 +359,7 @@ where
 
 }
 
-func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedis.Client) error {
+func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisConnector *shareRedis.RedisConnector) error {
 
 	BeginTime := time.Now()
 
@@ -330,8 +368,13 @@ func FillDataToRedisJobPlace(RedisDB int, DB *sql.DB, RedisClient *libraryGoRedi
 	collaborators_posle.collaborator_id
 from
 	collaborators_posle as collaborators_posle
-where 
-	status <> 'Увольнение'`
+where
+	status <> 'Увольнение'
+	and collaborators_posle.position <> 'Студент'
+	and collaborators_posle.employment_type <> 'Подработка'
+	and employment_type <> 'Внутреннее совместительство'`
+	//where
+	//status <> 'Увольнение'`
 	//where
 	//area = '6083'
 	//limit 100`
@@ -357,29 +400,38 @@ where
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	err = shareRedis.FlushdbLibraryGoRedis(RedisClient, RedisDB)
+	err = RedisConnector.Flushdb(RedisDB)
 	if err != nil {
 		return err
 	}
+
+	//TODO: It is assumed that there are problems with a quick cache reset
+	time.Sleep(time.Second * 60)
 
 	for _, item := range collaborator_idSlice {
 
 		workerID := item
 
-		var V3JobPlaces interface{}
-		V3JobPlaces, err = V3JobPlacesGeneral(workerID, RedisClient)
+		//TODO: We flushed chack above, but it not working, now for sure del key
+		err = RedisConnector.Del(5, workerID)
 		if err != nil {
-			V3JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
+			return err
+		}
+
+		var V4JobPlaces interface{}
+		V4JobPlaces, err = V4JobPlacesGeneral(workerID, RedisConnector)
+		if err != nil {
+			V4JobPlaces = AnswerWebV1{false, nil, &ErrorWebV1{http.StatusInternalServerError, err.Error()}}
 		}
 
 		//panic occurred in main: redis: can't marshal store.GetPersonalInfoResponds (implement encoding.BinaryMarshaler)
-		byteResult, err := json.Marshal(V3JobPlaces)
+		byteResult, err := json.Marshal(V4JobPlaces)
 		if err != nil {
 			return err
 		}
 
 		//err = RedisClient.Set(ctxRedis, r.InsuranceNumber, r, 0).Err()
-		err = shareRedis.SetLibraryGoRedis(RedisClient, item, byteResult, RedisDB, 0)
+		err = RedisConnector.Set(item, byteResult, RedisDB, 0)
 		if err != nil {
 			return err
 		}

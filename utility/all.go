@@ -17,12 +17,13 @@ import (
 	"time"
 
 	sq "github.com/Masterminds/squirrel"
+	"github.com/lib/pq"
 	"github.com/ometcenter/keeper/config"
 	log "github.com/ometcenter/keeper/logging"
 	"github.com/ometcenter/keeper/models"
+	queue "github.com/ometcenter/keeper/queue"
 	tracing "github.com/ometcenter/keeper/tracing/jaeger"
 	tracingRabbitMQ "github.com/ometcenter/keeper/tracing/jaeger/rabbitmq"
-	"github.com/ometcenter/keeper/version"
 	"github.com/streadway/amqp"
 )
 
@@ -313,7 +314,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast}).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(
 				sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}}).Limit(
-				uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+				uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC")
 		} else {
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}})
@@ -340,7 +341,7 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast}).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(
 				sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}}).Limit(
-				uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+				uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC")
 		} else {
 			//queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.GtOrEq{"updated_at": timePast})
 			queryBuilder = psql.Select("*").From(TableNameParam).Where(sq.Or{sq.GtOrEq{"updated_at": timePast}, sq.GtOrEq{"deleted_at": timePast}, sq.GtOrEq{"created_at": timePast}})
@@ -357,7 +358,34 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 
 	} else if PaginatioRegim {
 
-		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("created_at")
+		queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC")
+
+		if len(QueryURL) > 2 {
+			//var conditionSlice []sq.Eq
+			//conditionMap := make(map[string]interface{})
+			//var conditionSlice sq.Eq
+
+			sqEq := make(sq.Eq)
+
+			for key, value := range QueryURL {
+
+				if key == "total" || key == "page" || key == "per_page" {
+					continue
+				}
+				//conditionSlice = append(conditionSlice, sq.Eq{key: value})
+				//conditionMap[key] = value
+				if len(value) == 0 {
+					param = append(param, "")
+				} else {
+					param = append(param, value[0])
+				}
+
+				//sqEq[key] = ""
+				sqEq[`"`+key+`"`] = ""
+
+			}
+			queryBuilder = psql.Select("*").From(TableNameParam).Limit(uint64(Limit)).Offset(uint64(Offset)).OrderBy("id ASC").Where(sqEq)
+		}
 
 	} else if len(QueryURL) != 0 {
 		//var conditionSlice []sq.Eq
@@ -379,7 +407,8 @@ func GetAllDataFromTables(DB *sql.DB, TableNameParam string, mapAvailableTables 
 				param = append(param, value[0])
 			}
 
-			sqEq[key] = ""
+			//sqEq[key] = ""
+			sqEq[`"`+key+`"`] = ""
 
 		}
 		queryBuilder = psql.Select("*").From(TableNameParam).Where(sqEq)
@@ -566,7 +595,7 @@ func ShrinkTablesUniversal(DB *sql.DB, TableName string, CounterLimit int, Durat
 			}
 		}
 
-		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение больше чем %-8v",
+		log.Impl.Errorf("Обнаруженно переполнение таблицы %s\n Количество записей : %d выполненно усечение запесей больше(старше) чем %-8v",
 			TableName, counter, DurationTimeRemaindRows)
 
 	}
@@ -702,30 +731,33 @@ func CloseStatusJob(DB *sql.DB) error {
 
 		if len(value) == 1 && value[0] == "Выполнено" {
 
-			// var argsUpdate []interface{}
-			// argsUpdate = append(argsUpdate, JobID)
-			// argsUpdate = append(argsUpdate, "Выполнено")
-			// argsUpdate = append(argsUpdate, time.Now().Format("2006-01-02T15:04:05"))
-
-			// _, err := DB.Exec(`UPDATE jobs SET status=$2, priod=$3
-			// WHERE job_id = $1;`, argsUpdate...)
-
+			// err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
 			// if err != nil {
-			// 	return err
+			// 	//return nil
+			// 	continue
 			// }
 
-			err := ChangeStatusJobsTask(DB, JobID, "Выполнено")
+			var JobV2 models.JobV2
+			JobV2.JobID = JobID
+			JobV2.Status = "Выполнено"
+			var MessageQueueGeneralInterface models.MessageQueueGeneralInterface
+			MessageQueueGeneralInterface.Type = "ChangeStatusForJobV2"
+			MessageQueueGeneralInterface.Body = JobV2
+			JsonMessageBody, err := json.Marshal(&MessageQueueGeneralInterface)
 			if err != nil {
-				//return nil
+				log.Impl.Errorf("ошибка маршалинга: %s", err)
+				//return err
+				continue
+			}
+
+			headers := map[string]interface{}{}
+			err = queue.RabbitMQConnectorVb.SendInRabbitMQUniversalV2newChannel(JsonMessageBody, "go-keeper-status", headers)
+			if err != nil {
+				//return err
 				continue
 			}
 
 			ResultSettings := ResultSettingsMap[JobID]
-
-			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C, ResultSettings.TableName, version.Commit))
-			if err != nil {
-				log.Impl.Error(err)
-			}
 
 			// var QueryToBI models.QueryToBI
 			// err = QueryToBI.LoadSettingsFirstRowFromPgByJobID(DB, JobID)
@@ -735,6 +767,31 @@ func CloseStatusJob(DB *sql.DB) error {
 				err = fmt.Errorf("НастройкиМодели not filled in QueryResult для JobId %s", JobID)
 				log.Impl.Error(err)
 				continue
+			}
+
+			configDSN, err := pq.ParseURL(SettingsJobsAllV2.DSNconnection)
+			if err != nil {
+				log.Impl.Error(err)
+				continue
+			}
+
+			s := strings.Split(configDSN, " ")
+			sSummary := ""
+			for _, subS := range s {
+				if strings.Contains(subS, "dbname=") {
+					sSummary = sSummary + subS + " " //strings.ReplaceAll(subS, "dbname=", "")
+				}
+				if strings.Contains(subS, "host=") {
+					sSummary = sSummary + subS + " " //strings.ReplaceAll(subS, "host=", "")
+				}
+			}
+
+			// err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nКод в 1С: %s\nИмя таблицы: %s\nCommit микросервиса: %s", ResultSettings.Name1C, ResultSettings.Code1C,
+			// 	ResultSettings.TableName, version.Commit))
+			err = SendTextToTelegramChat(fmt.Sprintf("Выполнено задание: %s\nJobID: %s\nИмя таблицы: %s\nServer: %s", ResultSettings.Name1C, SettingsJobsAllV2.JobID,
+				ResultSettings.TableName, sSummary))
+			if err != nil {
+				log.Impl.Error(err)
 			}
 
 			if SettingsJobsAllV2.UseHandleAfterLoadAlgorithms {
@@ -747,26 +804,34 @@ func CloseStatusJob(DB *sql.DB) error {
 				MessageQueueGeneralInterface.Type = "HandleAfterLoad"
 				MessageQueueGeneralInterface.Body = HandleAfterLoad
 
-				MessageQueueGeneralInterfaceByte, err := json.Marshal(MessageQueueGeneralInterface)
+				JsonMessageBody, err := json.Marshal(MessageQueueGeneralInterface)
 				if err != nil {
 					return err
 				}
 
-				var RESTRequestUniversal models.RESTRequestUniversal
-				Headers := make(map[string]string)
-				Headers["TokenBearer"] = config.Conf.TokenBearer
-				RESTRequestUniversal.Headers = Headers
-				RESTRequestUniversal.Method = "POST"
-				RESTRequestUniversal.Body = MessageQueueGeneralInterfaceByte
-				// TODO: Переделать на переменную окружения
-				RESTRequestUniversal.UrlToCall = os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/save-event-to-queue"
-				_, err = RESTRequestUniversal.Send()
+				// var RESTRequestUniversal models.RESTRequestUniversal
+				// Headers := make(map[string]string)
+				// Headers["TokenBearer"] = config.Conf.TokenBearer
+				// RESTRequestUniversal.Headers = Headers
+				// RESTRequestUniversal.Method = "POST"
+				// RESTRequestUniversal.Body = MessageQueueGeneralInterfaceByte
+				// // TODO: Переделать на переменную окружения
+				// RESTRequestUniversal.UrlToCall = os.Getenv("ADDRESS_PORT_SERVICE_FRONT") + "/save-event-to-queue"
+				// _, err = RESTRequestUniversal.Send()
+				// if err != nil {
+				// 	log.Impl.Error(err)
+				// }
+
+				headers := map[string]interface{}{}
+				err = queue.RabbitMQConnectorVb.SendInRabbitMQUniversalV2newChannel(JsonMessageBody, "go-keeper-events", headers)
 				if err != nil {
 					log.Impl.Error(err)
+					continue
 				}
+
 			}
 
-			log.Impl.Infof("Обновленно задание %s \n", JobID)
+			log.Impl.Infof("Обновленно задание: %s", JobID)
 		}
 
 	}

@@ -18,25 +18,25 @@ import (
 // TODO: Used for migration. Need a replacement for web.LkUsers
 type LkUsers struct {
 	gorm.Model
-	FullName     string
+	FullName     string `json:"fullName"`
 	UserID       string // Он же collaborator_id
 	Login        string `json:"login"`
-	Password     string `json:"Password"`
+	Password     string `json:"password"`
 	HashPassword string
 	SecretJWT    string //`gorm:"index:idx_lk_users_jw_ttoken,type:btree"`
 	//JWTtoken        string
 	//JWTExp          int64
-	ExpSec          int64
-	Role            string
+	ExpSec          int64  `json:"expireSeconds"`
+	Role            string `json:"role"`
 	InsuranceNumber string
-	Email           string
+	Email           string `json:"eMail"`
 	Status          string //Уволен и т.д
 	DateDismissals  time.Time
-	Blocked         bool
+	Blocked         bool `json:"blocked"`
 	Source          string
 	PersonJSONByte  datatypes.JSON
 	//Person                         V1ActiveWorkers `gorm:"-"`
 	AdditionalSettingsUserJSONByte datatypes.JSON
 	//AdditionalSettingsUser         AdditionalSettingsUser `gorm:"-"`
-	Notes string
+	Notes string `json:"notes"`
 }
