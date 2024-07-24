@@ -92,6 +92,15 @@ func GetAreasNotEqualToStatus(DB *sql.DB, JobID, Stasus string) ([]string, error
 
 }
 
+func Contains[T comparable](elems []T, v T) bool {
+	for _, s := range elems {
+		if v == s {
+			return true
+		}
+	}
+	return false
+}
+
 func SendInQueueRabbitMQUniversal(TypeMessage string, DataStruct interface{},
 	topicName string, ConnectRabbitMQ *amqp.Connection) error { // RabbitMQchannelMessage *amqp.Channel
 
