@@ -231,6 +231,21 @@ func (S *SettingsJobsAllV2) LoadSettingsFromPgByJobID(DB *sql.DB, JobID string) 
 	return nil
 }
 
+func (S *SettingsJobsAllV2) CheckSettings() error {
+
+	if S.DataUploadMethod == "ИзменениеУдаление" || S.DataUploadMethod == "Изменение" {
+		if len(S.ComparionFields) == 0 || len(S.SelectionFields) == 0 {
+			return fmt.Errorf("Ошибка в настройках не заполнены ComparionFields или SelectionFields: %s", S.JobID)
+		}
+	}
+
+	if S.DSNconnection == "" {
+		return fmt.Errorf("Ошибка в настройках не заполнено DSN Connection для настройки: %s", S.JobID)
+	}
+
+	return nil
+}
+
 func (S *SettingsJobsAllV2) LoadSettingsFromPgByFileds(DB *sql.DB, FieldName string, Value interface{}) error {
 
 	var argsquery []interface{}
