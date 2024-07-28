@@ -511,21 +511,21 @@ func StartOfWeek(t time.Time) time.Time {
 	return time.Date(y, m, d, 0, 0, 0, 0, t.Location())
 }
 
-// func СhunkSliceBy[T any](items []T, chunkSize int) (chunks [][]T) {
-//     for chunkSize < len(items) {
-//         items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
-//     }
-//     return append(chunks, items)
-// }
+func СhunkSliceBy[T any](items []T, chunkSize int) (chunks [][]T) {
+	for chunkSize < len(items) {
+		items, chunks = items[chunkSize:], append(chunks, items[0:chunkSize:chunkSize])
+	}
+	return append(chunks, items)
+}
 
-//Or if you want to manually set the capacity:
-// func СhunkSliceBy[T any](items []T, chunkSize int) (chunks [][]T) {
-// 	var _chunks = make([][]T, 0, (len(items)/chunkSize)+1)
-// 	for chunkSize < len(items) {
-// 		items, _chunks = items[chunkSize:], append(_chunks, items[0:chunkSize:chunkSize])
-// 	}
-// 	return append(_chunks, items)
-// }
+// Or if you want to manually set the capacity:
+func СhunkSliceByWithCapacity[T any](items []T, chunkSize int) (chunks [][]T) {
+	var _chunks = make([][]T, 0, (len(items)/chunkSize)+1)
+	for chunkSize < len(items) {
+		items, _chunks = items[chunkSize:], append(_chunks, items[0:chunkSize:chunkSize])
+	}
+	return append(_chunks, items)
+}
 
 func ShortDur(d time.Duration) string {
 	s := d.String()
