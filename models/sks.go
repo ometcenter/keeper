@@ -35,14 +35,14 @@ type HRInfoBodyReduest struct {
 	OrgIDArray []string `json:"OrgIDArray"`
 }
 
-type sksReferenceInfo struct {
+type SksReferenceInfo struct {
 	MessageType      string                       `json:"MessageType"`
 	RequestExecuted  bool                         `json:"RequestExecuted"`
 	ErrorDescription string                       `json:"ErrorDescription"`
 	RequestType      string                       `json:"RequestType"`
-	ResponceBody     sksReferenceInfoResponceBody `json:"ResponceBody"`
+	ResponceBody     SksReferenceInfoResponceBody `json:"ResponceBody"`
 }
-type sksReferenceInfoOrganizations struct {
+type SksReferenceInfoOrganizations struct {
 	ID        string `json:"ID"`
 	Name      string `json:"Name"`
 	Inn       string `json:"INN"`
@@ -50,8 +50,8 @@ type sksReferenceInfoOrganizations struct {
 	ChiefFIO  string `json:"ChiefFIO"`
 	ShortName string `json:"ShortName"`
 }
-type sksReferenceInfoResponceBody struct {
-	Organizations []sksReferenceInfoOrganizations `json:"Organizations"`
+type SksReferenceInfoResponceBody struct {
+	Organizations []SksReferenceInfoOrganizations `json:"Organizations"`
 }
 
 type PersonsInfoRequestBody struct {
